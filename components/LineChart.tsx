@@ -1,4 +1,6 @@
 import { useState } from 'react';
+
+// https://github.com/apexcharts/react-apexcharts/issues/240#issuecomment-765417887
 import dynamic from 'next/dynamic';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
