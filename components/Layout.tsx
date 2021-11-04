@@ -5,9 +5,7 @@ type Props = {
 };
 
 const Layout: React.FC<Props> = props => {
-  return (
-    <div className="container mx-auto min-h-screen p-5">{props.children}</div>
-  );
+  return <>{props.children}</>;
 };
 
 export default Layout;
