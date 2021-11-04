@@ -29,7 +29,7 @@ const Map = ({ width, height }: MapProps) => {
 
   // fetch berlin data
   const { data, error } = useSWR<GeoJSON.FeatureCollection, any>(
-    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson',
+    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor',
   );
 
   return (
