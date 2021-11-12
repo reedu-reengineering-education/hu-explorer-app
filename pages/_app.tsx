@@ -2,8 +2,8 @@ import { NextPage } from 'next';
 import { AppProps } from 'next/app';
 import React, { ReactElement, ReactNode } from 'react';
 import { SWRConfig } from 'swr';
-import Layout from '../components/Layout';
-import { fetcher } from '../lib/fetcher';
+import Layout from '@/components/Layout';
+import { fetcher } from '@/lib/fetcher';
 import '../styles/globals.css';
 
 type NextPageWithLayout = NextPage & {
