@@ -1,6 +1,7 @@
 import LineChart from '../components/LineChart';
 import Map from '../components/Map';
 import { FilterIcon, SearchIcon } from '@heroicons/react/outline';
+import { ReactElement } from 'react';
 
 export default function Home() {
   return (
@@ -45,3 +46,7 @@ export default function Home() {
     </main>
   );
 }
+
+Home.getLayout = function getLayout(page: ReactElement) {
+  return <>{page}</>;
+};

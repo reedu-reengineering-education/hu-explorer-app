@@ -1,11 +1,7 @@
-import React, { ReactNode } from 'react';
+import React, { ReactElement } from 'react';
 
-type Props = {
-  children: ReactNode;
-};
-
-const Layout: React.FC<Props> = props => {
-  return <>{props.children}</>;
+const Layout: React.FC<ReactElement> = props => {
+  return <div className="container mx-auto">{props}</div>;
 };
 
 export default Layout;

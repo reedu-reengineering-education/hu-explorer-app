@@ -1,20 +1,29 @@
+import { NextPage } from 'next';
 import { AppProps } from 'next/app';
-import React from 'react';
+import React, { ReactElement, ReactNode } from 'react';
 import { SWRConfig } from 'swr';
 import Layout from '../components/Layout';
 import { fetcher } from '../lib/fetcher';
 import '../styles/globals.css';
 
-function MyApp({ Component, pageProps }: AppProps) {
+type NextPageWithLayout = NextPage & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  const getLayout = Component.getLayout || Layout;
+
   return (
     <SWRConfig
       value={{
         fetcher,
       }}
     >
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      {getLayout(<Component {...pageProps} />)}
     </SWRConfig>
   );
 }
