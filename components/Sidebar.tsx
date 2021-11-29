@@ -1,5 +1,6 @@
 import { FilterIcon, SearchIcon } from '@heroicons/react/outline';
 import React from 'react';
+import { Button } from './Elements/Button';
 import LineChart from './LineChart';
 
 const Sidebar = () => {
@@ -8,14 +9,16 @@ const Sidebar = () => {
       <h1 className="text-3xl font-bold">Humboldt Explorers</h1>
       <hr className="my-8" />
       <div className="flex w-full">
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl flex w-full mr-2">
-          <FilterIcon className="h-6 w-6 text-blue-100 mr-2" />
+        <Button
+          startIcon={<FilterIcon className="h-6 w-6 text-blue-100 mr-2" />}
+        >
           Filter
-        </button>
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl flex w-full ml-2 ">
-          <SearchIcon className="h-6 w-6 text-blue-100 mr-2" />
+        </Button>
+        <Button
+          startIcon={<SearchIcon className="h-6 w-6 text-blue-100 mr-2" />}
+        >
           Suche
-        </button>
+        </Button>
       </div>
       <hr className="my-8" />
       <div className="flex">

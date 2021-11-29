@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Spreadsheet, { CellBase, Matrix } from 'react-spreadsheet';
 
 import { useLerneinheitParams } from '@/hooks/useLerneinheitParams';
+import { Button } from '@/components/Elements/Button';
 
 const Biodiversitaet = () => {
   const { schule } = useLerneinheitParams();
@@ -51,6 +52,21 @@ const Biodiversitaet = () => {
       <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500">
         <div className="flex-grow md:w-2/3 p-4">
           <Spreadsheet data={data} onChange={setData} />
+          <Button
+            onClick={() =>
+              setData([
+                ...data,
+                [
+                  {
+                    value: '',
+                  },
+                  { value: '' },
+                ],
+              ])
+            }
+          >
+            Tier hinzufügen
+          </Button>
         </div>
         <div className="flex-none md:w-1/3 p-4">Auswertung</div>
       </div>
