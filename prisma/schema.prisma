@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Schule {
+  id                  String                @id @default(uuid())
+  name                String
+  VersiegelungRecord  VersiegelungRecord[]
+  ArtenvielfaltRecord ArtenvielfaltRecord[]
+}
+
+model VersiegelungRecord {
+  id       String @id @default(uuid())
+  area     Float
+  school   Schule @relation(fields: [schuleId], references: [id])
+  schuleId String
+}
+
+model Animal {
+  id                  String                @id @default(uuid())
+  name                String
+  ArtenvielfaltRecord ArtenvielfaltRecord[]
+}
+
+model ArtenvielfaltRecord {
+  id       String @id @default(uuid())
+  animal   Animal @relation(fields: [animalId], references: [id])
+  count    Int
+  animalId String
+  school   Schule @relation(fields: [schuleId], references: [id])
+  schuleId String
+}
