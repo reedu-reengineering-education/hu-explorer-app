@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import Spreadsheet, { CellBase, Matrix } from 'react-spreadsheet';
 
-import { useLerneinheitParams } from '@/hooks/useLerneinheitParams';
+import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import { Button } from '@/components/Elements/Button';
 
 const Biodiversitaet = () => {
-  const { schule } = useLerneinheitParams();
+  const { schule, gruppe } = useExpeditionParams();
 
   const [data, setData] = useState<Matrix<CellBase>>([
     [
@@ -47,7 +47,8 @@ const Biodiversitaet = () => {
     <div className="flex flex-col">
       <div className="p-4">
         <h1 className="text-4xl">Artenvielfalt</h1>
-        <div className="font-semibold text-gray-500">{schule}</div>
+        <div className="font-semibold text-gray-500">Schule: {schule}</div>
+        <div className="font-semibold text-gray-500">Gruppe: {gruppe}</div>
       </div>
       <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500">
         <div className="flex-grow md:w-2/3 p-4">
