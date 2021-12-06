@@ -9,8 +9,8 @@ const Navbar = () => {
       <Link href="/" passHref>
         <Button>Karte</Button>
       </Link>
-      <Link href="/lerneinheit" passHref>
-        <Button>Lerneinheit</Button>
+      <Link href="/expidition" passHref>
+        <Button>Expiditionen</Button>
       </Link>
     </nav>
   );

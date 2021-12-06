@@ -9,11 +9,11 @@ function Lerneinheit() {
         <h1 className="text-4xl">Title</h1>
       </div>
       <div className="flex flex-col">
-        <Link href="lerneinheit/schall" passHref>
+        <Link href="/expidition/schall" passHref>
           <Button>Schall</Button>
         </Link>
-        <Link href="lerneinheit/biodiversitaet" passHref>
-          <Button>Biodiversitaet</Button>
+        <Link href="/expidition/artenvielfalt" passHref>
+          <Button>Artenvielfalt</Button>
         </Link>
       </div>
     </div>

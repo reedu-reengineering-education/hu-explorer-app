@@ -46,7 +46,7 @@ const Biodiversitaet = () => {
   return (
     <div className="flex flex-col">
       <div className="p-4">
-        <h1 className="text-4xl">Biodiversität</h1>
+        <h1 className="text-4xl">Artenvielfalt</h1>
         <div className="font-semibold text-gray-500">{schule}</div>
       </div>
       <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500">
@@ -65,7 +65,7 @@ const Biodiversitaet = () => {
               ])
             }
           >
-            Tier hinzufügen
+            Art hinzufügen
           </Button>
         </div>
         <div className="flex-none md:w-1/3 p-4">Auswertung</div>
