@@ -8,17 +8,6 @@ import LineChart from '@/components/LineChart';
 import Map from '@/components/Map';
 import { DateTime } from 'luxon';
 
-const tabs = [
-  {
-    title: 'Artenvielfalt',
-    component: <InputSheet />,
-  },
-  {
-    title: 'Messwerte',
-    component: <OsemSheet />,
-  },
-];
-
 const generateData = (range: number) => {
   return Array.from({ length: 10 }, (_, i) => {
     return {
@@ -31,39 +20,54 @@ const generateData = (range: number) => {
   });
 };
 
+const series = [
+  {
+    name: 'Temperatur',
+    data: generateData(50),
+  },
+  {
+    name: 'Bodenfeuchte',
+    data: generateData(100),
+  },
+  {
+    name: 'Temperatur senseBox 2',
+    data: generateData(50),
+  },
+  {
+    name: 'Bodenfeuchte senseBox 2',
+    data: generateData(100),
+  },
+];
+
+const tabs = [
+  {
+    title: 'Artenvielfalt',
+    component: <InputSheet />,
+  },
+  {
+    title: 'Messwerte',
+    component: <OsemSheet series={series} />,
+  },
+];
+
 const Artenvielfalt = () => {
   const { schule, gruppe } = useExpeditionParams();
   const [tab, setTab] = useState(0);
 
-  const series = [
-    {
-      name: 'Temperatur',
-      data: generateData(50),
-    },
-    {
-      name: 'Bodenfeuchte',
-      data: generateData(100),
-    },
-    {
-      name: 'Temperatur senseBox 2',
-      data: generateData(50),
-    },
-    {
-      name: 'Bodenfeuchte senseBox 2',
-      data: generateData(100),
-    },
-  ];
-
   const yaxis: ApexYAxis[] = [
     {
+      seriesName: 'Temperatur',
+      showAlways: true,
       title: {
-        text: 'Temperatur',
+        text: 'Temperatur in °C',
       },
     },
     {
+      seriesName: 'Bodenfeuchte',
+      showAlways: true,
       opposite: true,
       title: {
-        text: 'Bodenfeuchte',
+        text: 'Bodenfeuchte in %',
       },
     },
   ];
@@ -89,7 +93,7 @@ const Artenvielfalt = () => {
               </Button>
             ))}
           </div>
-          <div className="w-full text-center">{tabs[tab].component}</div>
+          <div className="w-full overflow-auto">{tabs[tab].component}</div>
         </div>
         <div className="flex-none md:w-1/3 p-4">
           <div className="rounded-xl overflow-hidden shadow mb-4">

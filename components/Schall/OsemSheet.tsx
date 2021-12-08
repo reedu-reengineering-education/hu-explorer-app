@@ -11,11 +11,12 @@ const OsemSheet = ({ series }: SheetProps) => {
   const cellHeader = series.map(serie => {
     return {
       value: serie.name,
+      readOnly: true,
     };
   });
 
   const [data, setData] = useState([
-    [{ value: 'Zeitstempel' }, ...cellHeader],
+    [{ value: 'Zeitstempel', readOnly: true }, ...cellHeader],
     ...Array.from({ length: 10 }, (_, i) => [
       {
         value: DateTime.local(2021, 12, 8, 13, 0, 0)

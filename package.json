@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroicons/react": "^1.0.5",
     "@prisma/client": "3.5.0",
+    "@turf/bbox": "^6.5.0",
     "add": "^2.0.6",
     "apexcharts": "^3.29.0",
     "axios": "^0.24.0",
