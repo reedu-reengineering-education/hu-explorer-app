@@ -6,6 +6,7 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 export interface ChartProps {
   series: SeriesProps[];
+  yaxis?: ApexYAxis | ApexYAxis[];
 }
 
 export interface SeriesProps {
@@ -18,7 +19,7 @@ export interface DataPointProps {
   y: number;
 }
 
-const LineChart = ({ series }: ChartProps) => {
+const LineChart = ({ series, yaxis }: ChartProps) => {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
@@ -35,11 +36,7 @@ const LineChart = ({ series }: ChartProps) => {
     xaxis: {
       type: 'datetime',
     },
-    yaxis: {
-      title: {
-        text: 'Lautstärke',
-      },
-    },
+    yaxis,
     legend: {
       position: 'bottom',
     },

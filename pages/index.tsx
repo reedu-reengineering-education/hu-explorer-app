@@ -14,7 +14,7 @@ export default function Home() {
           <Navbar />
         </div>
         <div className="row-span-6 pointer-events-auto">
-          <Sidebar></Sidebar>
+          {/* <Sidebar></Sidebar> */}
         </div>
       </div>
       {/* <div className="absolute top-0 right-0 h-full p-8">

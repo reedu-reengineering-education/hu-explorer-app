@@ -8,7 +8,7 @@ import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 export interface MapProps {
   width: number | string;
   height: number | string;
-  expedition: string;
+  expedition?: string;
 }
 
 const layerStyle: LayerProps = {

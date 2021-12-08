@@ -5,6 +5,8 @@ import { Button } from '@/components/Elements/Button';
 import InputSheet from '@/components/Artenvielfalt/InputSheet';
 import OsemSheet from '@/components/Artenvielfalt/OsemSheet';
 import LineChart from '@/components/LineChart';
+import Map from '@/components/Map';
+import { DateTime } from 'luxon';
 
 const tabs = [
   {
@@ -17,9 +19,54 @@ const tabs = [
   },
 ];
 
+const generateData = (range: number) => {
+  return Array.from({ length: 10 }, (_, i) => {
+    return {
+      y: Math.floor(Math.random() * range) + 1,
+      x: DateTime.local(2021, 12, 8, 13, 0, 0)
+        .plus({ minutes: i })
+        .toUTC()
+        .toString(),
+    };
+  });
+};
+
 const Artenvielfalt = () => {
   const { schule, gruppe } = useExpeditionParams();
   const [tab, setTab] = useState(0);
+
+  const series = [
+    {
+      name: 'Temperatur',
+      data: generateData(50),
+    },
+    {
+      name: 'Bodenfeuchte',
+      data: generateData(100),
+    },
+    {
+      name: 'Temperatur senseBox 2',
+      data: generateData(50),
+    },
+    {
+      name: 'Bodenfeuchte senseBox 2',
+      data: generateData(100),
+    },
+  ];
+
+  const yaxis: ApexYAxis[] = [
+    {
+      title: {
+        text: 'Temperatur',
+      },
+    },
+    {
+      opposite: true,
+      title: {
+        text: 'Bodenfeuchte',
+      },
+    },
+  ];
 
   return (
     <div className="flex flex-col">
@@ -45,8 +92,11 @@ const Artenvielfalt = () => {
           <div className="w-full text-center">{tabs[tab].component}</div>
         </div>
         <div className="flex-none md:w-1/3 p-4">
+          <div className="rounded-xl overflow-hidden shadow mb-4">
+            <Map width="100%" height={200} expedition="artenvielfalt" />
+          </div>
           <h2 className="text-xl">Auswertung</h2>
-          <LineChart></LineChart>
+          <LineChart series={series} yaxis={yaxis}></LineChart>
         </div>
       </div>
     </div>

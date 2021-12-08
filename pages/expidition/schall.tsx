@@ -42,6 +42,12 @@ const Schall = () => {
     },
   ];
 
+  const yaxis = {
+    title: {
+      text: 'Lautstärke',
+    },
+  };
+
   return (
     <div className="flex flex-col">
       <div className="p-4">
@@ -59,7 +65,7 @@ const Schall = () => {
             <Map width="100%" height={200} expedition="schall" />
           </div>
           <h2 className="text-xl">Auswertung</h2>
-          <LineChart series={series} />
+          <LineChart series={series} yaxis={yaxis} />
         </div>
       </div>
     </div>
