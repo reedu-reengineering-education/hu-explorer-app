@@ -3,10 +3,12 @@ import ReactMapGL, { Source, Layer, LayerProps } from 'react-map-gl';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 import useSWR from 'swr';
+import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 
 export interface MapProps {
   width: number | string;
   height: number | string;
+  expedition: string;
 }
 
 const layerStyle: LayerProps = {
@@ -18,7 +20,7 @@ const layerStyle: LayerProps = {
   },
 };
 
-const Map = ({ width, height }: MapProps) => {
+const Map = ({ width, height, expedition }: MapProps) => {
   const [viewport, setViewport] = useState({
     width: width,
     height: height,
@@ -27,9 +29,11 @@ const Map = ({ width, height }: MapProps) => {
     zoom: 7,
   });
 
+  const { schule } = useExpeditionParams();
+
   // fetch berlin data
   const { data, error } = useSWR<GeoJSON.FeatureCollection, any>(
-    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor',
+    `https://api.opensensemap.org/boxes?format=geojson&grouptag=hu-explorer ${expedition} ${schule}`,
   );
 
   return (
