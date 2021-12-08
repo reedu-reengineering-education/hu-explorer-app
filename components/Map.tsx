@@ -32,13 +32,13 @@ const layerStyle: LayerProps = {
 const Map = ({ width, height, expedition }: MapProps) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [viewport, setViewport] = useState({
-    width: width,
-    height: height,
     latitude: 52.5,
     longitude: 13.5,
     zoom: 7,
     bearing: 0,
     pitch: 0,
+    height: 100, // just some random defaults
+    width: 100, // just some random defaults
   });
 
   const { schule } = useExpeditionParams();
@@ -52,6 +52,7 @@ const Map = ({ width, height, expedition }: MapProps) => {
     if (mapLoaded && data.features.length > 0) {
       flyToBbox();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded, data]);
 
   const flyToBbox = () => {
@@ -74,14 +75,16 @@ const Map = ({ width, height, expedition }: MapProps) => {
       longitude,
       latitude,
       zoom,
-      transitionInterpolator: new FlyToInterpolator({ speed: 1.2 }),
-      transitionDuration: 1000,
+      // transitionInterpolator: new FlyToInterpolator({ speed: 1.2 }),
+      // transitionDuration: 1000,
     });
   };
 
   return (
     <ReactMapGL
       {...viewport}
+      height={height}
+      width={width}
       onViewportChange={setViewport}
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
       onClick={flyToBbox}
