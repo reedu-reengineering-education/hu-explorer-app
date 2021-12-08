@@ -1,15 +1,32 @@
 import React, { useState } from 'react';
 import Spreadsheet from 'react-spreadsheet';
+import { SeriesProps } from '../LineChart';
+import { DateTime } from 'luxon';
 
-const OsemSheet = () => {
+export interface SheetProps {
+  series: SeriesProps[];
+}
+
+const OsemSheet = ({ series }: SheetProps) => {
+  const cellHeader = series.map(serie => {
+    return {
+      value: serie.name,
+    };
+  });
+
   const [data, setData] = useState([
-    [{ value: 'Zeitstempel' }, { value: 'Lautstärke in dB' }],
-    ...Array.from({ length: 10 }, e => [
+    [{ value: 'Zeitstempel' }, ...cellHeader],
+    ...Array.from({ length: 10 }, (_, i) => [
       {
-        value: new Date(
-          +new Date() - Math.floor(Math.random() * 10000000000),
-        ).toLocaleString(),
+        value: DateTime.local(2021, 12, 8, 13, 0, 0)
+          .plus({ minutes: i })
+          .setLocale('de')
+          .toLocaleString(DateTime.DATETIME_SHORT),
       },
+      { value: Math.floor(Math.random() * 120) + 1 },
+      { value: Math.floor(Math.random() * 120) + 1 },
+      { value: Math.floor(Math.random() * 120) + 1 },
+      { value: Math.floor(Math.random() * 120) + 1 },
       { value: Math.floor(Math.random() * 120) + 1 },
     ]),
     [{ value: '' }, { value: '' }, { value: '' }],

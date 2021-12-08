@@ -4,13 +4,44 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-const LineChart = () => {
+export interface ChartProps {
+  series: SeriesProps[];
+}
+
+export interface SeriesProps {
+  name: string;
+  data: DataPointProps[];
+}
+
+export interface DataPointProps {
+  x: Date | number;
+  y: number;
+}
+
+const LineChart = ({ series }: ChartProps) => {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
+      toolbar: {
+        export: {
+          csv: {
+            dateFormatter(timestamp) {
+              return timestamp;
+            },
+          },
+        },
+      },
     },
     xaxis: {
-      categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999],
+      type: 'datetime',
+    },
+    yaxis: {
+      title: {
+        text: 'Lautstärke',
+      },
+    },
+    legend: {
+      position: 'bottom',
     },
     dataLabels: {
       enabled: false,
@@ -18,14 +49,13 @@ const LineChart = () => {
     stroke: {
       curve: 'smooth',
     },
-  });
-
-  const [series, setSeries] = useState([
-    {
-      name: 'series-1',
-      data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
+    tooltip: {
+      shared: true,
+      x: {
+        format: 'dd.MM.yyyy HH:mm:ss',
+      },
     },
-  ]);
+  });
 
   return (
     <Chart
