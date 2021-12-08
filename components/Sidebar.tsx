@@ -36,8 +36,8 @@ const Sidebar = () => {
         </div>
       </div>
       <hr className="my-8" />
-      <LineChart></LineChart>
-      <LineChart></LineChart>
+      {/* <LineChart></LineChart>
+      <LineChart></LineChart> */}
     </div>
   );
 };
