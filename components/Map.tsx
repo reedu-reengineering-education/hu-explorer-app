@@ -75,8 +75,6 @@ const Map = ({ width, height, expedition }: MapProps) => {
       longitude,
       latitude,
       zoom,
-      // transitionInterpolator: new FlyToInterpolator({ speed: 1.2 }),
-      // transitionDuration: 1000,
     });
   };
 
@@ -89,6 +87,8 @@ const Map = ({ width, height, expedition }: MapProps) => {
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
       onClick={flyToBbox}
       onLoad={() => setMapLoaded(true)}
+      transitionDuration={1000}
+      transitionInterpolator={new FlyToInterpolator({ speed: 1.2 })}
     >
       {data && (
         <Source id="osem-data" type="geojson" data={data}>
