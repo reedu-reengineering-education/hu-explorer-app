@@ -5,7 +5,7 @@ import ReactMapGL, {
   LayerProps,
   FlyToInterpolator,
   WebMercatorViewport,
-  LinearInterpolator,
+  ViewportProps,
 } from 'react-map-gl';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -31,7 +31,7 @@ const layerStyle: LayerProps = {
 
 const Map = ({ width, height, expedition }: MapProps) => {
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [viewport, setViewport] = useState({
+  const [viewport, setViewport] = useState<ViewportProps>({
     latitude: 52.5,
     longitude: 13.5,
     zoom: 7,
@@ -49,7 +49,7 @@ const Map = ({ width, height, expedition }: MapProps) => {
   );
 
   useEffect(() => {
-    if (mapLoaded && data.features.length > 0) {
+    if (mapLoaded && data?.features.length > 0) {
       flyToBbox();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,7 +59,11 @@ const Map = ({ width, height, expedition }: MapProps) => {
     // calculate the bounding box of the feature
     const [minLng, minLat, maxLng, maxLat] = bbox(data);
     // construct a viewport instance from the current state
-    const vp = new WebMercatorViewport(viewport);
+    const vp = new WebMercatorViewport({
+      ...viewport,
+      width: viewport.width,
+      height: viewport.height,
+    });
     const { longitude, latitude, zoom } = vp.fitBounds(
       [
         [minLng, minLat],
@@ -75,6 +79,8 @@ const Map = ({ width, height, expedition }: MapProps) => {
       longitude,
       latitude,
       zoom,
+      transitionDuration: 1000,
+      transitionInterpolator: new FlyToInterpolator({ speed: 1.2 }),
     });
   };
 
@@ -85,10 +91,7 @@ const Map = ({ width, height, expedition }: MapProps) => {
       width={width}
       onViewportChange={setViewport}
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-      onClick={flyToBbox}
       onLoad={() => setMapLoaded(true)}
-      transitionDuration={1000}
-      transitionInterpolator={new FlyToInterpolator({ speed: 1.2 })}
     >
       {data && (
         <Source id="osem-data" type="geojson" data={data}>
