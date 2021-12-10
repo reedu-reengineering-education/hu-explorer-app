@@ -1,5 +1,6 @@
 import LineChart from '@/components/LineChart';
 import BarChart from '@/components/BarChart';
+import Tile from '@/components/Tile';
 import Map from '@/components/Map';
 import OsemSheet from '@/components/Schall/OsemSheet';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
@@ -57,7 +58,14 @@ const Schall = () => {
       </div>
       <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500">
         <div className="flex-grow md:w-2/3 p-4">
-          <div className="w-full overflow-auto">
+          <div className="flex flex-row justify-evenly w-full">
+            <Tile title="Eingang" min={10} max={66}></Tile>
+            <Tile title="Straße" min={89} max={101}></Tile>
+            <Tile title="Hof" min={70} max={81}></Tile>
+            <Tile title="Flur" min={33} max={51}></Tile>
+            <Tile title="Klingel" min={5} max={84}></Tile>
+          </div>
+          <div className="w-full overflow-auto pt-10">
             {/* <OsemSheet series={series}></OsemSheet> */}
             <BarChart></BarChart>
           </div>
