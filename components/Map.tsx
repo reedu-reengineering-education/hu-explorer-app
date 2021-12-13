@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import ReactMapGL, {
-  Source,
-  Layer,
-  LayerProps,
   FlyToInterpolator,
   WebMercatorViewport,
   ViewportProps,

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
-import { Button } from '@/components/Elements/Button';
 import InputSheet from '@/components/Artenvielfalt/InputSheet';
 import OsemSheet from '@/components/Artenvielfalt/OsemSheet';
 import LineChart from '@/components/LineChart';
 import Map from '@/components/Map';
 import { DateTime } from 'luxon';
+import Tabs, { Tab } from '@/components/Tabs';
 
 const generateData = (range: number) => {
   return Array.from({ length: 10 }, (_, i) => {
@@ -39,20 +39,31 @@ const series = [
   },
 ];
 
-const tabs = [
+const tabs: Tab[] = [
   {
     title: 'Artenvielfalt',
     component: <InputSheet />,
   },
   {
-    title: 'Messwerte',
+    title: 'Temperatur',
+    component: <OsemSheet series={series} />,
+    hypothesis:
+      'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
+  },
+  {
+    title: 'Bodenfeuchte',
+    component: <OsemSheet series={series} />,
+    hypothesis:
+      'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
+  },
+  {
+    title: 'Versiegelung',
     component: <OsemSheet series={series} />,
   },
 ];
 
 const Artenvielfalt = () => {
   const { schule, gruppe } = useExpeditionParams();
-  const [tab, setTab] = useState(0);
 
   const yaxis: ApexYAxis[] = [
     {
@@ -81,19 +92,7 @@ const Artenvielfalt = () => {
       </div>
       <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500">
         <div className="flex-grow md:w-2/3 p-4">
-          <div className="flex justify-around rounded-lg bg-gray-100 p-2 mb-2">
-            {tabs.map((t, i) => (
-              <Button
-                onClick={() => setTab(i)}
-                variant={tab === i ? 'primary' : 'inverse'}
-                key={`artenvielfalt_tab_${i}`}
-                className="w-full text-center"
-              >
-                {t.title}
-              </Button>
-            ))}
-          </div>
-          <div className="w-full overflow-auto">{tabs[tab].component}</div>
+          <Tabs tabs={tabs}></Tabs>
         </div>
         <div className="flex-none md:w-1/3 p-4">
           <div className="rounded-xl overflow-hidden shadow mb-4">
