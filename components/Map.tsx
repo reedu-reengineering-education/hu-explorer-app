@@ -6,6 +6,7 @@ import ReactMapGL, {
   FlyToInterpolator,
   WebMercatorViewport,
   ViewportProps,
+  MapContext,
 } from 'react-map-gl';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -13,6 +14,7 @@ import useSWR from 'swr';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 
 import bbox from '@turf/bbox';
+import { Point } from 'geojson';
 
 export interface MapProps {
   width: number | string;
@@ -20,13 +22,20 @@ export interface MapProps {
   expedition?: string;
 }
 
-const layerStyle: LayerProps = {
-  id: 'point',
-  type: 'circle',
-  paint: {
-    'circle-radius': 5,
-    'circle-color': '#007cbf',
-  },
+const LabelMarker = ({ name, lat, lng }) => {
+  const context = React.useContext(MapContext);
+
+  const [x, y] = context.viewport.project([lng, lat]);
+
+  return (
+    <div
+      style={{ position: 'absolute', left: x - 10, top: y - 10 }}
+      className="bg-white rounded-full w-fit pr-2 pl-1 text-sm shadow hover:z-10 flex items-center"
+    >
+      <span className="block w-3 h-3 bg-blue-500 rounded-full mr-1"></span>
+      {name}
+    </div>
+  );
 };
 
 const Map = ({ width, height, expedition }: MapProps) => {
@@ -44,7 +53,7 @@ const Map = ({ width, height, expedition }: MapProps) => {
   const { schule } = useExpeditionParams();
 
   // fetch berlin data
-  const { data, error } = useSWR<GeoJSON.FeatureCollection, any>(
+  const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
     `https://api.opensensemap.org/boxes?format=geojson&grouptag=hu-explorer ${expedition} ${schule}`,
   );
 
@@ -93,11 +102,15 @@ const Map = ({ width, height, expedition }: MapProps) => {
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
       onLoad={() => setMapLoaded(true)}
     >
-      {data && (
-        <Source id="osem-data" type="geojson" data={data}>
-          <Layer {...layerStyle} />
-        </Source>
-      )}
+      {data?.features &&
+        data.features.map((m, i) => (
+          <LabelMarker
+            key={i}
+            name={m.properties.name.split('HU Explorer Schall')[1]}
+            lat={m.geometry.coordinates[1]}
+            lng={m.geometry.coordinates[0]}
+          ></LabelMarker>
+        ))}
     </ReactMapGL>
   );
 };
