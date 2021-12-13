@@ -29,6 +29,7 @@
     "yarn": "^1.22.17"
   },
   "devDependencies": {
+    "@types/geojson": "^7946.0.8",
     "@types/node": "^16.11.6",
     "@types/react": "^17.0.34",
     "autoprefixer": "^10.4.0",
