@@ -58,7 +58,7 @@ const Schall = () => {
       </div>
       <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500">
         <div className="flex-grow md:w-2/3 p-4">
-          <div className="flex flex-row justify-evenly w-full">
+          <div className="flex flex-row flex-wrap justify-evenly w-full">
             <Tile title="Eingang" min={10} max={66}></Tile>
             <Tile title="Straße" min={89} max={101}></Tile>
             <Tile title="Hof" min={70} max={81}></Tile>
