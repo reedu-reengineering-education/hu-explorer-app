@@ -6,12 +6,13 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 export interface ChartProps {
   series: SeriesProps[];
+  xaxis?: ApexXAxis;
   yaxis?: ApexYAxis | ApexYAxis[];
 }
 
 export interface SeriesProps {
   name: string;
-  data: DataPointProps[];
+  data: DataPointProps[] | number[];
 }
 
 export interface DataPointProps {
@@ -19,29 +20,7 @@ export interface DataPointProps {
   y: number;
 }
 
-const BarChart = () => {
-  const series = [
-    {
-      name: 'Eingang',
-      data: [44, 55, 57, 56, 61, 58],
-    },
-    {
-      name: 'Straße',
-      data: [76, 85, 101, 98, 87, 105],
-    },
-    {
-      name: 'Hof',
-      data: [35, 41, 36, 26, 45, 48],
-    },
-    {
-      name: 'Flur',
-      data: [35, 41, 36, 26, 45, 48],
-    },
-    {
-      name: 'Klingel',
-      data: [35, 41, 36, 26, 45, 48],
-    },
-  ];
+const BarChart = ({ series, xaxis, yaxis }: ChartProps) => {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
@@ -54,21 +33,8 @@ const BarChart = () => {
         columnWidth: '55%',
       },
     },
-    xaxis: {
-      categories: [
-        '0 - 10 dB',
-        '10 - 20 dB',
-        '20 - 30 dB',
-        '30 - 40 dB',
-        '40 - 50 dB',
-        '50 - 60 dB',
-      ],
-    },
-    yaxis: {
-      title: {
-        text: 'Anzahl der Messungen',
-      },
-    },
+    xaxis,
+    yaxis,
     legend: {
       position: 'bottom',
     },

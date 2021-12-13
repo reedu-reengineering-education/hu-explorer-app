@@ -5,18 +5,18 @@ import InputSheet from '@/components/Artenvielfalt/InputSheet';
 import OsemSheet from '@/components/Artenvielfalt/OsemSheet';
 import LineChart from '@/components/LineChart';
 import Map from '@/components/Map';
-import { DateTime } from 'luxon';
 import Tabs, { Tab } from '@/components/Tabs';
+import BarChart from '@/components/BarChart';
 
 const generateData = (range: number) => {
   return Array.from({ length: 10 }, (_, i) => {
-    return {
-      y: Math.floor(Math.random() * range) + 1,
-      x: DateTime.local(2021, 12, 8, 13, 0, 0)
-        .plus({ minutes: i })
-        .toUTC()
-        .toString(),
-    };
+    return Math.floor(Math.random() * range) + 1;
+  });
+};
+
+const generateDataOld = (range: number) => {
+  return Array.from({ length: 10 }, (_, i) => {
+    return Math.floor(Math.random() * range) + 1;
   });
 };
 
@@ -26,15 +26,7 @@ const series = [
     data: generateData(50),
   },
   {
-    name: 'Bodenfeuchte',
-    data: generateData(100),
-  },
-  {
-    name: 'Temperatur senseBox 2',
-    data: generateData(50),
-  },
-  {
-    name: 'Bodenfeuchte senseBox 2',
+    name: 'pflanzliche Artenvielfalt',
     data: generateData(100),
   },
 ];
@@ -74,11 +66,11 @@ const Artenvielfalt = () => {
       },
     },
     {
-      seriesName: 'Bodenfeuchte',
+      seriesName: 'plflanzliche Artenvielfalt',
       showAlways: true,
       opposite: true,
       title: {
-        text: 'Bodenfeuchte in %',
+        text: 'Artenvielfaltsindex',
       },
     },
   ];
@@ -99,7 +91,7 @@ const Artenvielfalt = () => {
             <Map width="100%" height={200} expedition="artenvielfalt" />
           </div>
           <h2 className="text-xl">Auswertung</h2>
-          <LineChart series={series} yaxis={yaxis}></LineChart>
+          <BarChart series={series} yaxis={yaxis}></BarChart>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import LineChart from '@/components/LineChart';
-import BarChart from '@/components/BarChart';
+import BarChart, { SeriesProps } from '@/components/BarChart';
 import Tile from '@/components/Tile';
 import Map from '@/components/Map';
 import OsemSheet from '@/components/Schall/OsemSheet';
@@ -50,6 +50,29 @@ const Schall = () => {
     },
   };
 
+  const barSeries = [
+    {
+      name: 'Eingang',
+      data: [44, 55, 57, 56, 61, 58],
+    },
+    {
+      name: 'Straße',
+      data: [76, 85, 101, 98, 87, 105],
+    },
+    {
+      name: 'Hof',
+      data: [35, 41, 36, 26, 45, 48],
+    },
+    {
+      name: 'Flur',
+      data: [35, 41, 36, 26, 45, 48],
+    },
+    {
+      name: 'Klingel',
+      data: [35, 41, 36, 26, 45, 48],
+    },
+  ];
+
   return (
     <div className="flex flex-col">
       <div className="p-4">
@@ -67,7 +90,24 @@ const Schall = () => {
           </div>
           <div className="w-full overflow-auto pt-10">
             {/* <OsemSheet series={series}></OsemSheet> */}
-            <BarChart></BarChart>
+            <BarChart
+              series={barSeries}
+              yaxis={{
+                title: {
+                  text: 'Anzahl der Messungen',
+                },
+              }}
+              xaxis={{
+                categories: [
+                  '0 - 10 dB',
+                  '10 - 20 dB',
+                  '20 - 30 dB',
+                  '30 - 40 dB',
+                  '40 - 50 dB',
+                  '50 - 60 dB',
+                ],
+              }}
+            ></BarChart>
           </div>
         </div>
         <div className="flex-none md:w-1/3 p-4">
