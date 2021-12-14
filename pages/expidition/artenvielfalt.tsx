@@ -9,13 +9,13 @@ import Tabs, { Tab } from '@/components/Tabs';
 import BarChart from '@/components/BarChart';
 
 const generateData = (range: number) => {
-  return Array.from({ length: 10 }, (_, i) => {
+  return Array.from({ length: 20 }, (_, i) => {
     return Math.floor(Math.random() * range) + 1;
   });
 };
 
 const generateDataOld = (range: number) => {
-  return Array.from({ length: 10 }, (_, i) => {
+  return Array.from({ length: 20 }, (_, i) => {
     return Math.floor(Math.random() * range) + 1;
   });
 };
@@ -33,10 +33,6 @@ const series = [
 
 const tabs: Tab[] = [
   {
-    title: 'Artenvielfalt',
-    component: <InputSheet />,
-  },
-  {
     title: 'Temperatur',
     component: <OsemSheet series={series} />,
     hypothesis:
@@ -51,6 +47,10 @@ const tabs: Tab[] = [
   {
     title: 'Versiegelung',
     component: <OsemSheet series={series} />,
+  },
+  {
+    title: 'Artenvielfalt',
+    component: <InputSheet />,
   },
 ];
 
@@ -76,17 +76,17 @@ const Artenvielfalt = () => {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full w-full overflow-hidden">
       <div className="p-4">
         <h1 className="text-4xl">Artenvielfalt</h1>
         <div className="font-semibold text-gray-500">Schule: {schule}</div>
         <div className="font-semibold text-gray-500">Gruppe: {gruppe}</div>
       </div>
-      <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500">
-        <div className="flex-grow md:w-2/3 p-4">
+      <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500 overflow-hidden">
+        <div className="flex-grow md:w-2/3 p-4 overflow-hidden">
           <Tabs tabs={tabs}></Tabs>
         </div>
-        <div className="flex-none md:w-1/3 p-4">
+        <div className="flex-none md:w-1/3 p-4 overflow-auto">
           <div className="rounded-xl overflow-hidden shadow mb-4">
             <Map width="100%" height={200} />
           </div>

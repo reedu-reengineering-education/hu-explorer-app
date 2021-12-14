@@ -28,13 +28,17 @@ const Tabs = ({ tabs }: TabProps) => {
           </Button>
         ))}
       </div>
-      <div className="w-full overflow-auto">
-        {tabs[tab].hypothesis && (
-          <h2 className="text-center my-4 font-semibold text-gray-800">
-            &quot;{tabs[tab].hypothesis}&quot;
-          </h2>
-        )}
-        <div className="mt-4">{tabs[tab].component}</div>
+      <div className="w-full h-full overflow-hidden">
+        <div>
+          {tabs[tab].hypothesis && (
+            <h2 className="text-center my-4 font-semibold text-gray-800">
+              &quot;{tabs[tab].hypothesis}&quot;
+            </h2>
+          )}
+        </div>
+        <div className="h-4/5 overflow-auto">
+          <div className="mt-4">{tabs[tab].component}</div>
+        </div>
       </div>
     </>
   );
