@@ -88,7 +88,7 @@ const Artenvielfalt = () => {
         </div>
         <div className="flex-none md:w-1/3 p-4">
           <div className="rounded-xl overflow-hidden shadow mb-4">
-            <Map width="100%" height={200} expedition="artenvielfalt" />
+            <Map width="100%" height={200} />
           </div>
           <h2 className="text-xl">Auswertung</h2>
           <BarChart series={series} yaxis={yaxis}></BarChart>
