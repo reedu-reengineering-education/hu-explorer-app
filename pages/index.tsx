@@ -10,15 +10,10 @@ export default function Home() {
         <Map width="100%" height="100%" />
       </div>
       <div className="absolute top-0 left-0 h-full w-full p-8 grid grid-cols-6 grid-rows-6 gap-8 pointer-events-none">
-        <div className="col-span-5 pointer-events-auto">
-          <Navbar />
-        </div>
-        <div className="row-span-6 pointer-events-auto">
+        <div className="row-span-6 col-start-5 row-start-1 col-span-2 pointer-events-auto">
           <Sidebar></Sidebar>
         </div>
       </div>
-      {/* <div className="absolute top-0 right-0 h-full p-8">
-      </div> */}
     </main>
   );
 }
