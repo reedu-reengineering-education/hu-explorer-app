@@ -7,19 +7,17 @@ import ReactMapGL, {
 } from 'react-map-gl';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
-import useSWR from 'swr';
-import { useExpeditionParams } from '@/hooks/useExpeditionParams';
-
 import bbox from '@turf/bbox';
-import { Point } from 'geojson';
+import { FeatureCollection, Point } from 'geojson';
+import { schallColors } from '@/pages/expidition/schall';
 
 export interface MapProps {
   width: number | string;
   height: number | string;
-  expedition?: string;
+  data?: FeatureCollection<Point>;
 }
 
-const LabelMarker = ({ name, lat, lng }) => {
+const LabelMarker = ({ name, lat, lng, color }) => {
   const context = React.useContext(MapContext);
 
   const [x, y] = context.viewport.project([lng, lat]);
@@ -29,13 +27,15 @@ const LabelMarker = ({ name, lat, lng }) => {
       style={{ position: 'absolute', left: x - 10, top: y - 10 }}
       className="bg-white rounded-full w-fit pr-2 pl-1 text-sm shadow hover:z-10 flex items-center"
     >
-      <span className="block w-3 h-3 bg-blue-500 rounded-full mr-1"></span>
+      <span
+        className={`block w-3 h-3 ${color ?? 'bg-blue-500'} rounded-full mr-1`}
+      ></span>
       {name}
     </div>
   );
 };
 
-const Map = ({ width, height, expedition }: MapProps) => {
+const Map = ({ width, height, data }: MapProps) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [viewport, setViewport] = useState<ViewportProps>({
     latitude: 52.5,
@@ -46,13 +46,6 @@ const Map = ({ width, height, expedition }: MapProps) => {
     height: 100, // just some random defaults
     width: 100, // just some random defaults
   });
-
-  const { schule } = useExpeditionParams();
-
-  // fetch berlin data
-  const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
-    `https://api.opensensemap.org/boxes?format=geojson&grouptag=hu-explorer ${expedition} ${schule}`,
-  );
 
   useEffect(() => {
     if (mapLoaded && data?.features.length > 0) {
@@ -106,6 +99,7 @@ const Map = ({ width, height, expedition }: MapProps) => {
             name={m.properties.name.split('HU Explorer Schall')[1]}
             lat={m.geometry.coordinates[1]}
             lng={m.geometry.coordinates[0]}
+            color={schallColors[i].bg}
           ></LabelMarker>
         ))}
     </ReactMapGL>

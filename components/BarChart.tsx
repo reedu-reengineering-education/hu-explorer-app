@@ -54,7 +54,7 @@ const BarChart = ({ series, xaxis, yaxis }: ChartProps) => {
       series={series}
       type="bar"
       width={'100%'}
-      height={320}
+      height={'100%'}
     />
   );
 };

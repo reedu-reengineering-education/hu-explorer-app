@@ -60,7 +60,7 @@ const LineChart = ({ series, yaxis }: ChartProps) => {
       series={series}
       type="area"
       width={'100%'}
-      height={320}
+      height={'100%'}
     />
   );
 };

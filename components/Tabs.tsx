@@ -16,7 +16,7 @@ const Tabs = ({ tabs }: TabProps) => {
 
   return (
     <>
-      <div className="flex justify-around rounded-lg bg-gray-100 p-2">
+      <div className="flex flex-wrap xl:flex-nowrap rounded-lg bg-gray-100 p-2 overflow-x-auto">
         {tabs.map((t, i) => (
           <Button
             onClick={() => setTab(i)}

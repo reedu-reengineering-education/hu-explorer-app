@@ -2,9 +2,11 @@ import LineChart from '@/components/LineChart';
 import BarChart, { SeriesProps } from '@/components/BarChart';
 import Tile from '@/components/Tile';
 import Map from '@/components/Map';
-import OsemSheet from '@/components/Schall/OsemSheet';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import { DateTime } from 'luxon';
+import useSWR from 'swr';
+import { Point } from 'geojson';
+import LayoutTile from '@/components/LayoutTile';
 
 const generateData = () => {
   return Array.from({ length: 10 }, (_, i) => {
@@ -18,8 +20,21 @@ const generateData = () => {
   });
 };
 
+export const schallColors = [
+  { bg: 'bg-blue-500', shadow: 'shadow-blue-100' },
+  { bg: 'bg-amber-500', shadow: 'shadow-amber-100' },
+  { bg: 'bg-emerald-500', shadow: 'shadow-emerald-100' },
+  { bg: 'bg-fuchsia-500', shadow: 'shadow-fuchsia-100' },
+  { bg: 'bg-rose-500', shadow: 'shadow-rose-100' },
+];
+
 const Schall = () => {
   const { schule } = useExpeditionParams();
+
+  // fetch berlin data
+  const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
+    `https://api.opensensemap.org/boxes?format=geojson&grouptag=hu-explorer schall ${schule}`,
+  );
 
   const series = [
     {
@@ -74,22 +89,32 @@ const Schall = () => {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       <div className="p-4">
         <h1 className="text-4xl">Schall</h1>
         <div className="font-semibold text-gray-500">Schule: {schule}</div>
       </div>
-      <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500">
-        <div className="flex-grow md:w-2/3 p-4">
-          <div className="flex flex-row flex-wrap justify-evenly w-full">
-            <Tile title="Eingang" min={10} max={66}></Tile>
-            <Tile title="Straße" min={89} max={101}></Tile>
-            <Tile title="Hof" min={70} max={81}></Tile>
-            <Tile title="Flur" min={33} max={51}></Tile>
-            <Tile title="Klingel" min={5} max={84}></Tile>
+      <div className="flex flex-wrap h-full">
+        <LayoutTile>
+          <div className="flex flex-row flex-wrap justify-evenly items-center h-full">
+            {data?.features?.map((e, i) => (
+              <Tile
+                key={i}
+                title={e.properties.name.split('HU Explorer Schall')[1]}
+                min={10}
+                max={66}
+                color={schallColors[i]}
+              ></Tile>
+            ))}
           </div>
-          <div className="w-full overflow-auto pt-10">
-            {/* <OsemSheet series={series}></OsemSheet> */}
+        </LayoutTile>
+        <LayoutTile>
+          <div className="rounded-xl overflow-hidden shadow w-full h-full min-h-[300px]">
+            <Map width="100%" height="100%" data={data} />
+          </div>
+        </LayoutTile>
+        <LayoutTile>
+          <div className="w-full h-full">
             <BarChart
               series={barSeries}
               yaxis={{
@@ -109,14 +134,12 @@ const Schall = () => {
               }}
             ></BarChart>
           </div>
-        </div>
-        <div className="flex-none md:w-1/3 p-4">
-          <div className="rounded-xl overflow-hidden shadow mb-4">
-            <Map width="100%" height={200} expedition="schall" />
+        </LayoutTile>
+        <LayoutTile>
+          <div className="w-full h-full">
+            <LineChart series={series} yaxis={yaxis} />
           </div>
-          <h2 className="text-xl">Auswertung</h2>
-          <LineChart series={series} yaxis={yaxis} />
-        </div>
+        </LayoutTile>
       </div>
     </div>
   );
