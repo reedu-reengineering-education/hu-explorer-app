@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from './Elements/Button';
 
 export type Tab = {
@@ -9,14 +9,19 @@ export type Tab = {
 
 export interface TabProps {
   tabs: Tab[];
+  onChange?: (tab: number) => void;
 }
 
-const Tabs = ({ tabs }: TabProps) => {
+const Tabs = ({ tabs, onChange }: TabProps) => {
   const [tab, setTab] = useState(0);
+
+  useEffect(() => {
+    onChange(tab);
+  }, [tab]);
 
   return (
     <>
-      <div className="flex flex-wrap xl:flex-nowrap rounded-lg bg-gray-100 p-2 overflow-x-auto">
+      <div className="flex flex-wrap min-h-[25%] max-h-[25%] rounded-lg bg-gray-100">
         {tabs.map((t, i) => (
           <Button
             onClick={() => setTab(i)}
@@ -28,7 +33,7 @@ const Tabs = ({ tabs }: TabProps) => {
           </Button>
         ))}
       </div>
-      <div className="w-full h-full overflow-hidden">
+      <div className="flex flex-col min-h-[75%] max-h-[75%] overflow-hidden">
         <div>
           {tabs[tab].hypothesis && (
             <h2 className="text-center my-4 font-semibold text-gray-800">
@@ -36,7 +41,7 @@ const Tabs = ({ tabs }: TabProps) => {
             </h2>
           )}
         </div>
-        <div className="h-4/5 overflow-auto">
+        <div className="h-full overflow-auto">
           <div className="mt-4">{tabs[tab].component}</div>
         </div>
       </div>

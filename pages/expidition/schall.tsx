@@ -90,11 +90,11 @@ const Schall = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4">
+      {/* <div className="p-4">
         <h1 className="text-4xl">Schall</h1>
         <div className="font-semibold text-gray-500">Schule: {schule}</div>
-      </div>
-      <div className="flex flex-wrap h-full">
+      </div> */}
+      <div className="flex flex-wrap h-full w-full">
         <LayoutTile>
           <div className="flex flex-row flex-wrap justify-evenly items-center h-full">
             {data?.features?.map((e, i) => (
