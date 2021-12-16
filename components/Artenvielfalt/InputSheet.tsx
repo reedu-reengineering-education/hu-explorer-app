@@ -2,48 +2,19 @@ import React, { useMemo, useState } from 'react';
 import Spreadsheet, { Matrix, CellBase } from 'react-spreadsheet';
 import { Button } from '../Elements/Button';
 
-const InputSheet = () => {
-  const [data, setData] = useState<Matrix<CellBase>>([
-    [
-      { value: 'Versiegelung', readOnly: true, className: 'font-bold text-xl' },
-      { value: '' },
-    ],
-    [
-      {
-        value: 'Versiegelungsgrad in %',
-        readOnly: true,
-      },
-      { value: 0 },
-    ],
-    [{ value: '', readOnly: true }],
-    [
-      {
-        value: 'Artenvielfalt',
-        readOnly: true,
-        className: 'font-bold text-xl',
-      },
-      { value: '' },
-    ],
-    [
-      {
-        value: 'Art',
-        readOnly: true,
-      },
-      { value: 'Anzahl', readOnly: true },
-    ],
-    [
-      {
-        value: '',
-      },
-      { value: '' },
-    ],
-  ]);
+export interface InputSheetProps {
+  cells: Matrix<CellBase>;
+  hideAddButton?: boolean;
+}
+
+const InputSheet = ({ cells, hideAddButton = true }: InputSheetProps) => {
+  const [data, setData] = useState<Matrix<CellBase>>(cells);
 
   return (
     <>
       <Spreadsheet data={data} onChange={setData} />
       <Button
-        className="m-auto"
+        className={`m-auto ${hideAddButton ? 'hidden' : ''}`}
         onClick={() =>
           setData([
             ...data,

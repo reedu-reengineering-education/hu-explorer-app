@@ -67,7 +67,55 @@ const series3 = [
   },
 ];
 
+const versiegelungCells = [
+  [
+    { value: 'Versiegelung', readOnly: true, className: 'font-bold text-md' },
+    { value: '' },
+  ],
+  [
+    {
+      value: 'Versiegelungsgrad in %',
+      readOnly: true,
+    },
+    { value: 0 },
+  ],
+  [{ value: '', readOnly: true }],
+];
+const artenvielfaltCells = [
+  [
+    {
+      value: 'Artenvielfalt',
+      readOnly: true,
+      className: 'font-bold text-md',
+    },
+    { value: '' },
+  ],
+  [
+    {
+      value: 'Art',
+      readOnly: true,
+    },
+    { value: 'Anzahl', readOnly: true },
+  ],
+  [
+    {
+      value: '',
+    },
+    { value: '' },
+  ],
+];
+
 const tabs: Tab[] = [
+  {
+    title: 'Artenvielfalt',
+    component: <InputSheet cells={artenvielfaltCells} hideAddButton={false} />,
+  },
+  {
+    title: 'Versiegelung',
+    component: <InputSheet cells={versiegelungCells} />,
+    hypothesis:
+      'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
+  },
   {
     title: 'Temperatur',
     component: <OsemSheet series={series} />,
@@ -79,16 +127,6 @@ const tabs: Tab[] = [
     component: <OsemSheet series={seriesData3} />,
     hypothesis:
       'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
-  },
-  {
-    title: 'Versiegelung',
-    component: <InputSheet />,
-    hypothesis:
-      'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
-  },
-  {
-    title: 'Artenvielfalt',
-    component: <InputSheet />,
   },
 ];
 
@@ -183,10 +221,10 @@ const Artenvielfalt = () => {
         </div>
         {/* </LayoutTile> */}
         <div className="flex flex-col w-full">
-          <div className="flex-auto w-full max-h-[25%]">
+          <div className="flex-auto w-full max-h-[25%] mb-4">
             <Map width="100%" height="100%" />
           </div>
-          <div className="flex-auto w-full max-h-[37%]">
+          <div className="flex-auto w-full max-h-[37%] mb-4">
             <BarChart series={series} yaxis={yaxis} xaxis={xaxis}></BarChart>
           </div>
           <div className="flex-auto w-full max-h-[37%]">
