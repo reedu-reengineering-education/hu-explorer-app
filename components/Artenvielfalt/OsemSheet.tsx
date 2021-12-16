@@ -22,11 +22,12 @@ const OsemSheet = ({
     [{ value: '=MAX(A2:A11)' }, { value: '=MAX(B2:B11)' }],
   ]);
 
-  // const onKeyDown = (event: Point[]) => {
-  //   console.log(event);
-  // }
+  const commit = (prevCell, nextCell) => {
+    console.log(prevCell);
+    console.log(nextCell);
+  };
 
-  return <Spreadsheet data={data} onChange={setData} />;
+  return <Spreadsheet onCellCommit={commit} data={data} onChange={setData} />;
 };
 
 export default OsemSheet;

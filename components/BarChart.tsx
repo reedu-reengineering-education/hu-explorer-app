@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // https://github.com/apexcharts/react-apexcharts/issues/240#issuecomment-765417887
 import dynamic from 'next/dynamic';
@@ -8,6 +8,7 @@ export interface ChartProps {
   series: SeriesProps[];
   xaxis?: ApexXAxis;
   yaxis?: ApexYAxis | ApexYAxis[];
+  colors?: ApexCharts.ApexOptions['colors'];
 }
 
 export interface SeriesProps {
@@ -20,7 +21,7 @@ export interface DataPointProps {
   y: number;
 }
 
-const BarChart = ({ series, xaxis, yaxis }: ChartProps) => {
+const BarChart = ({ series, xaxis, yaxis, colors }: ChartProps) => {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
@@ -34,7 +35,8 @@ const BarChart = ({ series, xaxis, yaxis }: ChartProps) => {
       },
     },
     xaxis,
-    yaxis,
+    yaxis: yaxis,
+    colors: colors,
     legend: {
       position: 'bottom',
     },
@@ -47,6 +49,36 @@ const BarChart = ({ series, xaxis, yaxis }: ChartProps) => {
       colors: ['transparent'],
     },
   });
+
+  useEffect(() => {
+    setOptions({
+      chart: {
+        id: 'apexchart-example',
+        type: 'bar',
+      },
+      plotOptions: {
+        bar: {
+          // distributed: true,
+          horizontal: false,
+          columnWidth: '55%',
+        },
+      },
+      xaxis,
+      yaxis: yaxis,
+      colors: colors,
+      legend: {
+        position: 'bottom',
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      stroke: {
+        show: true,
+        width: 2,
+        colors: ['transparent'],
+      },
+    });
+  }, [colors]);
 
   return (
     <Chart

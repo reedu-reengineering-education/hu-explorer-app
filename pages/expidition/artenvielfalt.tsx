@@ -6,10 +6,17 @@ import OsemSheet from '@/components/Artenvielfalt/OsemSheet';
 import Map from '@/components/Map';
 import Tabs, { Tab } from '@/components/Tabs';
 import BarChart from '@/components/BarChart';
+import { Matrix } from 'react-spreadsheet';
 
 const generateData = (range: number, length: number) => {
   return Array.from({ length: length }, (_, i) => {
     return Math.floor(Math.random() * range) + 1;
+  });
+};
+
+const generateRandomData = (range: number, length: number) => {
+  return Array.from({ length: length }, (_, i) => {
+    return parseFloat(Math.random().toFixed(2));
   });
 };
 
@@ -19,51 +26,18 @@ const seriesData = [
     data: generateData(50, 5),
   },
 ];
-const series = [
-  {
-    name: 'Temperatur in °C',
-    data: generateData(50, 20),
-  },
-];
 
 const seriesData4 = [
   {
     name: 'Versiegelung',
-    data: generateData(100, 5),
-  },
-];
-const series4 = [
-  {
-    name: 'Versiegelung in %',
     data: generateData(100, 1),
-  },
-];
-
-const seriesData2 = [
-  {
-    name: 'pflanzliche Artenvielfalt',
-    data: generateData(100, 20),
-  },
-];
-
-const series2 = [
-  {
-    name: 'pflanzliche Artenvielfalt',
-    data: generateData(100, 5),
   },
 ];
 
 const seriesData3 = [
   {
     name: 'Bodenfeuchte in %',
-    data: generateData(100, 6),
-  },
-];
-
-const series3 = [
-  {
-    name: 'Bodenfeuchte in %',
-    data: generateData(100, 20),
+    data: generateData(100, 1),
   },
 ];
 
@@ -105,34 +79,94 @@ const artenvielfaltCells = [
   ],
 ];
 
-const tabs: Tab[] = [
-  {
-    title: 'Artenvielfalt',
-    component: <InputSheet cells={artenvielfaltCells} hideAddButton={false} />,
-  },
-  {
-    title: 'Versiegelung',
-    component: <InputSheet cells={versiegelungCells} />,
-    hypothesis:
-      'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
-  },
-  {
-    title: 'Temperatur',
-    component: <OsemSheet series={series} />,
-    hypothesis:
-      'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
-  },
-  {
-    title: 'Bodenfeuchte',
-    component: <OsemSheet series={seriesData3} />,
-    hypothesis:
-      'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
-  },
-];
-
 const Artenvielfalt = () => {
   const { schule, gruppe } = useExpeditionParams();
+  const [tab, setTab] = useState(0);
   const [series, setSeries] = useState(seriesData);
+  const [speciesIndex, setSpeciesIndex] = useState([
+    {
+      name: 'pflanzliche Artenvielfalt',
+      data: [],
+    },
+  ]);
+
+  const changedData = (data: Matrix<any>) => {
+    const matrix = [...data];
+    const speciesData = matrix.slice(2);
+    let numberOfOrganisms = 0;
+    const numberOfSpecies = speciesData
+      .flat()
+      .filter((_, i) => i % 2 === 1)
+      .map(value => {
+        // Check if value is a number
+        if (isNaN(parseInt(value.value))) return 0;
+
+        numberOfOrganisms = numberOfOrganisms + parseInt(value.value);
+        return parseInt(value.value) * (parseInt(value.value) - 1);
+      })
+      .reduce((prev, curr) => prev + curr);
+    const simpsonIndex =
+      1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
+    console.log('Simpson Index', simpsonIndex);
+
+    setSpeciesIndex([
+      {
+        name: 'pflanzliche Artenvielfalt',
+        data: [simpsonIndex, ...generateRandomData(1, 4)],
+      },
+    ]);
+  };
+
+  const tabs: Tab[] = [
+    {
+      title: 'Artenvielfalt',
+      component: (
+        <InputSheet
+          cells={artenvielfaltCells}
+          hideAddButton={false}
+          onChange={changedData}
+        />
+      ),
+    },
+    {
+      title: 'Versiegelung',
+      component: <InputSheet cells={versiegelungCells} />,
+      hypothesis:
+        'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
+    },
+    {
+      title: 'Temperatur',
+      component: (
+        <OsemSheet
+          series={[
+            {
+              name: 'Temperatur in °C',
+              data: generateData(50, 20),
+            },
+          ]}
+        />
+      ),
+      hypothesis:
+        'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
+    },
+    {
+      title: 'Bodenfeuchte',
+      component: (
+        <OsemSheet
+          series={[
+            {
+              name: 'Bodenfeuchte in %',
+              data: generateData(100, 20),
+            },
+          ]}
+        />
+      ),
+      hypothesis:
+        'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
+    },
+  ];
+
+  const [colors, setColor] = useState('');
   const [xaxis, setXaxis] = useState({
     categories: [
       'senseBox 1',
@@ -153,9 +187,11 @@ const Artenvielfalt = () => {
   ]);
 
   const onChange = (tab: number) => {
+    setTab(tab);
     switch (tab) {
-      case 0:
+      case 2:
         setSeries(seriesData);
+        setColor('#84CC16');
         setYaxis([
           {
             seriesName: 'Temperatur',
@@ -166,8 +202,9 @@ const Artenvielfalt = () => {
           },
         ]);
         break;
-      case 1:
+      case 3:
         setSeries(seriesData3);
+        setColor('#F59E0B');
         setYaxis([
           {
             seriesName: 'Bodenfeuchte',
@@ -178,8 +215,9 @@ const Artenvielfalt = () => {
           },
         ]);
         break;
-      case 2:
+      case 1:
         setSeries(seriesData4);
+        setColor('#737373');
         setYaxis([
           {
             seriesName: 'Versiegelung',
@@ -199,8 +237,14 @@ const Artenvielfalt = () => {
     {
       seriesName: 'plflanzliche Artenvielfalt',
       showAlways: true,
+      max: 1.0,
       title: {
         text: 'Artenvielfaltsindex',
+      },
+      labels: {
+        formatter: function (value) {
+          return value.toFixed(2);
+        },
       },
     },
   ];
@@ -215,35 +259,31 @@ const Artenvielfalt = () => {
         </div>
       </div> */}
       <div className="flex flex-row h-full w-full overflow-hidden">
-        {/* <LayoutTile> */}
         <div className="flex flex-row flex-wrap max-w-[40%] overflow-hidden mr-2">
           <Tabs tabs={tabs} onChange={onChange}></Tabs>
         </div>
-        {/* </LayoutTile> */}
         <div className="flex flex-col w-full">
           <div className="flex-auto w-full max-h-[25%] mb-4">
             <Map width="100%" height="100%" />
           </div>
           <div className="flex-auto w-full max-h-[37%] mb-4">
-            <BarChart series={series} yaxis={yaxis} xaxis={xaxis}></BarChart>
+            <BarChart
+              series={series}
+              yaxis={yaxis}
+              xaxis={xaxis}
+              colors={[colors]}
+            ></BarChart>
           </div>
           <div className="flex-auto w-full max-h-[37%]">
-            <BarChart series={series2} yaxis={yaxis2} xaxis={xaxis}></BarChart>
+            <BarChart
+              series={speciesIndex}
+              yaxis={yaxis2}
+              xaxis={xaxis}
+              colors={['#8B5CF6']}
+            ></BarChart>
           </div>
         </div>
       </div>
-      {/* <div className="flex flex-col sm:flex-row divide-x-2 divide-blue-500 overflow-hidden">
-          <div className="flex-grow md:w-2/3 p-4 overflow-hidden">
-            <Tabs tabs={tabs}></Tabs>
-          </div>
-          <div className="flex-none md:w-1/3 p-4 overflow-auto">
-            <div className="rounded-xl overflow-hidden shadow mb-4">
-              <Map width="100%" height={200} />
-            </div>
-            <h2 className="text-xl">Auswertung</h2>
-            <BarChart series={series} yaxis={yaxis}></BarChart>
-          </div>
-        </div> */}
     </>
   );
 };
