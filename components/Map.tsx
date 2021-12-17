@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMapGL, { Source, Layer, LayerProps } from 'react-map-gl';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 import useSWR from 'swr';
+import LabelMarker from '@/components/Map/LabelMarker';
+import { BBox, Feature, Point, Polygon } from 'geojson';
+
+import geoViewport from '@mapbox/geo-viewport';
+import bboxPolygon from '@turf/bbox-polygon';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 
 export interface MapProps {
   width: number | string;
   height: number | string;
+  onBoxSelect?: Function;
 }
 
 const layerStyle: LayerProps = {
@@ -18,7 +25,7 @@ const layerStyle: LayerProps = {
   },
 };
 
-const Map = ({ width, height }: MapProps) => {
+const Map = ({ width, height, onBoxSelect }: MapProps) => {
   const [mapStyle, setMapStyle] = useState(
     'mapbox://styles/mapbox/streets-v11',
   );
@@ -30,9 +37,23 @@ const Map = ({ width, height }: MapProps) => {
     zoom: 7,
   });
 
+  const [bbox, setBbox] = useState<Feature<Polygon>>();
+
+  useEffect(() => {
+    const bbox: BBox = geoViewport.bounds(
+      [viewport.longitude, viewport.latitude],
+      viewport.zoom,
+      [viewport.width, viewport.height],
+    );
+    if (!bbox.includes(NaN)) {
+      const poly = bboxPolygon(bbox);
+      setBbox(poly);
+    }
+  }, [viewport]);
+
   // fetch berlin data
-  const { data, error } = useSWR<GeoJSON.FeatureCollection, any>(
-    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor',
+  const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
+    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor&full=true',
   );
 
   return (
@@ -47,6 +68,21 @@ const Map = ({ width, height }: MapProps) => {
           <Layer {...layerStyle} />
         </Source>
       )}
+      {data?.features &&
+        viewport.zoom > 13 &&
+        data.features.map((m, i) => {
+          if (booleanPointInPolygon(m.geometry.coordinates, bbox)) {
+            return (
+              <LabelMarker
+                key={i}
+                name={m.properties.name}
+                lat={m.geometry.coordinates[1]}
+                lng={m.geometry.coordinates[0]}
+                onClick={() => onBoxSelect(m)}
+              ></LabelMarker>
+            );
+          }
+        })}
     </ReactMapGL>
   );
 };
