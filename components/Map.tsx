@@ -20,7 +20,7 @@ const layerStyle: LayerProps = {
 
 const Map = ({ width, height }: MapProps) => {
   const [mapStyle, setMapStyle] = useState(
-    'mapbox://styles/sensebox/ckxa8zuo54z2015qch9g1r1ty',
+    'mapbox://styles/mapbox/streets-v11',
   );
   const [viewport, setViewport] = useState({
     width: width,
