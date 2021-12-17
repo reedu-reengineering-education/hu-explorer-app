@@ -20,8 +20,10 @@ const layerStyle: LayerProps = {
   id: 'point',
   type: 'circle',
   paint: {
-    'circle-radius': 5,
+    'circle-radius': 6,
     'circle-color': '#007cbf',
+    'circle-stroke-width': 4,
+    'circle-stroke-color': '#fff',
   },
 };
 
@@ -63,7 +65,7 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
       onViewportChange={nextViewport => setViewport(nextViewport)}
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
     >
-      {data && (
+      {data && viewport.zoom <= 13 && (
         <Source id="osem-data" type="geojson" data={data}>
           <Layer {...layerStyle} />
         </Source>
