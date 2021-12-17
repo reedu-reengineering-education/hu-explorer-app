@@ -17,7 +17,7 @@ const LabelMarker = ({ name, lat, lng, color, onClick }: LabelMarkerProps) => {
   return (
     <div
       style={{ position: 'absolute', left: x - 10, top: y - 10 }}
-      className="bg-white rounded-full w-fit pr-2 pl-1 text-sm shadow hover:shadow-lg flex items-center cursor-pointer"
+      className="bg-white rounded-full w-fit pr-2 pl-1 text-sm shadow hover:shadow-lg hover:z-10 flex items-center cursor-pointer"
       onClick={onClick}
     >
       <span
