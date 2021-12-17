@@ -58,12 +58,34 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
     'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor&full=true',
   );
 
+  const onMapClick = e => {
+    if (viewport.zoom > 13) {
+      return;
+    }
+
+    const feature = e.features[0];
+
+    if (feature?.layer.source === 'osem-data') {
+      console.log(feature.properties);
+      onBoxSelect({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          sensors: JSON.parse(feature.properties.sensors),
+        },
+      });
+    } else {
+      onBoxSelect(undefined);
+    }
+  };
+
   return (
     <ReactMapGL
       {...viewport}
       mapStyle={mapStyle}
       onViewportChange={nextViewport => setViewport(nextViewport)}
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+      onClick={onMapClick}
     >
       {data && viewport.zoom <= 13 && (
         <Source id="osem-data" type="geojson" data={data}>
@@ -80,7 +102,9 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
                 name={m.properties.name}
                 lat={m.geometry.coordinates[1]}
                 lng={m.geometry.coordinates[0]}
-                onClick={() => onBoxSelect(m)}
+                onClick={() => {
+                  onBoxSelect(m);
+                }}
               ></LabelMarker>
             );
           }
