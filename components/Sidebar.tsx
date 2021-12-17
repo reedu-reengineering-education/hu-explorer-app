@@ -50,9 +50,9 @@ const Sidebar = () => {
 
   return (
     <div className="bg-white rounded-xl shadow h-full p-8 flex flex-col overflow-y-scroll">
-      <h1 className="text-3xl font-bold text-center">Humboldt Explorers</h1>
-      <hr className="my-8" />
-      <div className="flex w-full">
+      {/* <h1 className="text-3xl font-bold text-center">Humboldt Explorers</h1>
+      <hr className="my-8" /> */}
+      {/* <div className="flex w-full">
         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl flex w-full mr-2">
           <FilterIcon className="h-6 w-6 text-blue-100 mr-2" />
           Filter
@@ -61,7 +61,7 @@ const Sidebar = () => {
           <SearchIcon className="h-6 w-6 text-blue-100 mr-2" />
           Suche
         </button>
-      </div>
+      </div> */}
       <hr className="my-8" />
       <div className="flex justify-evenly">
         <div className="w-32 h-32 rounded-xl shadow mr-4 flex flex-col items-center justify-center bg-blue-500">

@@ -19,6 +19,9 @@ const layerStyle: LayerProps = {
 };
 
 const Map = ({ width, height }: MapProps) => {
+  const [mapStyle, setMapStyle] = useState(
+    'mapbox://styles/sensebox/ckxa8zuo54z2015qch9g1r1ty',
+  );
   const [viewport, setViewport] = useState({
     width: width,
     height: height,
@@ -35,6 +38,7 @@ const Map = ({ width, height }: MapProps) => {
   return (
     <ReactMapGL
       {...viewport}
+      mapStyle={mapStyle}
       onViewportChange={nextViewport => setViewport(nextViewport)}
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
     >
