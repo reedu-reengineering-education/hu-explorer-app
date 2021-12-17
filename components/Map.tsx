@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import ReactMapGL, { Source, Layer, LayerProps } from 'react-map-gl';
+import React, { createRef, useEffect, useState } from 'react';
+import ReactMapGL, { Source, Layer, LayerProps, MapRef } from 'react-map-gl';
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 import useSWR from 'swr';
@@ -42,13 +42,13 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
   const [bbox, setBbox] = useState<Feature<Polygon>>();
 
   useEffect(() => {
-    const bbox: BBox = geoViewport.bounds(
+    const bounds: BBox = geoViewport.bounds(
       [viewport.longitude, viewport.latitude],
       viewport.zoom,
       [viewport.width, viewport.height],
     );
-    if (!bbox.includes(NaN)) {
-      const poly = bboxPolygon(bbox);
+    if (!bounds.includes(NaN)) {
+      const poly = bboxPolygon(bounds);
       setBbox(poly);
     }
   }, [viewport]);
@@ -66,7 +66,6 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
     const feature = e.features[0];
 
     if (feature?.layer.source === 'osem-data') {
-      console.log(feature.properties);
       onBoxSelect({
         ...feature,
         properties: {
@@ -94,8 +93,9 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
       )}
       {data?.features &&
         viewport.zoom > 13 &&
-        data.features.map((m, i) => {
-          if (booleanPointInPolygon(m.geometry.coordinates, bbox)) {
+        data.features
+          .filter(b => booleanPointInPolygon(b.geometry.coordinates, bbox))
+          .map((m, i) => {
             return (
               <LabelMarker
                 key={i}
@@ -107,8 +107,7 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
                 }}
               ></LabelMarker>
             );
-          }
-        })}
+          })}
     </ReactMapGL>
   );
 };

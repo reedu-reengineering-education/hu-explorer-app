@@ -103,11 +103,10 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
         </>
       )}
       {!box && (
-        <>
-          <hr className="my-8" />
-          <LineChart series={series} yaxis={yaxis}></LineChart>
-          <LineChart series={series2} yaxis={yaxis2}></LineChart>
-        </>
+        <h1 className="text-xl font-bold text-center content-center">
+          Wähle eine der Stationen per Klick aus und du bekommst die aktuellen
+          Messwerte angezeigt.
+        </h1>
       )}
     </div>
   );
