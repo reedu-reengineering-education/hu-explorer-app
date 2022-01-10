@@ -91,6 +91,7 @@ const Map = ({ width, height, data }: MapProps) => {
       onViewportChange={setViewport}
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
       onLoad={() => setMapLoaded(true)}
+      mapStyle="mapbox://styles/mapbox/streets-v11"
     >
       {data?.features &&
         data.features.map((m, i) => (
