@@ -7,21 +7,14 @@ import useSWR from 'swr';
 import { Feature, Point } from 'geojson';
 import LayoutTile from '@/components/LayoutTile';
 import { useEffect, useState } from 'react';
+import { useTailwindColors } from '@/hooks/useTailwindColors';
 
 export const schallColors = [
-  { bg: 'bg-blue-500', shadow: 'shadow-blue-100' },
-  { bg: 'bg-amber-500', shadow: 'shadow-amber-100' },
-  { bg: 'bg-emerald-500', shadow: 'shadow-emerald-100' },
-  { bg: 'bg-fuchsia-500', shadow: 'shadow-fuchsia-100' },
-  { bg: 'bg-rose-500', shadow: 'shadow-rose-100' },
-];
-
-const barChartCategories = [
-  [0, 19],
-  [20, 39],
-  [40, 59],
-  [60, 79],
-  [80, 99],
+  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
+  { bg: 'bg-he-orange', shadow: 'shadow-he-orange' },
+  { bg: 'bg-he-green', shadow: 'shadow-he-green' },
+  { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
+  { bg: 'bg-he-red', shadow: 'shadow-he-red' },
 ];
 
 const Schall = () => {
@@ -80,7 +73,15 @@ const Schall = () => {
     );
   }, [data]);
 
-  console.log(barSeries);
+  const colors = useTailwindColors();
+
+  const barChartCategories = [
+    [0, 19],
+    [20, 39],
+    [40, 59],
+    [60, 79],
+    [80, 99],
+  ];
 
   const yaxis = {
     title: {
@@ -127,12 +128,29 @@ const Schall = () => {
                   ([l, u]) => `${l} - ${u} dB`,
                 ),
               }}
+              colors={[
+                colors.he.blue.light,
+                colors.he.orange.DEFAULT,
+                colors.he.green.DEFAULT,
+                colors.he.violet.DEFAULT,
+                colors.he.red.DEFAULT,
+              ]}
             ></BarChart>
           </div>
         </LayoutTile>
         <LayoutTile>
           <div className="w-full h-full">
-            <LineChart series={series} yaxis={yaxis} />
+            <LineChart
+              series={series}
+              yaxis={yaxis}
+              colors={[
+                colors.he.blue.light,
+                colors.he.orange.DEFAULT,
+                colors.he.green.DEFAULT,
+                colors.he.violet.DEFAULT,
+                colors.he.red.DEFAULT,
+              ]}
+            />
           </div>
         </LayoutTile>
       </div>

@@ -7,6 +7,7 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 export interface ChartProps {
   series: SeriesProps[];
   yaxis?: ApexYAxis | ApexYAxis[];
+  colors?: ApexCharts.ApexOptions['colors'];
 }
 
 export interface SeriesProps {
@@ -19,7 +20,7 @@ export interface DataPointProps {
   y: number;
 }
 
-const LineChart = ({ series, yaxis }: ChartProps) => {
+const LineChart = ({ series, yaxis, colors }: ChartProps) => {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
@@ -52,6 +53,7 @@ const LineChart = ({ series, yaxis }: ChartProps) => {
         format: 'dd.MM.yyyy HH:mm:ss',
       },
     },
+    colors,
   });
 
   return (
