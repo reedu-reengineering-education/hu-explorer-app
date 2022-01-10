@@ -3,22 +3,10 @@ import BarChart, { SeriesProps } from '@/components/BarChart';
 import Tile from '@/components/Tile';
 import Map from '@/components/Map';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
-import { DateTime } from 'luxon';
 import useSWR from 'swr';
-import { Point } from 'geojson';
+import { Feature, Point } from 'geojson';
 import LayoutTile from '@/components/LayoutTile';
-
-const generateData = () => {
-  return Array.from({ length: 10 }, (_, i) => {
-    return {
-      y: Math.floor(Math.random() * 120) + 1,
-      x: DateTime.local(2021, 12, 8, 13, 0, 0)
-        .plus({ minutes: i })
-        .toUTC()
-        .toString(),
-    };
-  });
-};
+import { useEffect, useState } from 'react';
 
 export const schallColors = [
   { bg: 'bg-blue-500', shadow: 'shadow-blue-100' },
@@ -28,65 +16,77 @@ export const schallColors = [
   { bg: 'bg-rose-500', shadow: 'shadow-rose-100' },
 ];
 
+const barChartCategories = [
+  [0, 19],
+  [20, 39],
+  [40, 59],
+  [60, 79],
+  [80, 99],
+];
+
 const Schall = () => {
   const { schule } = useExpeditionParams();
 
   // fetch berlin data
-  const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
+  const { data: boxes } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
     `https://api.opensensemap.org/boxes?format=geojson&grouptag=hu-explorer schall ${schule}`,
   );
+  const { data: measurements } = useSWR(
+    boxes?.features.map(
+      b =>
+        `https://api.opensensemap.org/boxes/${b.properties._id}/data/${b.properties.sensors[0]._id}`,
+    ),
+    { refreshInterval: 60000 },
+  );
 
-  const series = [
-    {
-      name: 'Eingang',
-      data: generateData(),
-    },
-    {
-      name: 'Straße',
-      data: generateData(),
-    },
-    {
-      name: 'Hof',
-      data: generateData(),
-    },
-    {
-      name: 'Flur',
-      data: generateData(),
-    },
-    {
-      name: 'Klingel',
-      data: generateData(),
-    },
-  ];
+  const [data, setData] = useState<
+    { box: Feature<Point, any>; measurements: any[] }[]
+  >([]);
+  const [series, setSeries] = useState([]);
+  const [barSeries, setBarSeries] = useState([]);
+
+  useEffect(() => {
+    if (measurements?.length > 0) {
+      setData(
+        boxes?.features.map((box, i) => ({
+          box,
+          measurements: measurements[i],
+        })),
+      );
+    }
+  }, [boxes, measurements]);
+
+  useEffect(() => {
+    setSeries(
+      data.map(e => ({
+        name: e.box.properties.name,
+        data: e.measurements.map(m => ({
+          y: Number(m.value),
+          x: new Date(m.createdAt),
+        })),
+      })),
+    );
+
+    setBarSeries(
+      data.map(e => ({
+        name: e.box.properties.name,
+        data: barChartCategories.map(
+          c =>
+            e.measurements
+              .map(m => Number(m.value))
+              .filter(x => c[0] <= x && x <= c[1], c).length,
+        ),
+      })),
+    );
+  }, [data]);
+
+  console.log(barSeries);
 
   const yaxis = {
     title: {
       text: 'Lautstärke in dB',
     },
   };
-
-  const barSeries = [
-    {
-      name: 'Eingang',
-      data: [44, 55, 57, 56, 61, 58],
-    },
-    {
-      name: 'Straße',
-      data: [76, 85, 101, 98, 87, 105],
-    },
-    {
-      name: 'Hof',
-      data: [35, 41, 36, 26, 45, 48],
-    },
-    {
-      name: 'Flur',
-      data: [35, 41, 36, 26, 45, 48],
-    },
-    {
-      name: 'Klingel',
-      data: [35, 41, 36, 26, 45, 48],
-    },
-  ];
 
   return (
     <div className="flex flex-col h-full">
@@ -97,12 +97,12 @@ const Schall = () => {
       <div className="flex flex-wrap h-full w-full">
         <LayoutTile>
           <div className="flex flex-row flex-wrap justify-evenly items-center h-full">
-            {data?.features?.map((e, i) => (
+            {data?.map((e, i) => (
               <Tile
                 key={i}
-                title={e.properties.name.split('HU Explorer Schall')[1]}
-                min={10}
-                max={66}
+                title={e.box.properties.name.split('HU Explorer Schall')[1]}
+                min={Math.min(...e.measurements.map(m => Number(m.value)))}
+                max={Math.max(...e.measurements.map(m => Number(m.value)))}
                 color={schallColors[i]}
               ></Tile>
             ))}
@@ -110,7 +110,7 @@ const Schall = () => {
         </LayoutTile>
         <LayoutTile>
           <div className="rounded-xl overflow-hidden shadow w-full h-full min-h-[300px]">
-            <Map width="100%" height="100%" data={data} />
+            <Map width="100%" height="100%" data={boxes} />
           </div>
         </LayoutTile>
         <LayoutTile>
@@ -123,14 +123,9 @@ const Schall = () => {
                 },
               }}
               xaxis={{
-                categories: [
-                  '0 - 10 dB',
-                  '10 - 20 dB',
-                  '20 - 30 dB',
-                  '30 - 40 dB',
-                  '40 - 50 dB',
-                  '50 - 60 dB',
-                ],
+                categories: barChartCategories.map(
+                  ([l, u]) => `${l} - ${u} dB`,
+                ),
               }}
             ></BarChart>
           </div>
