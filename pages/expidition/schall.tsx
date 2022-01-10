@@ -1,14 +1,14 @@
 import LineChart from '@/components/LineChart';
-import BarChart, { SeriesProps } from '@/components/BarChart';
+import BarChart from '@/components/BarChart';
 import Tile from '@/components/Tile';
 import Map from '@/components/Map';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
-import useSWR from 'swr';
-import { Feature, Point } from 'geojson';
 import LayoutTile from '@/components/LayoutTile';
 import { useEffect, useState } from 'react';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { useOsemData } from '@/hooks/useOsemData';
+import { PauseIcon } from '@heroicons/react/outline';
+import { PlayIcon } from '@heroicons/react/solid';
 
 export const schallColors = [
   { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
@@ -21,7 +21,8 @@ export const schallColors = [
 const Schall = () => {
   const { schule } = useExpeditionParams();
 
-  const { data, boxes } = useOsemData(schule);
+  const [live, setLive] = useState(true);
+  const { data, boxes } = useOsemData(schule, live);
 
   const [series, setSeries] = useState([]);
   const [barSeries, setBarSeries] = useState([]);
@@ -68,10 +69,26 @@ const Schall = () => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* <div className="p-4">
-        <h1 className="text-4xl">Schall</h1>
+      <div className="p-4">
+        <div className="flex justify-between">
+          <h1 className="text-4xl">Schall</h1>
+          <>
+            {!live && (
+              <PlayIcon
+                className="h-8 w-8 hover:scale-110 transition cursor-pointer"
+                onClick={() => setLive(!live)}
+              />
+            )}
+            {live && (
+              <PauseIcon
+                className="h-8 w-8 hover:scale-110 transition cursor-pointer"
+                onClick={() => setLive(!live)}
+              />
+            )}
+          </>
+        </div>
         <div className="font-semibold text-gray-500">Schule: {schule}</div>
-      </div> */}
+      </div>
       <div className="flex flex-wrap h-full w-full">
         <LayoutTile>
           <div className="flex flex-row flex-wrap justify-evenly items-center h-full">

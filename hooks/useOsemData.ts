@@ -2,7 +2,10 @@ import { Point, Feature } from 'geojson';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-export const useOsemData = (schule: string | string[]) => {
+export const useOsemData = (
+  schule: string | string[],
+  live: boolean = true,
+) => {
   // fetch berlin data
   const { data: boxes } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
     `https://api.opensensemap.org/boxes?format=geojson&grouptag=hu-explorer schall ${schule}`,
@@ -12,7 +15,7 @@ export const useOsemData = (schule: string | string[]) => {
       b =>
         `https://api.opensensemap.org/boxes/${b.properties._id}/data/${b.properties.sensors[0]._id}`,
     ),
-    { refreshInterval: 60000 },
+    { refreshInterval: live ? 60000 : 0 },
   );
 
   const [data, setData] = useState<
