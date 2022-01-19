@@ -4,46 +4,80 @@ import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import InputSheet from '@/components/Artenvielfalt/InputSheet';
 import { Matrix } from 'react-spreadsheet';
 import Tile from '@/components/Tile';
+import { GetServerSideProps } from 'next';
+import prisma from '@/lib/prisma';
+import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
 
-const versiegelungCells = [
-  [
-    { value: 'Versiegelung', readOnly: true, className: 'font-bold text-md' },
-    { value: '' },
-  ],
-  [
-    {
-      value: 'Versiegelungsgrad in %',
-      readOnly: true,
-    },
-    { value: 0 },
-  ],
-  [{ value: '', readOnly: true }],
-];
-const artenvielfaltCells = [
-  [
-    {
-      value: 'Artenvielfalt',
-      readOnly: true,
-      className: 'font-bold text-md',
-    },
-    { value: '' },
-  ],
-  [
-    {
-      value: 'Artname',
-      readOnly: true,
-    },
-    { value: 'Häufigkeit', readOnly: true },
-  ],
-  [{ value: '' }, { value: '' }],
-  [{ value: '' }, { value: '' }],
-  [{ value: '' }, { value: '' }],
-  [{ value: '' }, { value: '' }],
-  [{ value: '' }, { value: '' }],
-];
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  res,
+  query,
+}) => {
+  // TODO: Check how we can secure endpoint
 
-const Data = () => {
+  const group = query.gruppe as string;
+  const school = query.schule as string;
+
+  const records = await prisma.artenvielfaltRecord.findMany({});
+  const versiegelung = await prisma.versiegelungRecord.findMany({
+    where: {
+      group,
+    },
+  });
+
+  return {
+    props: { records, versiegelung },
+  };
+};
+
+type Props = {
+  records: ArtenvielfaltRecord[];
+  versiegelung: VersiegelungRecord[];
+};
+
+const Data = ({ records, versiegelung }: Props) => {
   const { schule, gruppe, daten } = useExpeditionParams();
+  // const [data, setData] = useState(records);
+
+  const [versiegelungsCells, setVersiegelungsCells] = useState([
+    [
+      { value: 'Versiegelung', readOnly: true, className: 'font-bold text-md' },
+      { value: '', readOnly: true },
+    ],
+    [
+      {
+        value: 'Versiegelungsgrad in %',
+        readOnly: true,
+      },
+      ...versiegelung?.map(entry => ({
+        value: entry.value,
+      })),
+    ],
+  ]);
+  const [artenvielfaltsCells, setArtenvielfaltsCells] = useState([
+    [
+      {
+        value: 'Artenvielfalt',
+        readOnly: true,
+        className: 'font-bold text-md',
+      },
+      { value: '' },
+    ],
+    [
+      {
+        value: 'Artname',
+        readOnly: true,
+      },
+      { value: 'Häufigkeit', readOnly: true },
+    ],
+    ...records.map(record => {
+      return [{ value: record.art }, { value: record.count }];
+    }),
+    [{ value: '' }, { value: '' }],
+    [{ value: '' }, { value: '' }],
+    [{ value: '' }, { value: '' }],
+  ]);
+
   const [simpsonIndex, setSimpsonIndex] = useState<number>(0);
 
   const changedData = (data: Matrix<any>) => {
@@ -70,17 +104,42 @@ const Data = () => {
     }
   };
 
+  const updateEntry = async value => {
+    console.log(value);
+    try {
+      await fetch('/api/versiegelung', {
+        method: 'POST',
+        body: JSON.stringify({
+          value: value.value,
+          group: gruppe,
+        }),
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const cellCommit = (prevCell, nextCell, coords) => {
+    console.log(prevCell, nextCell, coords);
+    if (daten === 'versiegelung') {
+      updateEntry(nextCell);
+    } else if (daten === 'artenvielfalt') {
+    }
+  };
+
   if (daten === 'versiegelung') {
-    return <InputSheet cells={versiegelungCells} />;
+    return <InputSheet cells={versiegelungsCells} onCellCommit={cellCommit} />;
   } else if (daten === 'artenvielfalt') {
     return (
       <>
         <div className="flex">
           <div className="flex flex-col">
             <InputSheet
-              cells={artenvielfaltCells}
+              cells={artenvielfaltsCells}
               hideAddButton={false}
               onChange={changedData}
+              onCellCommit={cellCommit}
+              onDataLoaded={changedData}
             />
           </div>
           <div className="flex flex-col-reverse m-3 pl-4">
