@@ -9,6 +9,9 @@ const variants = {
     'bg-white text-blue-600 hover:bg-blue-600:text-white focus:ring-white focus:ring-offset-blue-100',
   danger:
     'bg-red-600 text-white hover:bg-red-50:text-red-600 focus:ring-red-500 focus:ring-offset-red-200',
+  temperatur: 'bg-he-aqua text-white focus:ring-he-aqua',
+  bodenfeuchte: 'bg-he-lilac text-white focus:ring-he-lilac',
+  versiegelung: 'bg-he-blue text-white focus:ring-he-blue-500',
 };
 
 const sizes = {
