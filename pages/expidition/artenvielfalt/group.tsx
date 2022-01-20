@@ -8,13 +8,31 @@ import Tabs, { Tab } from '@/components/Tabs';
 import BarChart from '@/components/BarChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 
-const groups1 = ['gruppe 1', 'gruppe 2', 'gruppe 3', 'gruppe 4', 'gruppe 5'];
+const groups1 = [
+  'sensebox1',
+  'sensebox2',
+  'sensebox3',
+  'sensebox4',
+  'sensebox5',
+];
 
-const groups2 = ['gruppe 6', 'gruppe 7', 'gruppe 8', 'gruppe 9', 'gruppe 10'];
+const groups2 = [
+  'sensebox6',
+  'sensebox7',
+  'sensebox8',
+  'sensebox9',
+  'sensebox10',
+];
 
 const generateData = (range: number, length: number) => {
   return Array.from({ length: length }, (_, i) => {
     return Math.floor(Math.random() * range) + 1;
+  });
+};
+
+const generateRandomData = (range: number, length: number) => {
+  return Array.from({ length: length }, (_, i) => {
+    return parseFloat(Math.random().toFixed(2));
   });
 };
 
@@ -36,6 +54,13 @@ const bodenfeuchteData = [
   {
     name: 'Bodenfeuchte in %',
     data: generateData(100, 5),
+  },
+];
+
+const artenvielfaltData = [
+  {
+    name: 'Artenvielfaltsindex',
+    data: generateRandomData(1, 5),
   },
 ];
 
@@ -98,6 +123,10 @@ const Group = () => {
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
+    {
+      title: 'Artenvielfalt',
+      component: <InputSheet cells={versiegelungCells} />,
+    },
   ];
 
   const [xaxis, setXaxis] = useState({
@@ -157,6 +186,18 @@ const Group = () => {
             showAlways: true,
             title: {
               text: 'Versiegelung in %',
+            },
+          },
+        ]);
+        break;
+      case 3:
+        setSeries(artenvielfaltData);
+        setYaxis([
+          {
+            seriesName: 'Artenvielfalt',
+            showAlways: true,
+            title: {
+              text: 'Artenvielfaltsindex',
             },
           },
         ]);

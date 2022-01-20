@@ -9,9 +9,21 @@ import BarChart from '@/components/BarChart';
 import { Matrix } from 'react-spreadsheet';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 
-const groups1 = ['gruppe 1', 'gruppe 2', 'gruppe 3', 'gruppe 4', 'gruppe 5'];
+const groups1 = [
+  'sensebox1',
+  'sensebox2',
+  'sensebox3',
+  'sensebox4',
+  'sensebox5',
+];
 
-const groups2 = ['gruppe 6', 'gruppe 7', 'gruppe 8', 'gruppe 9', 'gruppe 10'];
+const groups2 = [
+  'sensebox6',
+  'sensebox7',
+  'sensebox8',
+  'sensebox9',
+  'sensebox10',
+];
 
 const generateData = (range: number, length: number) => {
   return Array.from({ length: length }, (_, i) => {

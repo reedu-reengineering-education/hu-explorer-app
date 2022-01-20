@@ -12,11 +12,20 @@ function Lerneinheit() {
         <Link href="/expidition/schall?schule=esn" passHref>
           <Button>Schall</Button>
         </Link>
+        <Link href="/expidition/artenvielfalt/data?schule=esn&gruppe=sensebox9&daten=versiegelung">
+          <Button>Datenerfassung Versieglung</Button>
+        </Link>
+        <Link href="/expidition/artenvielfalt/data?schule=esn&gruppe=sensebox9&daten=artenvielfalt">
+          <Button>Datenerfassung Artenvielfalt</Button>
+        </Link>
+        <Link href="/expidition/artenvielfalt/group?schule=esn&gruppe=sensebox9">
+          <Button>Datenvergleich Gruppen</Button>
+        </Link>
         <Link
           href="/expidition/artenvielfalt?schule=esn&gruppe=sensebox1"
           passHref
         >
-          <Button>Artenvielfalt</Button>
+          <Button>Artenvielfalt Auswertung</Button>
         </Link>
       </div>
     </div>
