@@ -11,11 +11,11 @@ import { PauseIcon } from '@heroicons/react/outline';
 import { PlayIcon } from '@heroicons/react/solid';
 
 export const schallColors = [
-  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
-  { bg: 'bg-he-orange', shadow: 'shadow-he-orange' },
-  { bg: 'bg-he-green', shadow: 'shadow-he-green' },
-  { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
-  { bg: 'bg-he-red', shadow: 'shadow-he-red' },
+  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light/40' },
+  { bg: 'bg-he-orange', shadow: 'shadow-he-orange/40' },
+  { bg: 'bg-he-green', shadow: 'shadow-he-green/40' },
+  { bg: 'bg-he-violet', shadow: 'shadow-he-violet/40' },
+  { bg: 'bg-he-red', shadow: 'shadow-he-red/40' },
 ];
 
 const Schall = () => {
