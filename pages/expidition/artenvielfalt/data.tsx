@@ -7,6 +7,7 @@ import Tile from '@/components/Tile';
 import { GetServerSideProps } from 'next';
 import prisma from '@/lib/prisma';
 import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
+import { TrendingUpIcon, VariableIcon } from '@heroicons/react/outline';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -143,12 +144,30 @@ const Data = ({ records, versiegelung }: Props) => {
             />
           </div>
           <div className="flex flex-col-reverse m-3 pl-4">
-            <Tile
-              key="artenvielfaltsindex"
-              title="Artenvielfalts-Index"
-              min={simpsonIndex}
-              color={{ bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' }}
-            ></Tile>
+            <div className="rounded-lg text-white shadow-lg bg-he-blue-light shadow-he-blue-light text-center aspect-square w-32 h-32 xl:w-48 xl:h-48 m-2">
+              <div className="p-4 flex flex-col justify-between h-full">
+                <span className="font-semibold text-xl">
+                  Artenvielfalts-Index
+                </span>
+                <hr></hr>
+                <div className="flex flex-col">
+                  <span className="flex items-center justify-evenly">
+                    <TrendingUpIcon className="h-5 w-5" />
+                    <div>
+                      <span className="text-3xl font-light">
+                        {simpsonIndex}
+                      </span>
+                    </div>
+                  </span>
+                  {/* <span className="flex items-center justify-evenly">
+                    <VolumeUpIcon className="h-5 w-5" />
+                    <div>
+                      <span className="text-3xl font-light">{max ?? '-'}</span> dB
+                    </div>
+                  </span> */}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </>
