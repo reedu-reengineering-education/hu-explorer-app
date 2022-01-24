@@ -87,7 +87,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow h-full p-8 flex flex-col overflow-y-scroll">
+    <div className="bg-white rounded-lg shadow h-full p-2 flex flex-col overflow-y-scroll">
       {box && (
         <h1 className="text-lg font-bold text-center content-center">
           {box.properties.name}
@@ -103,7 +103,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
         </>
       )}
       {!box && (
-        <h1 className="text-lg font-bold text-center content-center">
+        <h1 className="text-md font-bold text-center content-center">
           Wählt per Klick auf die Karte einen Schulstandort aus und ihr seht
           Messwerte von Umweltfaktoren an dieser Schule.
         </h1>
