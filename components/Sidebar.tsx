@@ -104,8 +104,8 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
       )}
       {!box && (
         <h1 className="text-xl font-bold text-center content-center">
-          Wähle eine der Stationen per Klick aus und du bekommst die aktuellen
-          Messwerte angezeigt.
+          Wählt per Klick auf die Karte einen Schulstandort aus und ihr seht
+          Messwerte von Umweltfaktoren an dieser Schule.
         </h1>
       )}
     </div>
