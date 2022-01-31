@@ -38,12 +38,12 @@ const generateRandomData = (range: number, length: number) => {
 };
 
 const temperatureData = {
-  name: 'Temperatur in °C',
+  name: 'Lufttemperatur in °C',
   data: generateData(50, 5),
 };
 
 const versiegelungData = {
-  name: 'Versiegelung',
+  name: 'Undurchlässigkeit',
   data: generateData(100, 5),
 };
 
@@ -59,12 +59,16 @@ const artenvielfaltData = {
 
 const versiegelungCells = [
   [
-    { value: 'Versiegelung', readOnly: true, className: 'font-bold text-md' },
+    {
+      value: 'Undurchlässigkeit',
+      readOnly: true,
+      className: 'font-bold text-md',
+    },
     { value: '' },
   ],
   [
     {
-      value: 'Versiegelungsgrad in %',
+      value: 'Undurchlässigkeit in %',
       readOnly: true,
     },
     { value: 0 },
@@ -150,12 +154,13 @@ const Artenvielfalt = () => {
     //   ),
     // },
     {
-      title: 'Temperatur',
+      id: 'Lufttemperatur',
+      title: 'Lufttemperatur',
       component: (
         <OsemSheet
           series={[
             {
-              name: 'Temperatur in °C',
+              name: 'Lufttemperatur in °C',
               data: generateData(50, 20),
             },
           ]}
@@ -165,6 +170,7 @@ const Artenvielfalt = () => {
         'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
     },
     {
+      id: 'Bodenfeuchte',
       title: 'Bodenfeuchte',
       component: (
         <OsemSheet
@@ -180,7 +186,8 @@ const Artenvielfalt = () => {
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
-      title: 'Versiegelung',
+      id: 'Undurchlaessigkeit',
+      title: 'Undurchlässigkeit',
       component: <InputSheet cells={versiegelungCells} />,
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
@@ -216,10 +223,10 @@ const Artenvielfalt = () => {
         setSeries([temperatureData, artenvielfaltData]);
         setYaxis([
           {
-            seriesName: 'Temperatur',
+            seriesName: 'Lufttemperatur',
             showAlways: true,
             title: {
-              text: 'Temperatur in °C',
+              text: 'Lufttemperatur in °C',
             },
           },
           {
@@ -268,10 +275,10 @@ const Artenvielfalt = () => {
         setSeries([versiegelungData, artenvielfaltData]);
         setYaxis([
           {
-            seriesName: 'Versiegelung',
+            seriesName: 'Undurchlässigkeit',
             showAlways: true,
             title: {
-              text: 'Versiegelung in %',
+              text: 'Undurchlässigkeit in %',
             },
           },
           {
@@ -319,25 +326,17 @@ const Artenvielfalt = () => {
             <Map width="100%" height="100%" />
           </div>
           <div className="flex flex-col flex-wrap overflow-hidden mr-2">
-            <Tabs tabs={tabs} onChange={onChange}></Tabs>
+            <Tabs tabs={tabs} onChange={onChange} showHypothesis={true}></Tabs>
           </div>
-          <div className="flex-auto w-full max-h-[37%] mb-4">
+          <div className="flex-auto w-full mb-4">
             <BarChart
               series={series}
               yaxis={yaxis}
               xaxis={xaxis}
               colors={[
-                colors.he[tabs[tab].title.toLowerCase()].DEFAULT,
+                colors.he[tabs[tab].id.toLowerCase()].DEFAULT,
                 colors.he.artenvielfalt.DEFAULT,
               ]}
-            ></BarChart>
-          </div>
-          <div className="flex-auto w-full max-h-[37%]">
-            <BarChart
-              series={[artenvielfaltData]}
-              yaxis={yaxis2}
-              xaxis={xaxis}
-              colors={[colors.he.artenvielfalt.DEFAULT]}
             ></BarChart>
           </div>
         </div>

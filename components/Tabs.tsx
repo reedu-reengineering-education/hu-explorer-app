@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './Elements/Button';
 
 export type Tab = {
+  id: string;
   title: string;
   component: JSX.Element;
   hypothesis?: string;
@@ -10,18 +11,19 @@ export type Tab = {
 export interface TabProps {
   tabs: Tab[];
   onChange?: (tab: number) => void;
+  showHypothesis?: boolean;
 }
 
 enum variants {
   primary = 'primary',
   inverse = 'inverse',
   danger = 'danger',
-  temperatur = 'temperatur',
+  lufttemperatur = 'lufttemperatur',
   bodenfeuchte = 'bodenfeuchte',
-  versiegelung = 'versiegelung',
+  undurchlaessigkeit = 'undurchlaessigkeit',
 }
 
-const Tabs = ({ tabs, onChange }: TabProps) => {
+const Tabs = ({ tabs, onChange, showHypothesis }: TabProps) => {
   const [tab, setTab] = useState(0);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ const Tabs = ({ tabs, onChange }: TabProps) => {
         {tabs.map((t, i) => (
           <Button
             onClick={() => setTab(i)}
-            variant={variants[t.title.toLowerCase()]}
+            variant={variants[t.id.toLowerCase()]}
             key={`artenvielfalt_tab_${i}`}
             className="w-full text-center"
           >
@@ -43,18 +45,20 @@ const Tabs = ({ tabs, onChange }: TabProps) => {
           </Button>
         ))}
       </div>
-      <div className="flex flex-row w-full min-h-[75%] max-h-[75%] overflow-hidden">
-        <div className="w-full">
-          {tabs[tab].hypothesis && (
-            <h2 className="text-center my-4 font-semibold text-gray-800">
-              &quot;{tabs[tab].hypothesis}&quot;
-            </h2>
-          )}
+      {showHypothesis && (
+        <div className="flex flex-row w-full min-h-[75%] max-h-[75%] overflow-hidden">
+          <div className="w-full">
+            {tabs[tab].hypothesis && (
+              <h2 className="text-center my-4 font-semibold text-gray-800">
+                &quot;{tabs[tab].hypothesis}&quot;
+              </h2>
+            )}
+          </div>
+          {/* <div className="h-full overflow-auto">
+              <div className="mt-4">{tabs[tab].component}</div>
+            </div> */}
         </div>
-        {/* <div className="h-full overflow-auto">
-          <div className="mt-4">{tabs[tab].component}</div>
-        </div> */}
-      </div>
+      )}
     </div>
   );
 };

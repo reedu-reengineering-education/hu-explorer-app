@@ -88,12 +88,13 @@ const Group = () => {
 
   const tabs: Tab[] = [
     {
-      title: 'Temperatur',
+      id: 'Lufttemperatur',
+      title: 'Lufttemperatur',
       component: (
         <OsemSheet
           series={[
             {
-              name: 'Temperatur in °C',
+              name: 'Lufttemperatur in °C',
               data: generateData(50, 20),
             },
           ]}
@@ -103,6 +104,7 @@ const Group = () => {
         'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
     },
     {
+      id: 'Bodenfeuchte',
       title: 'Bodenfeuchte',
       component: (
         <OsemSheet
@@ -118,12 +120,14 @@ const Group = () => {
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
-      title: 'Versiegelung',
+      id: 'Undurchlaessigkeit',
+      title: 'Undurchlässigkeit',
       component: <InputSheet cells={versiegelungCells} />,
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
+      id: 'Artenvielfalt',
       title: 'Artenvielfalt',
       component: <InputSheet cells={versiegelungCells} />,
     },
@@ -143,10 +147,10 @@ const Group = () => {
 
   const [yaxis, setYaxis] = useState<ApexYAxis[]>([
     {
-      seriesName: 'Temperatur',
+      seriesName: 'Lufttemperatur',
       showAlways: true,
       title: {
-        text: 'Temperatur in °C',
+        text: 'Lufttemperatur in °C',
       },
     },
   ]);
@@ -158,10 +162,10 @@ const Group = () => {
         setSeries(temperatureData);
         setYaxis([
           {
-            seriesName: 'Temperatur',
+            seriesName: 'Lufttemperatur',
             showAlways: true,
             title: {
-              text: 'Temperatur in °C',
+              text: 'Lufttemperatur in °C',
             },
           },
         ]);
@@ -182,10 +186,10 @@ const Group = () => {
         setSeries(versiegelungData);
         setYaxis([
           {
-            seriesName: 'Versiegelung',
+            seriesName: 'Undurchlässigkeit',
             showAlways: true,
             title: {
-              text: 'Versiegelung in %',
+              text: 'Undurchlässigkeit in %',
             },
           },
         ]);
@@ -222,7 +226,7 @@ const Group = () => {
               series={series}
               yaxis={yaxis}
               xaxis={xaxis}
-              colors={[colors.he[tabs[tab].title.toLowerCase()].DEFAULT]}
+              colors={[colors.he[tabs[tab].id.toLowerCase()].DEFAULT]}
             ></BarChart>
           </div>
         </div>

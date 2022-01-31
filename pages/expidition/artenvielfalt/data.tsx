@@ -42,12 +42,16 @@ const Data = ({ records, versiegelung }: Props) => {
 
   const [versiegelungsCells, setVersiegelungsCells] = useState([
     [
-      { value: 'Versiegelung', readOnly: true, className: 'font-bold text-md' },
+      {
+        value: 'Undurchlässigkeit',
+        readOnly: true,
+        className: 'font-bold text-md',
+      },
       { value: '', readOnly: true },
     ],
     [
       {
-        value: 'Versiegelungsgrad in %',
+        value: 'Undurchlässigkeit in %',
         readOnly: true,
       },
       ...versiegelung?.map(entry => ({

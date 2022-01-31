@@ -36,13 +36,13 @@ module.exports = {
           yellow: {
             DEFAULT: '#fbbd35',
           },
-          temperatur: {
+          lufttemperatur: {
             DEFAULT: '#56bfc6',
           },
           bodenfeuchte: {
             DEFAULT: '#7d8bc5',
           },
-          versiegelung: {
+          undurchlaessigkeit: {
             light: '#5394d0',
             DEFAULT: '#004c90',
           },

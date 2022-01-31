@@ -13,7 +13,7 @@ function Lerneinheit() {
           <Button>Schall</Button>
         </Link>
         <Link href="/expidition/artenvielfalt/data?schule=esn&gruppe=sensebox9&daten=versiegelung">
-          <Button>Datenerfassung Versieglung</Button>
+          <Button>Datenerfassung Undurchlässigkeit</Button>
         </Link>
         <Link href="/expidition/artenvielfalt/data?schule=esn&gruppe=sensebox9&daten=artenvielfalt">
           <Button>Datenerfassung Artenvielfalt</Button>
