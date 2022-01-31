@@ -12,6 +12,7 @@ const variants = {
   lufttemperatur: 'bg-he-aqua text-white focus:ring-he-aqua',
   bodenfeuchte: 'bg-he-lilac text-white focus:ring-he-lilac',
   undurchlaessigkeit: 'bg-he-blue text-white focus:ring-he-blue-500',
+  artenvielfalt: 'bg-he-green text-white focus:ring-he-blue-500',
 };
 
 const sizes = {

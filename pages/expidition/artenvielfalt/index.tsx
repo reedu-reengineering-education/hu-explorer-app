@@ -227,6 +227,13 @@ const Artenvielfalt = () => {
             showAlways: true,
             title: {
               text: 'Lufttemperatur in °C',
+              style: {
+                color: '#56bfc6',
+              },
+            },
+            axisBorder: {
+              show: true,
+              color: '#56bfc6',
             },
           },
           {
@@ -235,12 +242,19 @@ const Artenvielfalt = () => {
             max: 1.0,
             title: {
               text: 'Artenvielfaltsindex',
+              style: {
+                color: '#6bbe98',
+              },
             },
             opposite: true,
             labels: {
               formatter: function (value) {
                 return value.toFixed(2);
               },
+            },
+            axisBorder: {
+              show: true,
+              color: '#6bbe98',
             },
           },
         ]);
@@ -253,6 +267,13 @@ const Artenvielfalt = () => {
             showAlways: true,
             title: {
               text: 'Bodenfeuchte in %',
+              style: {
+                color: '#7d8bc5',
+              },
+            },
+            axisBorder: {
+              show: true,
+              color: '#7d8bc5',
             },
           },
           {
@@ -261,12 +282,19 @@ const Artenvielfalt = () => {
             max: 1.0,
             title: {
               text: 'Artenvielfaltsindex',
+              style: {
+                color: '#6bbe98',
+              },
             },
             opposite: true,
             labels: {
               formatter: function (value) {
                 return value.toFixed(2);
               },
+            },
+            axisBorder: {
+              show: true,
+              color: '#6bbe98',
             },
           },
         ]);
@@ -279,6 +307,13 @@ const Artenvielfalt = () => {
             showAlways: true,
             title: {
               text: 'Undurchlässigkeit in %',
+              style: {
+                color: '#004c90',
+              },
+            },
+            axisBorder: {
+              show: true,
+              color: '#004c90',
             },
           },
           {
@@ -287,12 +322,19 @@ const Artenvielfalt = () => {
             max: 1.0,
             title: {
               text: 'Artenvielfaltsindex',
+              style: {
+                color: '#6bbe98',
+              },
             },
             opposite: true,
             labels: {
               formatter: function (value) {
                 return value.toFixed(2);
               },
+            },
+            axisBorder: {
+              show: true,
+              color: '#6bbe98',
             },
           },
         ]);

@@ -21,6 +21,7 @@ enum variants {
   lufttemperatur = 'lufttemperatur',
   bodenfeuchte = 'bodenfeuchte',
   undurchlaessigkeit = 'undurchlaessigkeit',
+  artenvielfalt = 'artenvielfalt',
 }
 
 const Tabs = ({ tabs, onChange, showHypothesis }: TabProps) => {

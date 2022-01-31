@@ -3,11 +3,10 @@ import React, { useState } from 'react';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import InputSheet from '@/components/Artenvielfalt/InputSheet';
 import { Matrix } from 'react-spreadsheet';
-import Tile from '@/components/Tile';
 import { GetServerSideProps } from 'next';
 import prisma from '@/lib/prisma';
 import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
-import { TrendingUpIcon, VariableIcon } from '@heroicons/react/outline';
+import { TrendingUpIcon } from '@heroicons/react/outline';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
