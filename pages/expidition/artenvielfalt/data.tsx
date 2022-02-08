@@ -1,12 +1,60 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import InputSheet from '@/components/Artenvielfalt/InputSheet';
 import { Matrix } from 'react-spreadsheet';
 import { GetServerSideProps } from 'next';
 import prisma from '@/lib/prisma';
-import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
+import {
+  ArtenvielfaltRecord,
+  ArtRecord,
+  VersiegelungRecord,
+} from '@prisma/client';
 import { TrendingUpIcon } from '@heroicons/react/outline';
+
+import {
+  ReactGrid,
+  Column,
+  Row,
+  CellChange,
+  TextCell,
+  NumberCell,
+} from '@silevis/reactgrid';
+import '@silevis/reactgrid/styles.css';
+import { Button } from '@/components/Elements/Button';
+import { useRouter } from 'next/dist/client/router';
+
+const getColumns = (): Column[] => [
+  { columnId: 'rowId', width: 150 },
+  { columnId: 'art', width: 150 },
+  { columnId: 'count', width: 150 },
+];
+
+const headerRow: Row = {
+  rowId: 'header',
+  cells: [
+    { type: 'header', text: '' },
+    { type: 'header', text: 'Art' },
+    { type: 'header', text: 'Häufigkeit' },
+  ],
+};
+
+const getRows = (arten: ArtRecord[]): Row[] => [
+  headerRow,
+  ...arten.map<Row>((art, idx) => ({
+    rowId: art.id,
+    cells: [
+      { type: 'text', text: `${idx + 1}`, nonEditable: true },
+      { type: 'text', text: art.art },
+      { type: 'number', value: art.count },
+    ],
+  })),
+];
+
+enum ExpeditionsArten {
+  versiegelung = 'versiegelung',
+  artenvielfalt = 'artenvielfalt',
+}
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -18,26 +66,68 @@ export const getServerSideProps: GetServerSideProps = async ({
   const group = query.gruppe as string;
   const school = query.schule as string;
 
-  const records = await prisma.artenvielfaltRecord.findMany({});
+  const devices = await fetch(
+    `${process.env.OSEM_API}/boxes?grouptag=HU Explorers,Artenvielfalt`,
+  ).then(async response => {
+    return await response.json();
+  });
+
+  const device = devices.filter(device => device.name === group);
+  const today = new Date();
+
+  let artenvielfalt;
+
+  // Find main group entries for data types
+  artenvielfalt = await prisma.artenvielfaltRecord.upsert({
+    where: {
+      deviceId_group_createdAt: {
+        deviceId: device[0]._id,
+        group: group,
+        createdAt: today,
+      },
+    },
+    update: {},
+    create: {
+      deviceId: device[0]._id,
+      group: group,
+    },
+  });
+
   const versiegelung = await prisma.versiegelungRecord.findMany({
     where: {
-      group,
+      deviceId: device[0]._id,
+      createdAt: today,
+    },
+  });
+
+  const arten = await prisma.artRecord.findMany({
+    where: {
+      artenvielfaltId: artenvielfalt.id,
+    },
+    orderBy: {
+      id: 'asc',
     },
   });
 
   return {
-    props: { records, versiegelung },
+    props: { arten, device, artenvielfalt, versiegelung },
   };
 };
 
 type Props = {
-  records: ArtenvielfaltRecord[];
+  artenvielfalt: ArtenvielfaltRecord[];
+  arten: ArtRecord[];
   versiegelung: VersiegelungRecord[];
+  device: any;
 };
 
-const Data = ({ records, versiegelung }: Props) => {
+const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   const { schule, gruppe, daten } = useExpeditionParams();
+  const router = useRouter();
   // const [data, setData] = useState(records);
+
+  console.log(artenvielfalt);
+  console.log(arten);
 
   const [versiegelungsCells, setVersiegelungsCells] = useState([
     [
@@ -74,49 +164,79 @@ const Data = ({ records, versiegelung }: Props) => {
       },
       { value: 'Häufigkeit', readOnly: true },
     ],
-    ...records.map(record => {
+    ...arten.map(record => {
       return [{ value: record.art }, { value: record.count }];
     }),
     [{ value: '' }, { value: '' }],
     [{ value: '' }, { value: '' }],
     [{ value: '' }, { value: '' }],
   ]);
-
+  const [artendb, setArtenDB] = useState<ArtRecord[]>(arten);
   const [simpsonIndex, setSimpsonIndex] = useState<number>(0);
 
-  const changedData = (data: Matrix<any>) => {
-    const matrix = [...data];
-    const speciesData = matrix.slice(2);
-    let numberOfOrganisms = 0;
-    const numberOfSpecies = speciesData
-      .flat()
-      .filter((_, i) => i % 2 === 1)
-      .map(value => {
-        // Check if value is a number
-        if (isNaN(parseInt(value.value))) return 0;
+  useEffect(() => {
+    calculateSimpsonIndex();
+  }, [artendb]);
 
-        numberOfOrganisms = numberOfOrganisms + parseInt(value.value);
-        return parseInt(value.value) * (parseInt(value.value) - 1);
-      })
-      .reduce((prev, curr) => prev + curr);
-    const simpsonIndex: number =
-      1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
-    console.log('Simpson Index', simpsonIndex);
+  useEffect(() => {
+    console.log('Use Effect setArtenDB');
+    setArtenDB(arten);
+  }, [arten]);
 
-    if (!Number.isNaN(simpsonIndex)) {
-      setSimpsonIndex(+simpsonIndex.toFixed(2));
-    }
+  // Call this function whenever you want to
+  // refresh props!
+  const refreshData = () => {
+    router.replace(router.asPath);
   };
 
-  const updateEntry = async value => {
-    console.log(value);
+  // const changedData = (data: Matrix<any>) => {
+  //   const matrix = [...data];
+  //   const speciesData = matrix.slice(2);
+  //   let numberOfOrganisms = 0;
+  //   const numberOfSpecies = speciesData
+  //     .flat()
+  //     .filter((_, i) => i % 2 === 1)
+  //     .map(value => {
+  //       // Check if value is a number
+  //       if (isNaN(parseInt(value.value))) return 0;
+
+  //       numberOfOrganisms = numberOfOrganisms + parseInt(value.value);
+  //       return parseInt(value.value) * (parseInt(value.value) - 1);
+  //     })
+  //     .reduce((prev, curr) => prev + curr);
+  //   const simpsonIndex: number =
+  //     1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
+  //   console.log('Simpson Index', simpsonIndex);
+
+  //   if (!Number.isNaN(simpsonIndex)) {
+  //     setSimpsonIndex(+simpsonIndex.toFixed(2));
+  //   }
+  // };
+
+  const calculateSimpsonIndex = () => {
+    let numberOfOrganisms: number = 0;
+    const numberOfSpecies = arten
+      .map(art => {
+        numberOfOrganisms = numberOfOrganisms + art.count;
+        return art.count * (art.count - 1);
+      })
+      .reduce((prev, curr) => prev + curr);
+
+    const simpsonIndex: number =
+      1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
+    console.log('Simpson Index (New Table)', simpsonIndex);
+
+    setSimpsonIndex(+simpsonIndex.toFixed(2));
+  };
+
+  const updateEntry = async (value, type, body) => {
+    console.log(value, type);
+
+    // TODO: build body
     try {
-      await fetch('/api/versiegelung', {
+      await fetch(`/api/${type}`, {
         method: 'POST',
-        body: JSON.stringify({
-          value: value.value,
-          group: gruppe,
-        }),
+        body: body,
       });
     } catch (error) {
       console.log(error);
@@ -125,10 +245,76 @@ const Data = ({ records, versiegelung }: Props) => {
 
   const cellCommit = (prevCell, nextCell, coords) => {
     console.log(prevCell, nextCell, coords);
-    if (daten === 'versiegelung') {
-      updateEntry(nextCell);
-    } else if (daten === 'artenvielfalt') {
+    if (daten === ExpeditionsArten.versiegelung) {
+      const payload = JSON.stringify({
+        value: nextCell.value,
+        group: gruppe,
+        deviceId: device[0]._id,
+      });
+      updateEntry(nextCell, ExpeditionsArten.versiegelung, payload);
     }
+  };
+
+  let rows = getRows(artendb);
+  const columns = getColumns();
+
+  // const applyChangesToArten = (
+  //   changes: CellChange[],
+  //   prevPeople: ArtRecord[]
+  // ): ArtRecord[] => {
+  //   console.log(changes);
+  //   // changes.forEach((change) => {
+  //   //   const personIndex = change.rowId;
+  //   //   const fieldName = change.columnId;
+  //   //   prevPeople[personIndex][fieldName] = change.newCell.value;
+  //   // });
+  //   // return [...prevPeople];
+  // };
+
+  const handleChanges = async (changes: CellChange[]) => {
+    console.log(changes);
+
+    const payload = {
+      id: changes[0].rowId,
+      artenvielfaltId: artenvielfalt.id,
+    };
+
+    if (changes[0].type === 'text') {
+      const change: CellChange<TextCell> = changes[0];
+      payload['art'] = change.newCell.text;
+    }
+
+    if (changes[0].type === 'number') {
+      const change: CellChange<NumberCell> = changes[0];
+      payload['count'] = change.newCell.value;
+    }
+
+    await fetch('/api/art', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+
+    calculateSimpsonIndex();
+
+    refreshData();
+
+    // setArtenDB((prevPeople) => applyChangesToArten(changes, prevPeople));
+  };
+
+  const addRow = async () => {
+    // Create DB entry for new row in table
+    const art: ArtRecord = await fetch('/api/art', {
+      method: 'POST',
+      body: JSON.stringify({
+        art: '',
+        count: 0,
+        artenvielfaltId: artenvielfalt.id,
+      }),
+    }).then(response => {
+      return response.json();
+    });
+
+    setArtenDB([...artendb, art]);
   };
 
   if (daten === 'versiegelung') {
@@ -138,13 +324,12 @@ const Data = ({ records, versiegelung }: Props) => {
       <>
         <div className="flex">
           <div className="flex flex-col">
-            <InputSheet
-              cells={artenvielfaltsCells}
-              hideAddButton={false}
-              onChange={changedData}
-              onCellCommit={cellCommit}
-              onDataLoaded={changedData}
+            <ReactGrid
+              rows={rows}
+              columns={columns}
+              onCellsChanged={handleChanges}
             />
+            <Button onClick={addRow}>Art hinzufügen</Button>
           </div>
           <div className="flex flex-col-reverse m-3 pl-4">
             <div className="rounded-lg text-white shadow-lg bg-he-blue-light shadow-he-blue-light text-center aspect-square w-32 h-32 xl:w-48 xl:h-48 m-2">
@@ -162,12 +347,6 @@ const Data = ({ records, versiegelung }: Props) => {
                       </span>
                     </div>
                   </span>
-                  {/* <span className="flex items-center justify-evenly">
-                    <VolumeUpIcon className="h-5 w-5" />
-                    <div>
-                      <span className="text-3xl font-light">{max ?? '-'}</span> dB
-                    </div>
-                  </span> */}
                 </div>
               </div>
             </div>

@@ -6,16 +6,19 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   if (req.method === 'POST') {
+    const body = JSON.parse(req.body);
+
     try {
       const result = await prisma.artenvielfaltRecord.create({
         data: {
-          art: 'Rose',
-          count: 25,
-          group: 'sensebox1',
+          deviceId: body.deviceId,
+          simpsonIndex: body.simpsonIndex,
+          group: body.group,
         },
       });
       res.status(201).json(result);
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         error,
       });
