@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import InputSheet from '@/components/Artenvielfalt/InputSheet';
-import { Matrix } from 'react-spreadsheet';
 import { GetServerSideProps } from 'next';
 import prisma from '@/lib/prisma';
 import {
@@ -75,10 +74,8 @@ export const getServerSideProps: GetServerSideProps = async ({
   const device = devices.filter(device => device.name === group);
   const today = new Date();
 
-  let artenvielfalt;
-
   // Find main group entries for data types
-  artenvielfalt = await prisma.artenvielfaltRecord.upsert({
+  const artenvielfalt = await prisma.artenvielfaltRecord.upsert({
     where: {
       deviceId_group_createdAt: {
         deviceId: device[0]._id,
@@ -115,7 +112,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 };
 
 type Props = {
-  artenvielfalt: ArtenvielfaltRecord[];
+  artenvielfalt: ArtenvielfaltRecord;
   arten: ArtRecord[];
   versiegelung: VersiegelungRecord[];
   device: any;
@@ -148,29 +145,6 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
       })),
     ],
   ]);
-  const [artenvielfaltsCells, setArtenvielfaltsCells] = useState([
-    [
-      {
-        value: 'Artenvielfalt',
-        readOnly: true,
-        className: 'font-bold text-md',
-      },
-      { value: '' },
-    ],
-    [
-      {
-        value: 'Artname',
-        readOnly: true,
-      },
-      { value: 'Häufigkeit', readOnly: true },
-    ],
-    ...arten.map(record => {
-      return [{ value: record.art }, { value: record.count }];
-    }),
-    [{ value: '' }, { value: '' }],
-    [{ value: '' }, { value: '' }],
-    [{ value: '' }, { value: '' }],
-  ]);
   const [artendb, setArtenDB] = useState<ArtRecord[]>(arten);
   const [simpsonIndex, setSimpsonIndex] = useState<number>(0);
 
@@ -189,31 +163,11 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
     router.replace(router.asPath);
   };
 
-  // const changedData = (data: Matrix<any>) => {
-  //   const matrix = [...data];
-  //   const speciesData = matrix.slice(2);
-  //   let numberOfOrganisms = 0;
-  //   const numberOfSpecies = speciesData
-  //     .flat()
-  //     .filter((_, i) => i % 2 === 1)
-  //     .map(value => {
-  //       // Check if value is a number
-  //       if (isNaN(parseInt(value.value))) return 0;
-
-  //       numberOfOrganisms = numberOfOrganisms + parseInt(value.value);
-  //       return parseInt(value.value) * (parseInt(value.value) - 1);
-  //     })
-  //     .reduce((prev, curr) => prev + curr);
-  //   const simpsonIndex: number =
-  //     1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
-  //   console.log('Simpson Index', simpsonIndex);
-
-  //   if (!Number.isNaN(simpsonIndex)) {
-  //     setSimpsonIndex(+simpsonIndex.toFixed(2));
-  //   }
-  // };
-
   const calculateSimpsonIndex = () => {
+    if (arten.length === 0) {
+      return;
+    }
+
     let numberOfOrganisms: number = 0;
     const numberOfSpecies = arten
       .map(art => {
@@ -221,6 +175,10 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
         return art.count * (art.count - 1);
       })
       .reduce((prev, curr) => prev + curr);
+
+    if (numberOfOrganisms === 0) {
+      return;
+    }
 
     const simpsonIndex: number =
       1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
