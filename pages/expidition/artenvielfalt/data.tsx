@@ -66,7 +66,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   const school = query.schule as string;
 
   const devices = await fetch(
-    `${process.env.OSEM_API}/boxes?grouptag=HU Explorers,Artenvielfalt`,
+    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?grouptag=HU Explorers,Artenvielfalt,${school}`,
   ).then(async response => {
     return await response.json();
   });
@@ -125,6 +125,8 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
 
   console.log(artenvielfalt);
   console.log(arten);
+  console.log(versiegelung);
+  console.log(device);
 
   const [versiegelungsCells, setVersiegelungsCells] = useState([
     [

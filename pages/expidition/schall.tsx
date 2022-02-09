@@ -22,7 +22,7 @@ const Schall = () => {
   const { schule } = useExpeditionParams();
 
   const [live, setLive] = useState(true);
-  const { data, boxes } = useOsemData(schule, live);
+  const { data, boxes } = useOsemData('Schallpegel', schule, live);
 
   const [series, setSeries] = useState([]);
   const [barSeries, setBarSeries] = useState([]);

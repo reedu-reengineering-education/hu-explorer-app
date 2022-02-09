@@ -3,17 +3,18 @@ import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
 export const useOsemData = (
+  expedition: string,
   schule: string | string[],
   live: boolean = true,
 ) => {
   // fetch berlin data
   const { data: boxes } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
-    `https://api.opensensemap.org/boxes?format=geojson&grouptag=hu-explorer schall ${schule}`,
+    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,${expedition},${schule}`,
   );
   const { data: measurements } = useSWR(
     boxes?.features.map(
       b =>
-        `https://api.opensensemap.org/boxes/${b.properties._id}/data/${b.properties.sensors[0]._id}`,
+        `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${b.properties.sensors[0]._id}`,
     ),
     { refreshInterval: live ? 60000 : 0 },
   );

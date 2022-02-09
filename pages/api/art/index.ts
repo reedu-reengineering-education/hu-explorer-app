@@ -20,11 +20,7 @@ export default async function handler(
       });
     }
   } else if (req.method === 'GET') {
-    const results = await prisma.artRecord.findMany({
-      where: {
-        artenvielfaltId: '1055621e-def1-46b2-bd90-34711f7247a4',
-      },
-    });
+    const results = await prisma.artRecord.findMany({});
     res.status(201).json(results);
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);

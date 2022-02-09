@@ -12,6 +12,7 @@ export default async function handler(
       const exists = await prisma.versiegelungRecord.findMany({
         where: {
           deviceId: body.deviceId,
+          createdAt: new Date(),
         },
       });
 

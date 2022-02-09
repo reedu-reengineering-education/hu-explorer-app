@@ -97,7 +97,7 @@ const Map = ({ width, height, data }: MapProps) => {
         data.features.map((m, i) => (
           <LabelMarker
             key={i}
-            name={m.properties.name.split('HU Explorer Schall')[1]}
+            name={m.properties.name}
             lat={m.geometry.coordinates[1]}
             lng={m.geometry.coordinates[0]}
             color={schallColors[i].bg}
