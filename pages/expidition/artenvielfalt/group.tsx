@@ -9,6 +9,7 @@ import BarChart from '@/components/BarChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { GetServerSideProps } from 'next';
 import { FeatureCollection, Point } from 'geojson';
+import prisma from '@/lib/prisma';
 
 const groups1 = [
   'sensebox1',
@@ -112,25 +113,45 @@ export const getServerSideProps: GetServerSideProps = async ({
     features: filteredDevices,
   };
 
+  const orFilter = filteredDevices.map(device => {
+    console.log(device);
+
+    return {
+      deviceId: device.properties._id,
+    };
+  });
+
+  const versiegelung = await prisma.versiegelungRecord.findMany({
+    where: {
+      OR: orFilter,
+      createdAt: new Date(),
+    },
+    orderBy: {
+      group: 'asc',
+    },
+  });
+
+  const data = versiegelung.map(entry => entry.value);
+
   return {
     props: {
       devices: featureCollection,
+      versiegelung: data,
     },
   };
 };
 
 type Props = {
   devices: any;
+  versiegelung: number[];
 };
 
-const Group = ({ devices }: Props) => {
+const Group = ({ devices, versiegelung }: Props) => {
   const { schule, gruppe } = useExpeditionParams();
   const [tab, setTab] = useState(0);
   const [series, setSeries] = useState(temperatureData);
 
   const colors = useTailwindColors();
-
-  console.log(devices);
 
   const tabs: Tab[] = [
     {
@@ -229,7 +250,12 @@ const Group = ({ devices }: Props) => {
         ]);
         break;
       case 2:
-        setSeries(versiegelungData);
+        setSeries([
+          {
+            name: 'Versiegelung',
+            data: versiegelung,
+          },
+        ]);
         setYaxis([
           {
             seriesName: 'Undurchlässigkeit',
