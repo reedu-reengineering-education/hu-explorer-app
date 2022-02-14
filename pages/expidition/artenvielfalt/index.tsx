@@ -6,7 +6,6 @@ import OsemSheet from '@/components/Artenvielfalt/OsemSheet';
 import Map from '@/components/Map';
 import Tabs, { Tab } from '@/components/Tabs';
 import BarChart from '@/components/BarChart';
-import { Matrix } from 'react-spreadsheet';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 
 const groups1 = [

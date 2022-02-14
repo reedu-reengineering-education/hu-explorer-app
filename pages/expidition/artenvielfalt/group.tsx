@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
+import { useOsemData } from '@/hooks/useOsemData';
 import InputSheet from '@/components/Artenvielfalt/InputSheet';
 import OsemSheet from '@/components/Artenvielfalt/OsemSheet';
 import Map from '@/components/Map';
@@ -10,6 +11,7 @@ import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { GetServerSideProps } from 'next';
 import { FeatureCollection, Point } from 'geojson';
 import prisma from '@/lib/prisma';
+import { useOsemData2 } from '@/hooks/useOsemData2';
 
 const groups1 = [
   'sensebox1',
@@ -25,46 +27,6 @@ const groups2 = [
   'sensebox8',
   'sensebox9',
   'sensebox10',
-];
-
-const generateData = (range: number, length: number) => {
-  return Array.from({ length: length }, (_, i) => {
-    return Math.floor(Math.random() * range) + 1;
-  });
-};
-
-const generateRandomData = (range: number, length: number) => {
-  return Array.from({ length: length }, (_, i) => {
-    return parseFloat(Math.random().toFixed(2));
-  });
-};
-
-const temperatureData = [
-  {
-    name: 'Temperatur in °C',
-    data: generateData(50, 5),
-  },
-];
-
-const versiegelungData = [
-  {
-    name: 'Versiegelung',
-    data: generateData(100, 5),
-  },
-];
-
-const bodenfeuchteData = [
-  {
-    name: 'Bodenfeuchte in %',
-    data: generateData(100, 5),
-  },
-];
-
-const artenvielfaltData = [
-  {
-    name: 'Artenvielfaltsindex',
-    data: generateRandomData(1, 5),
-  },
 ];
 
 const versiegelungCells = [
@@ -162,9 +124,50 @@ type Props = {
 const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
   const { schule, gruppe } = useExpeditionParams();
   const [tab, setTab] = useState(0);
-  const [series, setSeries] = useState(temperatureData);
 
+  const [series, setSeries] = useState([]);
+  const [temperatureSeries, setTemperatureSeries] = useState([]);
+  const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState([]);
+
+  // Fetch openSenseMap data
+  const { data, boxes } = useOsemData2('Artenvielfalt', schule, false);
   const colors = useTailwindColors();
+
+  useEffect(() => {
+    const filteredDevices = data.filter(e =>
+      groups1.includes(e.box.properties.name.toLocaleLowerCase()),
+    );
+
+    const transformedTemperatureData = filteredDevices.map(e => {
+      const sumWithInitial = e.temperature?.reduce(
+        (a, b) => a + (parseFloat(b['value']) || 0),
+        0,
+      );
+      return (sumWithInitial / e.temperature?.length).toFixed(2);
+    });
+
+    const transformedBodenfeuchteData = filteredDevices.map(e => {
+      const sumWithInitial = e.bodenfeuchte?.reduce(
+        (a, b) => a + (parseFloat(b['value']) || 0),
+        0,
+      );
+      return (sumWithInitial / e.bodenfeuchte?.length).toFixed(2);
+    });
+
+    setTemperatureSeries([
+      {
+        name: 'Lufttemperatur',
+        data: transformedTemperatureData,
+      },
+    ]);
+
+    setBodenfeuchteSeries([
+      {
+        name: 'Lufttemperatur',
+        data: transformedBodenfeuchteData,
+      },
+    ]);
+  }, [data]);
 
   const tabs: Tab[] = [
     {
@@ -175,7 +178,7 @@ const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
           series={[
             {
               name: 'Lufttemperatur in °C',
-              data: generateData(50, 20),
+              data: temperatureSeries,
             },
           ]}
         />
@@ -191,7 +194,7 @@ const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
           series={[
             {
               name: 'Bodenfeuchte in %',
-              data: generateData(100, 20),
+              data: bodenfeuchteSeries,
             },
           ]}
         />
@@ -239,7 +242,7 @@ const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
     setTab(tab);
     switch (tab) {
       case 0:
-        setSeries(temperatureData);
+        setSeries(temperatureSeries);
         setYaxis([
           {
             seriesName: 'Lufttemperatur',
@@ -251,7 +254,7 @@ const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
         ]);
         break;
       case 1:
-        setSeries(bodenfeuchteData);
+        setSeries(bodenfeuchteSeries);
         setYaxis([
           {
             seriesName: 'Bodenfeuchte',
