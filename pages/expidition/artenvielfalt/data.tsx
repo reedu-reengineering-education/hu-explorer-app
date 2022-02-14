@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import InputSheet from '@/components/Artenvielfalt/InputSheet';
@@ -121,7 +121,6 @@ type Props = {
 const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   const { schule, gruppe, daten } = useExpeditionParams();
   const router = useRouter();
-  // const [data, setData] = useState(records);
 
   console.log(artenvielfalt);
   console.log(arten);
@@ -147,17 +146,6 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
       })),
     ],
   ]);
-  const [artendb, setArtenDB] = useState<ArtRecord[]>(arten);
-  const [simpsonIndex, setSimpsonIndex] = useState<number>(0);
-
-  useEffect(() => {
-    calculateSimpsonIndex();
-  }, [artendb]);
-
-  useEffect(() => {
-    console.log('Use Effect setArtenDB');
-    setArtenDB(arten);
-  }, [arten]);
 
   // Call this function whenever you want to
   // refresh props!
@@ -186,7 +174,7 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
       1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
     console.log('Simpson Index (New Table)', simpsonIndex);
 
-    setSimpsonIndex(+simpsonIndex.toFixed(2));
+    return +simpsonIndex.toFixed(2);
   };
 
   const updateEntry = async (value, type, body) => {
@@ -215,24 +203,26 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
     }
   };
 
-  let rows = getRows(artendb);
+  let rows = getRows(arten);
   const columns = getColumns();
 
-  // const applyChangesToArten = (
-  //   changes: CellChange[],
-  //   prevPeople: ArtRecord[]
-  // ): ArtRecord[] => {
-  //   console.log(changes);
-  //   // changes.forEach((change) => {
-  //   //   const personIndex = change.rowId;
-  //   //   const fieldName = change.columnId;
-  //   //   prevPeople[personIndex][fieldName] = change.newCell.value;
-  //   // });
-  //   // return [...prevPeople];
-  // };
+  const applyChangesToArten = (
+    changes: CellChange[],
+    prevArten: ArtRecord[],
+  ): ArtRecord[] => {
+    changes.forEach((change: CellChange<NumberCell>) => {
+      const personIndex = change.rowId;
+      const fieldName = change.columnId;
+
+      const prevArt = prevArten.filter(art => art.id == personIndex);
+      prevArt[0][fieldName] = change.newCell.value;
+      prevArten = [...prevArten, prevArt[0]];
+    });
+    return [...prevArten];
+  };
 
   const handleChanges = async (changes: CellChange[]) => {
-    console.log(changes);
+    // console.log("CHANGES: ", changes);
 
     const payload = {
       id: changes[0].rowId,
@@ -247,6 +237,7 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
     if (changes[0].type === 'number') {
       const change: CellChange<NumberCell> = changes[0];
       payload['count'] = change.newCell.value;
+      applyChangesToArten(changes, arten);
     }
 
     await fetch('/api/art', {
@@ -254,11 +245,17 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
       body: JSON.stringify(payload),
     });
 
-    calculateSimpsonIndex();
+    const index = calculateSimpsonIndex();
+    await fetch('/api/artenvielfalt', {
+      method: 'PUT',
+      body: JSON.stringify({
+        id: artenvielfalt.id,
+        simpsonIndex: index,
+      }),
+    });
 
+    // Refresh to load new data from backend
     refreshData();
-
-    // setArtenDB((prevPeople) => applyChangesToArten(changes, prevPeople));
   };
 
   const addRow = async () => {
@@ -274,7 +271,8 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
       return response.json();
     });
 
-    setArtenDB([...artendb, art]);
+    // Refresh to load new data from backend
+    refreshData();
   };
 
   if (daten === 'versiegelung') {
@@ -303,7 +301,7 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
                     <TrendingUpIcon className="h-5 w-5" />
                     <div>
                       <span className="text-3xl font-light">
-                        {simpsonIndex}
+                        {artenvielfalt.simpsonIndex}
                       </span>
                     </div>
                   </span>

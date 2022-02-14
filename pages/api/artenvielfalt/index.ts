@@ -26,6 +26,25 @@ export default async function handler(
   } else if (req.method === 'GET') {
     const results = await prisma.artenvielfaltRecord.findMany();
     res.status(201).json(results);
+  } else if (req.method === 'PUT') {
+    const body = JSON.parse(req.body);
+
+    try {
+      const result = await prisma.artenvielfaltRecord.update({
+        where: {
+          id: body.id,
+        },
+        data: {
+          simpsonIndex: body.simpsonIndex,
+        },
+      });
+      res.status(201).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        error,
+      });
+    }
   } else {
     res.status(405).json({});
   }

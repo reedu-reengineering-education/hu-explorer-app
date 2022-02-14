@@ -131,12 +131,24 @@ export const getServerSideProps: GetServerSideProps = async ({
     },
   });
 
-  const data = versiegelung.map(entry => entry.value);
+  const artenvielfalt = await prisma.artenvielfaltRecord.findMany({
+    where: {
+      OR: orFilter,
+      createdAt: new Date(),
+    },
+    orderBy: {
+      group: 'asc',
+    },
+  });
+
+  const dataVersiegelung = versiegelung.map(entry => entry.value);
+  const dataArtenvielfalt = artenvielfalt.map(entry => entry.simpsonIndex);
 
   return {
     props: {
       devices: featureCollection,
-      versiegelung: data,
+      versiegelung: dataVersiegelung,
+      artenvielfalt: dataArtenvielfalt,
     },
   };
 };
@@ -144,9 +156,10 @@ export const getServerSideProps: GetServerSideProps = async ({
 type Props = {
   devices: any;
   versiegelung: number[];
+  artenvielfalt: number[];
 };
 
-const Group = ({ devices, versiegelung }: Props) => {
+const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
   const { schule, gruppe } = useExpeditionParams();
   const [tab, setTab] = useState(0);
   const [series, setSeries] = useState(temperatureData);
@@ -267,7 +280,12 @@ const Group = ({ devices, versiegelung }: Props) => {
         ]);
         break;
       case 3:
-        setSeries(artenvielfaltData);
+        setSeries([
+          {
+            name: 'Artenvielfalt',
+            data: artenvielfalt,
+          },
+        ]);
         setYaxis([
           {
             seriesName: 'Artenvielfalt',
