@@ -7,6 +7,10 @@ import Map from '@/components/Map';
 import Tabs, { Tab } from '@/components/Tabs';
 import BarChart from '@/components/BarChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
+import prisma from '@/lib/prisma';
+import { FeatureCollection, Point } from 'geojson';
+import { GetServerSideProps } from 'next';
+import { useOsemData2 } from '@/hooks/useOsemData2';
 
 const groups1 = [
   'sensebox1',
@@ -23,38 +27,6 @@ const groups2 = [
   'sensebox9',
   'sensebox10',
 ];
-
-const generateData = (range: number, length: number) => {
-  return Array.from({ length: length }, (_, i) => {
-    return Math.floor(Math.random() * range) + 1;
-  });
-};
-
-const generateRandomData = (range: number, length: number) => {
-  return Array.from({ length: length }, (_, i) => {
-    return parseFloat(Math.random().toFixed(2));
-  });
-};
-
-const temperatureData = {
-  name: 'Lufttemperatur in °C',
-  data: generateData(50, 5),
-};
-
-const versiegelungData = {
-  name: 'Undurchlässigkeit',
-  data: generateData(100, 5),
-};
-
-const bodenfeuchteData = {
-  name: 'Bodenfeuchte in %',
-  data: generateData(100, 5),
-};
-
-const artenvielfaltData = {
-  name: 'pflanzliche Artenvielfalt',
-  data: generateRandomData(1, 5),
-};
 
 const versiegelungCells = [
   [
@@ -98,60 +70,134 @@ const artenvielfaltCells = [
   ],
 ];
 
-const Artenvielfalt = () => {
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  res,
+  query,
+}) => {
+  const group = query.gruppe as string;
+  const school = query.schule as string;
+
+  const devices = await fetch(
+    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,Artenvielfalt,${school}`,
+  ).then(async response => {
+    return await response.json();
+  });
+
+  let filteredDevices;
+
+  if (groups1.includes(group.toLocaleLowerCase())) {
+    filteredDevices = devices.features.filter(device =>
+      groups1.includes(device.properties.name.toLocaleLowerCase()),
+    );
+  } else if (groups2.includes(group.toLocaleLowerCase())) {
+    filteredDevices = devices.features.filter(device =>
+      groups2.includes(device.properties.name.toLocaleLowerCase()),
+    );
+  }
+
+  const featureCollection: FeatureCollection<Point> = {
+    type: 'FeatureCollection',
+    features: filteredDevices,
+  };
+
+  const orFilter = filteredDevices.map(device => {
+    console.log(device);
+
+    return {
+      deviceId: device.properties._id,
+    };
+  });
+
+  const versiegelung = await prisma.versiegelungRecord.findMany({
+    where: {
+      OR: orFilter,
+      createdAt: new Date(),
+    },
+    orderBy: {
+      group: 'asc',
+    },
+  });
+
+  const artenvielfalt = await prisma.artenvielfaltRecord.findMany({
+    where: {
+      OR: orFilter,
+      createdAt: new Date(),
+    },
+    orderBy: {
+      group: 'asc',
+    },
+  });
+
+  const dataVersiegelung = versiegelung.map(entry => entry.value);
+  const dataArtenvielfalt = artenvielfalt.map(entry => entry.simpsonIndex);
+
+  return {
+    props: {
+      devices: featureCollection,
+      versiegelung: dataVersiegelung,
+      artenvielfalt: dataArtenvielfalt,
+    },
+  };
+};
+
+type Props = {
+  devices: any;
+  versiegelung: number[];
+  artenvielfalt: number[];
+};
+
+const Artenvielfalt = ({ devices, versiegelung, artenvielfalt }: Props) => {
   const { schule, gruppe } = useExpeditionParams();
   const [tab, setTab] = useState(0);
   const [series, setSeries] = useState([]);
-
-  // console.log(series);
+  const [temperatureSeries, setTemperatureSeries] = useState({
+    name: 'Lufttemperatur',
+    data: [],
+  });
+  const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState({
+    name: 'Bodenfeuchte',
+    data: [],
+  });
 
   const colors = useTailwindColors();
 
-  // const [speciesIndex, setSpeciesIndex] = useState([
-  //   {
-  //     name: 'pflanzliche Artenvielfalt',
-  //     data: [],
-  //   },
-  // ]);
+  // Fetch openSenseMap data
+  const { data, boxes } = useOsemData2('Artenvielfalt', schule, false);
 
-  // const changedData = (data: Matrix<any>) => {
-  //   const matrix = [...data];
-  //   const speciesData = matrix.slice(2);
-  //   let numberOfOrganisms = 0;
-  //   const numberOfSpecies = speciesData
-  //     .flat()
-  //     .filter((_, i) => i % 2 === 1)
-  //     .map(value => {
-  //       // Check if value is a number
-  //       if (isNaN(parseInt(value.value))) return 0;
+  useEffect(() => {
+    const filteredDevices = data.filter(e =>
+      groups1.includes(e.box.properties.name.toLocaleLowerCase()),
+    );
 
-  //       numberOfOrganisms = numberOfOrganisms + parseInt(value.value);
-  //       return parseInt(value.value) * (parseInt(value.value) - 1);
-  //     })
-  //     .reduce((prev, curr) => prev + curr);
-  //   const simpsonIndex =
-  //     1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
-  //   console.log('Simpson Index', simpsonIndex);
+    const transformedTemperatureData = filteredDevices.map(e => {
+      const sumWithInitial = e.temperature?.reduce(
+        (a, b) => a + (parseFloat(b['value']) || 0),
+        0,
+      );
+      return (sumWithInitial / e.temperature?.length).toFixed(2);
+    });
 
-  //   setSpeciesIndex([
-  //     {
-  //       name: 'pflanzliche Artenvielfalt',
-  //       data: [simpsonIndex, ...generateRandomData(1, 4)],
-  //     },
-  //   ]);
-  // };
+    const transformedBodenfeuchteData = filteredDevices.map(e => {
+      const sumWithInitial = e.bodenfeuchte?.reduce(
+        (a, b) => a + (parseFloat(b['value']) || 0),
+        0,
+      );
+      return (sumWithInitial / e.bodenfeuchte?.length).toFixed(2);
+    });
+
+    setTemperatureSeries({
+      name: 'Lufttemperatur',
+      data: transformedTemperatureData,
+    });
+
+    setBodenfeuchteSeries({
+      name: 'Bodenfeuchte',
+      data: transformedBodenfeuchteData,
+    });
+  }, [data]);
 
   const tabs: Tab[] = [
-    // {
-    //   title: 'Artenvielfalt',
-    //   component: (
-    //     <InputSheet
-    //       cells={artenvielfaltCells}
-    //       hideAddButton={false}
-    //       onChange={changedData}
-    //     />
-    //   ),
-    // },
     {
       id: 'Lufttemperatur',
       title: 'Lufttemperatur',
@@ -160,7 +206,7 @@ const Artenvielfalt = () => {
           series={[
             {
               name: 'Lufttemperatur in °C',
-              data: generateData(50, 20),
+              data: temperatureSeries.data,
             },
           ]}
         />
@@ -176,7 +222,7 @@ const Artenvielfalt = () => {
           series={[
             {
               name: 'Bodenfeuchte in %',
-              data: generateData(100, 20),
+              data: bodenfeuchteSeries.data,
             },
           ]}
         />
@@ -219,7 +265,13 @@ const Artenvielfalt = () => {
     setTab(tab);
     switch (tab) {
       case 0:
-        setSeries([temperatureData, artenvielfaltData]);
+        setSeries([
+          temperatureSeries,
+          {
+            name: 'pflanzliche Artenvielfalt',
+            data: artenvielfalt,
+          },
+        ]);
         setYaxis([
           {
             seriesName: 'Lufttemperatur',
@@ -259,7 +311,13 @@ const Artenvielfalt = () => {
         ]);
         break;
       case 1:
-        setSeries([bodenfeuchteData, artenvielfaltData]);
+        setSeries([
+          bodenfeuchteSeries,
+          {
+            name: 'pflanzliche Artenvielfalt',
+            data: artenvielfalt,
+          },
+        ]);
         setYaxis([
           {
             seriesName: 'Bodenfeuchte',
@@ -299,7 +357,16 @@ const Artenvielfalt = () => {
         ]);
         break;
       case 2:
-        setSeries([versiegelungData, artenvielfaltData]);
+        setSeries([
+          {
+            name: 'Undurchlässigkeit',
+            data: versiegelung,
+          },
+          {
+            name: 'pflanzliche Artenvielfalt',
+            data: artenvielfalt,
+          },
+        ]);
         setYaxis([
           {
             seriesName: 'Undurchlässigkeit',
