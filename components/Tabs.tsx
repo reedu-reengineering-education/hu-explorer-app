@@ -4,7 +4,7 @@ import { Button } from './Elements/Button';
 export type Tab = {
   id: string;
   title: string;
-  component: JSX.Element;
+  component?: JSX.Element;
   hypothesis?: string;
 };
 

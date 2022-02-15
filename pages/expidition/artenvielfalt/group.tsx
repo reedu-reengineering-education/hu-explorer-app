@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
-import { useOsemData } from '@/hooks/useOsemData';
-import InputSheet from '@/components/Artenvielfalt/InputSheet';
-import OsemSheet from '@/components/Artenvielfalt/OsemSheet';
 import Map from '@/components/Map';
 import Tabs, { Tab } from '@/components/Tabs';
 import BarChart from '@/components/BarChart';
@@ -12,37 +9,7 @@ import { GetServerSideProps } from 'next';
 import { FeatureCollection, Point } from 'geojson';
 import prisma from '@/lib/prisma';
 import { useOsemData2 } from '@/hooks/useOsemData2';
-
-const groups1 = [
-  'sensebox1',
-  'sensebox2',
-  'sensebox3',
-  'sensebox4',
-  'sensebox5',
-];
-
-const groups2 = [
-  'sensebox6',
-  'sensebox7',
-  'sensebox8',
-  'sensebox9',
-  'sensebox10',
-];
-
-const versiegelungCells = [
-  [
-    { value: 'Versiegelung', readOnly: true, className: 'font-bold text-md' },
-    { value: '' },
-  ],
-  [
-    {
-      value: 'Versiegelungsgrad in %',
-      readOnly: true,
-    },
-    { value: 0 },
-  ],
-  [{ value: '', readOnly: true }],
-];
+import { getGroups } from '@/lib/groups';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -52,6 +19,8 @@ export const getServerSideProps: GetServerSideProps = async ({
   const group = query.gruppe as string;
   const school = query.schule as string;
 
+  const groups = getGroups(group);
+
   const devices = await fetch(
     `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,Artenvielfalt,${school}`,
   ).then(async response => {
@@ -60,13 +29,9 @@ export const getServerSideProps: GetServerSideProps = async ({
 
   let filteredDevices;
 
-  if (groups1.includes(group.toLocaleLowerCase())) {
+  if (groups.includes(group.toLocaleLowerCase())) {
     filteredDevices = devices.features.filter(device =>
-      groups1.includes(device.properties.name.toLocaleLowerCase()),
-    );
-  } else if (groups2.includes(group.toLocaleLowerCase())) {
-    filteredDevices = devices.features.filter(device =>
-      groups2.includes(device.properties.name.toLocaleLowerCase()),
+      groups.includes(device.properties.name.toLocaleLowerCase()),
     );
   }
 
@@ -76,8 +41,6 @@ export const getServerSideProps: GetServerSideProps = async ({
   };
 
   const orFilter = filteredDevices.map(device => {
-    console.log(device);
-
     return {
       deviceId: device.properties._id,
     };
@@ -108,6 +71,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 
   return {
     props: {
+      groups: groups,
       devices: featureCollection,
       versiegelung: dataVersiegelung,
       artenvielfalt: dataArtenvielfalt,
@@ -116,13 +80,14 @@ export const getServerSideProps: GetServerSideProps = async ({
 };
 
 type Props = {
+  groups: string[];
   devices: any;
   versiegelung: number[];
   artenvielfalt: number[];
 };
 
-const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
-  const { schule, gruppe } = useExpeditionParams();
+const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
+  const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
 
   const [series, setSeries] = useState([]);
@@ -135,7 +100,7 @@ const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
 
   useEffect(() => {
     const filteredDevices = data.filter(e =>
-      groups1.includes(e.box.properties.name.toLocaleLowerCase()),
+      groups.includes(e.box.properties.name.toLocaleLowerCase()),
     );
 
     const transformedTemperatureData = filteredDevices.map(e => {
@@ -173,60 +138,30 @@ const Group = ({ devices, versiegelung, artenvielfalt }: Props) => {
     {
       id: 'Lufttemperatur',
       title: 'Lufttemperatur',
-      component: (
-        <OsemSheet
-          series={[
-            {
-              name: 'Lufttemperatur in °C',
-              data: temperatureSeries,
-            },
-          ]}
-        />
-      ),
       hypothesis:
         'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Bodenfeuchte',
       title: 'Bodenfeuchte',
-      component: (
-        <OsemSheet
-          series={[
-            {
-              name: 'Bodenfeuchte in %',
-              data: bodenfeuchteSeries,
-            },
-          ]}
-        />
-      ),
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Undurchlaessigkeit',
       title: 'Undurchlässigkeit',
-      component: <InputSheet cells={versiegelungCells} />,
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Artenvielfalt',
       title: 'Artenvielfalt',
-      component: <InputSheet cells={versiegelungCells} />,
     },
   ];
 
   const [xaxis, setXaxis] = useState({
-    categories: groups1,
+    categories: groups,
   });
-
-  useEffect(() => {
-    if (groups2.includes(gruppe as string)) {
-      setXaxis({
-        categories: groups2,
-      });
-    }
-  }, [gruppe]);
 
   const [yaxis, setYaxis] = useState<ApexYAxis[]>([
     {
