@@ -41,8 +41,6 @@ export const getServerSideProps: GetServerSideProps = async ({
   };
 
   const orFilter = filteredDevices.map(device => {
-    console.log(device);
-
     return {
       deviceId: device.properties._id,
     };
@@ -96,7 +94,7 @@ const Artenvielfalt = ({
 }: Props) => {
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
-  const [series, setSeries] = useState([]);
+  const [series, setSeries] = useState<any[]>();
   const [temperatureSeries, setTemperatureSeries] = useState({
     name: 'Lufttemperatur',
     data: [],
@@ -141,7 +139,18 @@ const Artenvielfalt = ({
       name: 'Bodenfeuchte',
       data: transformedBodenfeuchteData,
     });
-  }, [data, groups]);
+
+    setSeries([
+      {
+        name: 'Lufttemperatur',
+        data: transformedTemperatureData,
+      },
+      {
+        name: 'pflanzliche Artenvielfalt',
+        data: artenvielfalt,
+      },
+    ]);
+  }, [data, groups, artenvielfalt]);
 
   const tabs: Tab[] = [
     {
@@ -215,11 +224,6 @@ const Artenvielfalt = ({
               },
             },
             opposite: true,
-            labels: {
-              formatter: function (value) {
-                return value.toFixed(2);
-              },
-            },
             axisBorder: {
               show: true,
               color: '#6bbe98',
@@ -261,11 +265,6 @@ const Artenvielfalt = ({
               },
             },
             opposite: true,
-            labels: {
-              formatter: function (value) {
-                return value.toFixed(2);
-              },
-            },
             axisBorder: {
               show: true,
               color: '#6bbe98',
@@ -310,11 +309,6 @@ const Artenvielfalt = ({
               },
             },
             opposite: true,
-            labels: {
-              formatter: function (value) {
-                return value.toFixed(2);
-              },
-            },
             axisBorder: {
               show: true,
               color: '#6bbe98',
@@ -332,21 +326,23 @@ const Artenvielfalt = ({
       <div className="flex flex-row h-full w-full overflow-hidden">
         <div className="flex flex-col w-full">
           <div className="flex-auto w-full h-[25%] max-h-[25%] mb-4">
-            <Map width="100%" height="100%" />
+            <Map width="100%" height="100%" data={devices} />
           </div>
           <div className="flex flex-col flex-wrap overflow-hidden mr-2">
             <Tabs tabs={tabs} onChange={onChange} showHypothesis={true}></Tabs>
           </div>
           <div className="flex-auto w-full mb-4">
-            <BarChart
-              series={series}
-              yaxis={yaxis}
-              xaxis={xaxis}
-              colors={[
-                colors.he[tabs[tab].id.toLowerCase()].DEFAULT,
-                colors.he.artenvielfalt.DEFAULT,
-              ]}
-            ></BarChart>
+            {series && (
+              <BarChart
+                series={series}
+                yaxis={yaxis}
+                xaxis={xaxis}
+                colors={[
+                  colors.he[tabs[tab].id.toLowerCase()].DEFAULT,
+                  colors.he.artenvielfalt.DEFAULT,
+                ]}
+              ></BarChart>
+            )}
           </div>
         </div>
       </div>

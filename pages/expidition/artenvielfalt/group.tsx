@@ -90,9 +90,9 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
 
-  const [series, setSeries] = useState([]);
-  const [temperatureSeries, setTemperatureSeries] = useState([]);
-  const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState([]);
+  const [series, setSeries] = useState<any[]>();
+  const [temperatureSeries, setTemperatureSeries] = useState<any[]>();
+  const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState<any[]>();
 
   // Fetch openSenseMap data
   const { data, boxes } = useOsemData2('Artenvielfalt', schule, false);
@@ -130,6 +130,13 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
       {
         name: 'Lufttemperatur',
         data: transformedBodenfeuchteData,
+      },
+    ]);
+
+    setSeries([
+      {
+        name: 'Lufttemperatur',
+        data: transformedTemperatureData,
       },
     ]);
   }, [data, groups]);
@@ -250,12 +257,14 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             <Tabs tabs={tabs} onChange={onChange}></Tabs>
           </div>
           <div className="flex-auto w-full mb-4 pt-10">
-            <BarChart
-              series={series}
-              yaxis={yaxis}
-              xaxis={xaxis}
-              colors={[colors.he[tabs[tab].id.toLowerCase()].DEFAULT]}
-            ></BarChart>
+            {series && (
+              <BarChart
+                series={series}
+                yaxis={yaxis}
+                xaxis={xaxis}
+                colors={[colors.he[tabs[tab].id.toLowerCase()].DEFAULT]}
+              ></BarChart>
+            )}
           </div>
         </div>
       </div>
