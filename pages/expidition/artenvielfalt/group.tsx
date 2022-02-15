@@ -132,7 +132,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
         data: transformedBodenfeuchteData,
       },
     ]);
-  }, [data]);
+  }, [data, groups]);
 
   const tabs: Tab[] = [
     {
