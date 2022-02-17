@@ -96,7 +96,7 @@ const Schall = () => {
             {data?.map((e, i) => (
               <Tile
                 key={i}
-                title={e.box.properties.name.split('HU Explorer Schall')[1]}
+                title={e.box.properties.name}
                 min={Math.min(...e.measurements.map(m => Number(m.value)))}
                 max={Math.max(...e.measurements.map(m => Number(m.value)))}
                 color={schallColors[i]}
