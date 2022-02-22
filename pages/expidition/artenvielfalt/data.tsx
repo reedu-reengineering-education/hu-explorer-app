@@ -18,15 +18,21 @@ import {
   CellChange,
   TextCell,
   NumberCell,
+  DefaultCellTypes,
 } from '@silevis/reactgrid';
 import '@silevis/reactgrid/styles.css';
 import { Button } from '@/components/Elements/Button';
-import { useRouter } from 'next/dist/client/router';
+import { Router, useRouter } from 'next/dist/client/router';
+import {
+  ButtonCell,
+  ButtonCellTemplate,
+} from '@/components/ButtonCellTemplate';
 
 const getColumns = (): Column[] => [
   { columnId: 'rowId', width: 150 },
   { columnId: 'art', width: 150 },
   { columnId: 'count', width: 150 },
+  { columnId: 'actions', width: 150 },
 ];
 
 const headerRow: Row = {
@@ -35,17 +41,19 @@ const headerRow: Row = {
     { type: 'header', text: '' },
     { type: 'header', text: 'Art' },
     { type: 'header', text: 'Häufigkeit' },
+    { type: 'header', text: 'Aktionen' },
   ],
 };
 
-const getRows = (arten: ArtRecord[]): Row[] => [
+const getRows = (arten: ArtRecord[]): Row<DefaultCellTypes | ButtonCell>[] => [
   headerRow,
-  ...arten.map<Row>((art, idx) => ({
+  ...arten.map<Row<DefaultCellTypes | ButtonCell>>((art, idx) => ({
     rowId: art.id,
     cells: [
       { type: 'text', text: `${idx + 1}`, nonEditable: true },
       { type: 'text', text: art.art },
       { type: 'number', value: art.count },
+      { type: 'button', text: 'Aktionen', action: 'DELETE' },
     ],
   })),
 ];
@@ -122,10 +130,10 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   const { schule, gruppe, daten } = useExpeditionParams();
   const router = useRouter();
 
-  console.log(artenvielfalt);
-  console.log(arten);
-  console.log(versiegelung);
-  console.log(device);
+  // console.log(artenvielfalt);
+  // console.log(arten);
+  // console.log(versiegelung);
+  // console.log(device);
 
   const [versiegelungsCells, setVersiegelungsCells] = useState([
     [
@@ -207,7 +215,7 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   const columns = getColumns();
 
   const applyChangesToArten = (
-    changes: CellChange[],
+    changes: CellChange<DefaultCellTypes | ButtonCell>[],
     prevArten: ArtRecord[],
   ): ArtRecord[] => {
     changes.forEach((change: CellChange<NumberCell>) => {
@@ -221,9 +229,23 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
     return [...prevArten];
   };
 
-  const handleChanges = async (changes: CellChange[]) => {
-    // console.log("CHANGES: ", changes);
+  const removeChangeFromArten = (
+    changes: CellChange<DefaultCellTypes | ButtonCell>[],
+    prevArten: ArtRecord[],
+  ): ArtRecord[] => {
+    changes.forEach((change: CellChange<NumberCell | ButtonCell>) => {
+      const personIndex = change.rowId;
 
+      const prevArt = prevArten.filter(art => art.id !== personIndex);
+      prevArten = [...prevArt];
+    });
+    return [...prevArten];
+  };
+
+  const handleChanges = async (
+    changes: CellChange<DefaultCellTypes | ButtonCell>[],
+  ) => {
+    let method = 'PUT';
     const payload = {
       id: changes[0].rowId,
       artenvielfaltId: artenvielfalt.id,
@@ -240,8 +262,14 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
       applyChangesToArten(changes, arten);
     }
 
+    if (changes[0].type === 'button') {
+      const change: CellChange<ButtonCell> = changes[0];
+      arten = removeChangeFromArten(changes, arten);
+      method = 'DELETE';
+    }
+
     await fetch('/api/art', {
-      method: 'PUT',
+      method: method,
       body: JSON.stringify(payload),
     });
 
@@ -286,6 +314,7 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
               rows={rows}
               columns={columns}
               onCellsChanged={handleChanges}
+              customCellTemplates={{ button: new ButtonCellTemplate() }}
             />
             <Button onClick={addRow}>Art hinzufügen</Button>
           </div>

@@ -66,8 +66,31 @@ export const getServerSideProps: GetServerSideProps = async ({
     },
   });
 
-  const dataVersiegelung = versiegelung.map(entry => entry.value);
-  const dataArtenvielfalt = artenvielfalt.map(entry => entry.simpsonIndex);
+  // const dataVersiegelung = versiegelung.map(entry => entry.value);
+  // const dataArtenvielfalt = artenvielfalt.map(entry => entry.simpsonIndex);
+  const dataArtenvielfalt = filteredDevices.map(device => {
+    const vers = artenvielfalt.filter(
+      entry =>
+        entry.group.toLowerCase() === device.properties.name.toLowerCase(),
+    );
+    if (vers.length > 0) {
+      return vers[0].simpsonIndex;
+    }
+
+    return 0;
+  });
+
+  const dataVersiegelung = filteredDevices.map(device => {
+    const vers = versiegelung.filter(
+      entry =>
+        entry.group.toLowerCase() === device.properties.name.toLowerCase(),
+    );
+    if (vers.length > 0) {
+      return vers[0].value;
+    }
+
+    return 0;
+  });
 
   return {
     props: {

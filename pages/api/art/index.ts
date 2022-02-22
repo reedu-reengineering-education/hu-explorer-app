@@ -22,6 +22,22 @@ export default async function handler(
   } else if (req.method === 'GET') {
     const results = await prisma.artRecord.findMany({});
     res.status(201).json(results);
+  } else if (req.method === 'DELETE') {
+    const body = JSON.parse(req.body);
+
+    try {
+      const result = await prisma.artRecord.delete({
+        where: {
+          id: body.id,
+        },
+      });
+      res.status(201).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        error,
+      });
+    }
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);
 
