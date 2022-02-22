@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
-import InputSheet from '@/components/Artenvielfalt/InputSheet';
 import { GetServerSideProps } from 'next';
 import prisma from '@/lib/prisma';
 import {
@@ -19,10 +18,11 @@ import {
   TextCell,
   NumberCell,
   DefaultCellTypes,
+  Cell,
 } from '@silevis/reactgrid';
 import '@silevis/reactgrid/styles.css';
 import { Button } from '@/components/Elements/Button';
-import { Router, useRouter } from 'next/dist/client/router';
+import { useRouter } from 'next/dist/client/router';
 import {
   ButtonCell,
   ButtonCellTemplate,
@@ -35,6 +35,11 @@ const getColumns = (): Column[] => [
   { columnId: 'actions', width: 150 },
 ];
 
+const getColumnsVersieglung = (): Column[] => [
+  { columnId: 'rowId', width: 150 },
+  { columnId: 'count', width: 180 },
+];
+
 const headerRow: Row = {
   rowId: 'header',
   cells: [
@@ -42,6 +47,14 @@ const headerRow: Row = {
     { type: 'header', text: 'Art' },
     { type: 'header', text: 'Häufigkeit' },
     { type: 'header', text: 'Aktionen' },
+  ],
+};
+
+const headerRowVersieglung: Row = {
+  rowId: 'header',
+  cells: [
+    { type: 'header', text: '' },
+    { type: 'header', text: 'Undurchlässigkeit in %' },
   ],
 };
 
@@ -53,15 +66,23 @@ const getRows = (arten: ArtRecord[]): Row<DefaultCellTypes | ButtonCell>[] => [
       { type: 'text', text: `${idx + 1}`, nonEditable: true },
       { type: 'text', text: art.art },
       { type: 'number', value: art.count },
-      { type: 'button', text: 'Aktionen', action: 'DELETE' },
+      { type: 'button', text: 'Löschen', action: 'DELETE' },
     ],
   })),
 ];
 
-enum ExpeditionsArten {
-  versiegelung = 'versiegelung',
-  artenvielfalt = 'artenvielfalt',
-}
+const getRowsVersieglung = (
+  versieglung: VersiegelungRecord[],
+): Row<DefaultCellTypes | ButtonCell>[] => [
+  headerRowVersieglung,
+  ...versieglung.map<Row<DefaultCellTypes | ButtonCell>>((art, idx) => ({
+    rowId: art.id,
+    cells: [
+      { type: 'text', text: `${idx + 1}`, nonEditable: true },
+      { type: 'number', value: art.value },
+    ],
+  })),
+];
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -185,34 +206,10 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
     return +simpsonIndex.toFixed(2);
   };
 
-  const updateEntry = async (value, type, body) => {
-    console.log(value, type);
-
-    // TODO: build body
-    try {
-      await fetch(`/api/${type}`, {
-        method: 'POST',
-        body: body,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const cellCommit = (prevCell, nextCell, coords) => {
-    console.log(prevCell, nextCell, coords);
-    if (daten === ExpeditionsArten.versiegelung) {
-      const payload = JSON.stringify({
-        value: nextCell.value,
-        group: gruppe,
-        deviceId: device[0]._id,
-      });
-      updateEntry(nextCell, ExpeditionsArten.versiegelung, payload);
-    }
-  };
-
   let rows = getRows(arten);
+  let rowsVersiegelung = getRowsVersieglung(versiegelung);
   const columns = getColumns();
+  const columnsVersieglung = getColumnsVersieglung();
 
   const applyChangesToArten = (
     changes: CellChange<DefaultCellTypes | ButtonCell>[],
@@ -240,6 +237,29 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
       prevArten = [...prevArt];
     });
     return [...prevArten];
+  };
+
+  const handleChangeVersieglung = async (changes: CellChange<NumberCell>[]) => {
+    const payload = {
+      group: gruppe,
+      deviceId: device[0]._id,
+    };
+
+    if (changes[0].type === 'number') {
+      const change: CellChange<NumberCell> = changes[0];
+      payload['value'] = change.newCell.value;
+    }
+
+    try {
+      await fetch(`/api/versiegelung`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      console.log(error);
+    }
+
+    refreshData();
   };
 
   const handleChanges = async (
@@ -304,7 +324,15 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   };
 
   if (daten === 'versiegelung') {
-    return <InputSheet cells={versiegelungsCells} onCellCommit={cellCommit} />;
+    return (
+      <>
+        <ReactGrid
+          rows={rowsVersiegelung}
+          columns={columnsVersieglung}
+          onCellsChanged={handleChangeVersieglung}
+        />
+      </>
+    );
   } else if (daten === 'artenvielfalt') {
     return (
       <>

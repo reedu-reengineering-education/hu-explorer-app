@@ -53,7 +53,7 @@ export class ButtonCellTemplate implements CellTemplate<ButtonCell> {
             )
           }
         >
-          Löschen
+          {cell.text}
         </button>
       </div>
     );
