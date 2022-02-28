@@ -97,8 +97,16 @@ const Schall = () => {
               <Tile
                 key={i}
                 title={e.box.properties.name}
-                min={Math.min(...e.measurements.map(m => Number(m.value)))}
-                max={Math.max(...e.measurements.map(m => Number(m.value)))}
+                min={
+                  e.measurements.length > 0
+                    ? Math.min(...e.measurements.map(m => Number(m.value)))
+                    : undefined
+                }
+                max={
+                  e.measurements.length > 0
+                    ? Math.max(...e.measurements.map(m => Number(m.value)))
+                    : undefined
+                }
                 color={schallColors[i]}
               ></Tile>
             ))}

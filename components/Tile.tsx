@@ -10,11 +10,11 @@ export interface TileProps {
 const Tile = ({ title, min, max, color }: TileProps) => {
   return (
     <div
-      className={`rounded-lg ${
+      className={`rounded-xl ${
         color.bg ?? 'bg-blue-600'
       } text-white shadow-lg ${
         color.shadow ?? 'shadow-blue-100'
-      } text-center aspect-square w-32 h-32 xl:w-48 xl:h-48 m-2`}
+      } text-center aspect-square w-36 h-36 m-2`}
     >
       <div className="p-4 flex flex-col justify-between h-full">
         <span className="font-semibold text-xl">{title}</span>
