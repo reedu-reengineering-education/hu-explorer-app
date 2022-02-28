@@ -4,8 +4,8 @@ import { Button } from './Elements/Button';
 
 const Navbar = () => {
   return (
-    <nav className="w-full bg-white rounded-3xl shadow p-4 flex">
-      <h1 className="text-2xl font-bold py-2 px-4">HU Explorers</h1>
+    <nav className="flex w-full rounded-3xl bg-white p-4 shadow">
+      <h1 className="py-2 px-4 text-2xl font-bold">HU Explorers</h1>
       <Link href="/" passHref>
         <Button>Karte</Button>
       </Link>

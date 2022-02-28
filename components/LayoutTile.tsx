@@ -1,5 +1,5 @@
 const LayoutTile = ({ children }: { children: JSX.Element }) => (
-  <div className="flex-auto max-w-[50%] min-w-[50%] max-h-[50%] min-h-[50%] p-4 mb-4">
+  <div className="mb-4 max-h-[50%] min-h-[50%] min-w-[50%] max-w-[50%] flex-auto p-4">
     {children}
   </div>
 );

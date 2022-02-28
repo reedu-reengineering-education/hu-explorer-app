@@ -346,15 +346,15 @@ const Artenvielfalt = ({
 
   return (
     <>
-      <div className="flex flex-row h-full w-full overflow-hidden">
-        <div className="flex flex-col w-full">
-          <div className="flex-auto w-full h-[25%] max-h-[25%] mb-4">
+      <div className="flex h-full w-full flex-row overflow-hidden">
+        <div className="flex w-full flex-col">
+          <div className="mb-4 h-[25%] max-h-[25%] w-full flex-auto">
             <Map width="100%" height="100%" data={devices} />
           </div>
-          <div className="flex flex-col flex-wrap overflow-hidden mr-2">
+          <div className="mr-2 flex flex-col flex-wrap overflow-hidden">
             <Tabs tabs={tabs} onChange={onChange} showHypothesis={true}></Tabs>
           </div>
-          <div className="flex-auto w-full mb-4">
+          <div className="mb-4 w-full flex-auto">
             {series && (
               <BarChart
                 series={series}

@@ -69,20 +69,20 @@ const Schall = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       <div className="p-4">
         <div className="flex justify-between">
           <h1 className="text-4xl">Schall</h1>
           <>
             {!live && (
               <PlayIcon
-                className="h-8 w-8 hover:scale-110 transition cursor-pointer"
+                className="h-8 w-8 cursor-pointer transition hover:scale-110"
                 onClick={() => setLive(!live)}
               />
             )}
             {live && (
               <PauseIcon
-                className="h-8 w-8 hover:scale-110 transition cursor-pointer"
+                className="h-8 w-8 cursor-pointer transition hover:scale-110"
                 onClick={() => setLive(!live)}
               />
             )}
@@ -90,9 +90,9 @@ const Schall = () => {
         </div>
         <div className="font-semibold text-gray-500">Schule: {schule}</div>
       </div>
-      <div className="flex flex-wrap h-full w-full">
+      <div className="flex h-full w-full flex-wrap">
         <LayoutTile>
-          <div className="flex flex-row flex-wrap justify-evenly items-center h-full">
+          <div className="flex h-full flex-row flex-wrap items-center justify-evenly">
             {data?.map((e, i) => (
               <Tile
                 key={i}
@@ -113,12 +113,12 @@ const Schall = () => {
           </div>
         </LayoutTile>
         <LayoutTile>
-          <div className="rounded-xl overflow-hidden shadow w-full h-full min-h-[300px]">
+          <div className="h-full min-h-[300px] w-full overflow-hidden rounded-xl shadow">
             <Map width="100%" height="100%" data={boxes} />
           </div>
         </LayoutTile>
         <LayoutTile>
-          <div className="w-full h-full">
+          <div className="h-full w-full">
             <BarChart
               series={barSeries}
               yaxis={{
@@ -142,7 +142,7 @@ const Schall = () => {
           </div>
         </LayoutTile>
         <LayoutTile>
-          <div className="w-full h-full">
+          <div className="h-full w-full">
             <LineChart
               series={series}
               yaxis={yaxis}

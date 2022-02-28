@@ -50,7 +50,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         type={type}
-        className={`flex justify-center items-center py-2 px-4 m-1 transition ease-in duration-100 shadow-md disabled:opacity-70 disabled:cursor-not-allowed  focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg ${variants[variant]} ${sizes[size]} ${className}`}
+        className={`m-1 flex items-center justify-center rounded-lg py-2 px-4 shadow-md transition duration-100 ease-in focus:outline-none  focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 ${variants[variant]} ${sizes[size]} ${className}`}
         {...props}
       >
         {isLoading && (

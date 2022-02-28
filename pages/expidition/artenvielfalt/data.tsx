@@ -346,10 +346,10 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
             />
             <Button onClick={addRow}>Art hinzufügen</Button>
           </div>
-          <div className="flex flex-col-reverse m-3 pl-4">
-            <div className="rounded-lg text-white shadow-lg bg-he-blue-light shadow-he-blue-light text-center aspect-square w-32 h-32 xl:w-48 xl:h-48 m-2">
-              <div className="p-4 flex flex-col justify-between h-full">
-                <span className="font-semibold text-xl">
+          <div className="m-3 flex flex-col-reverse pl-4">
+            <div className="m-2 aspect-square h-32 w-32 rounded-lg bg-he-blue-light text-center text-white shadow-lg shadow-he-blue-light xl:h-48 xl:w-48">
+              <div className="flex h-full flex-col justify-between p-4">
+                <span className="text-xl font-semibold">
                   Artenvielfalts-Index
                 </span>
                 <hr></hr>
@@ -373,8 +373,8 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
 
   return (
     <>
-      <div className="flex flex-row h-full w-full overflow-hidden">
-        <div className="flex flex-row flex-wrap max-w-[40%] overflow-hidden mr-2">
+      <div className="flex h-full w-full flex-row overflow-hidden">
+        <div className="mr-2 flex max-w-[40%] flex-row flex-wrap overflow-hidden">
           Nothing found!
         </div>
       </div>

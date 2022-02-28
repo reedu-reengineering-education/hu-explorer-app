@@ -47,10 +47,10 @@ const Tabs = ({ tabs, onChange, showHypothesis }: TabProps) => {
         ))}
       </div>
       {showHypothesis && (
-        <div className="flex flex-row w-full min-h-[75%] max-h-[75%] overflow-hidden">
+        <div className="flex max-h-[75%] min-h-[75%] w-full flex-row overflow-hidden">
           <div className="w-full">
             {tabs[tab].hypothesis && (
-              <h2 className="text-center my-4 font-semibold text-gray-800">
+              <h2 className="my-4 text-center font-semibold text-gray-800">
                 &quot;{tabs[tab].hypothesis}&quot;
               </h2>
             )}
