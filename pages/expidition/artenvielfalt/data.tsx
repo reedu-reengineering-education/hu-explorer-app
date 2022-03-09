@@ -72,16 +72,23 @@ const getRows = (arten: ArtRecord[]): Row<DefaultCellTypes | ButtonCell>[] => [
 ];
 
 const getRowsVersieglung = (
-  versieglung: VersiegelungRecord[],
+  versieglung: VersiegelungRecord,
 ): Row<DefaultCellTypes | ButtonCell>[] => [
   headerRowVersieglung,
-  ...versieglung.map<Row<DefaultCellTypes | ButtonCell>>((art, idx) => ({
-    rowId: art.id,
+  {
+    rowId: versieglung.id,
     cells: [
-      { type: 'text', text: `${idx + 1}`, nonEditable: true },
-      { type: 'number', value: art.value },
+      { type: 'text', text: '1', nonEditable: true },
+      { type: 'number', value: versieglung.value },
     ],
-  })),
+  },
+  // ...versieglung.map<Row<DefaultCellTypes | ButtonCell>>((art, idx) => ({
+  //   rowId: art.id,
+  //   cells: [
+  //     { type: 'text', text: `${idx + 1}`, nonEditable: true },
+  //     { type: 'number', value: art.value },
+  //   ],
+  // })),
 ];
 
 export const getServerSideProps: GetServerSideProps = async ({
@@ -119,10 +126,21 @@ export const getServerSideProps: GetServerSideProps = async ({
     },
   });
 
-  const versiegelung = await prisma.versiegelungRecord.findMany({
+  // Find versiegelungs record
+  // If not existing, create record
+  const versiegelung = await prisma.versiegelungRecord.upsert({
     where: {
+      deviceId_group_createdAt: {
+        deviceId: device[0]._id,
+        group: group,
+        createdAt: today,
+      },
+    },
+    update: {},
+    create: {
       deviceId: device[0]._id,
-      createdAt: today,
+      group: group,
+      value: 0,
     },
   });
 
@@ -143,7 +161,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 type Props = {
   artenvielfalt: ArtenvielfaltRecord;
   arten: ArtRecord[];
-  versiegelung: VersiegelungRecord[];
+  versiegelung: VersiegelungRecord;
   device: any;
 };
 
@@ -155,26 +173,6 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   // console.log(arten);
   // console.log(versiegelung);
   // console.log(device);
-
-  const [versiegelungsCells, setVersiegelungsCells] = useState([
-    [
-      {
-        value: 'Undurchlässigkeit',
-        readOnly: true,
-        className: 'font-bold text-md',
-      },
-      { value: '', readOnly: true },
-    ],
-    [
-      {
-        value: 'Undurchlässigkeit in %',
-        readOnly: true,
-      },
-      ...versiegelung?.map(entry => ({
-        value: entry.value,
-      })),
-    ],
-  ]);
 
   // Call this function whenever you want to
   // refresh props!

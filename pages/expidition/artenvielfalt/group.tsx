@@ -119,6 +119,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState<any[]>();
 
   console.log(versiegelung);
+  console.log(devices);
 
   // Fetch openSenseMap data
   const { data, boxes } = useOsemData2('Artenvielfalt', schule, false);
@@ -128,6 +129,8 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     const filteredDevices = data.filter(e =>
       groups.includes(e.box.properties.name.toLocaleLowerCase()),
     );
+    console.log('useEffect');
+    console.log(filteredDevices);
 
     const transformedTemperatureData = filteredDevices.map(e => {
       const sumWithInitial = e.temperature?.reduce(
