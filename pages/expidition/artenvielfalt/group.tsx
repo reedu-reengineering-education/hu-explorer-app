@@ -297,7 +297,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     }
   };
 
-  const switchChart = e => {
+  const switchChart = () => {
     setBarChart(!barChart);
   };
 
@@ -311,20 +311,22 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
           <div className="mr-2 flex flex-col flex-wrap overflow-hidden">
             <Tabs tabs={tabs} onChange={onChange}></Tabs>
           </div>
-          <div>
-            <button onClick={switchChart}>Line chart</button>
-          </div>
           <div className="mb-4 w-full flex-auto pt-10">
+            {lineSeries && !barChart && (
+              <LineChart
+                series={lineSeries}
+                yaxis={yaxis}
+                switchChart={switchChart}
+              />
+            )}
             {series && barChart && (
               <BarChart
                 series={series}
                 yaxis={yaxis}
                 xaxis={xaxis}
                 colors={[colors.he[tabs[tab].id.toLowerCase()].DEFAULT]}
+                switchChart={switchChart}
               ></BarChart>
-            )}
-            {lineSeries && !barChart && (
-              <LineChart series={lineSeries} yaxis={yaxis} />
             )}
           </div>
         </div>
