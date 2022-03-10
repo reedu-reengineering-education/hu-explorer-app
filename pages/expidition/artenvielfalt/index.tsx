@@ -228,12 +228,12 @@ const Artenvielfalt = ({
             title: {
               text: 'Lufttemperatur in °C',
               style: {
-                color: '#56bfc6',
+                color: colors.he.lufttemperatur.DEFAULT,
               },
             },
             axisBorder: {
               show: true,
-              color: '#56bfc6',
+              color: colors.he.lufttemperatur.DEFAULT,
             },
           },
           {
@@ -243,13 +243,13 @@ const Artenvielfalt = ({
             title: {
               text: 'Artenvielfaltsindex',
               style: {
-                color: '#6bbe98',
+                color: colors.he.artenvielfalt.DEFAULT,
               },
             },
             opposite: true,
             axisBorder: {
               show: true,
-              color: '#6bbe98',
+              color: colors.he.artenvielfalt.DEFAULT,
             },
           },
         ]);
@@ -269,7 +269,7 @@ const Artenvielfalt = ({
             title: {
               text: 'Bodenfeuchte in %',
               style: {
-                color: '#7d8bc5',
+                color: colors.he.bodenfeuchte.DEFAULT,
               },
             },
             axisBorder: {
@@ -284,13 +284,13 @@ const Artenvielfalt = ({
             title: {
               text: 'Artenvielfaltsindex',
               style: {
-                color: '#6bbe98',
+                color: colors.he.artenvielfalt.DEFAULT,
               },
             },
             opposite: true,
             axisBorder: {
               show: true,
-              color: '#6bbe98',
+              color: colors.he.artenvielfalt.DEFAULT,
             },
           },
         ]);
@@ -313,12 +313,12 @@ const Artenvielfalt = ({
             title: {
               text: 'Undurchlässigkeit in %',
               style: {
-                color: '#004c90',
+                color: colors.he.undurchlaessigkeit.DEFAULT,
               },
             },
             axisBorder: {
               show: true,
-              color: '#004c90',
+              color: colors.he.undurchlaessigkeit.DEFAULT,
             },
           },
           {
@@ -328,13 +328,13 @@ const Artenvielfalt = ({
             title: {
               text: 'Artenvielfaltsindex',
               style: {
-                color: '#6bbe98',
+                color: colors.he.artenvielfalt.DEFAULT,
               },
             },
             opposite: true,
             axisBorder: {
               show: true,
-              color: '#6bbe98',
+              color: colors.he.artenvielfalt.DEFAULT,
             },
           },
         ]);

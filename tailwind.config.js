@@ -9,7 +9,7 @@ module.exports = {
         he: {
           blue: {
             light: '#5394d0',
-            DEFAULT: '#004c90',
+            DEFAULT: '#5394d0',
           },
           green: {
             light: '#bad580',
@@ -22,7 +22,7 @@ module.exports = {
             DEFAULT: '#7d8bc5',
           },
           violet: {
-            DEFAULT: '#9d78b4',
+            DEFAULT: '#9b78b4',
           },
           magenta: {
             DEFAULT: '#e175ac',
@@ -34,21 +34,21 @@ module.exports = {
             DEFAULT: '#f6a03e',
           },
           yellow: {
-            DEFAULT: '#fbbd35',
+            DEFAULT: '#f6a03e',
           },
           lufttemperatur: {
-            DEFAULT: '#56bfc6',
+            DEFAULT: '#5394d0',
           },
           bodenfeuchte: {
-            DEFAULT: '#7d8bc5',
+            DEFAULT: '#f6a03e',
           },
           undurchlaessigkeit: {
             light: '#5394d0',
-            DEFAULT: '#004c90',
+            DEFAULT: '#6bbe98',
           },
           artenvielfalt: {
             light: '#bad580',
-            DEFAULT: '#6bbe98',
+            DEFAULT: '#ec656b',
           },
         },
       },

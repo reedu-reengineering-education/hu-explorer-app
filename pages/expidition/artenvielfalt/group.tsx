@@ -56,7 +56,6 @@ export const getServerSideProps: GetServerSideProps = async ({
       group: 'asc',
     },
   });
-  console.log(versiegelung);
 
   const artenvielfalt = await prisma.artenvielfaltRecord.findMany({
     where: {
@@ -124,18 +123,14 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const [temperatureSeries, setTemperatureSeries] = useState<any[]>();
   const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState<any[]>();
 
-  console.log(devices);
-
   // Fetch openSenseMap data
-  const { data, boxes } = useOsemData2('Artenvielfalt', schule, false);
+  const { data, boxes } = useOsemData2('Artenvielfalt', schule, true);
   const colors = useTailwindColors();
 
   useEffect(() => {
     const filteredDevices = data.filter(e =>
       groups.includes(e.box.properties.name.toLocaleLowerCase()),
     );
-    console.log('USE EFFECT');
-    console.log(data);
 
     const transformedTemperatureData = filteredDevices.map(e => {
       const sumWithInitial = e.temperature?.reduce(
@@ -153,7 +148,15 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
       return (sumWithInitial / e.bodenfeuchte?.length).toFixed(2);
     });
 
-    setLineSeries(filteredDevices.map(e => console.log(e)));
+    const tempSeries = filteredDevices.map(e => ({
+      name: e.box.properties.name,
+      data: e.temperature.map(m => ({
+        y: Number(m.value),
+        x: new Date(m.createdAt),
+      })),
+    }));
+    setLineSeriesTemperature(tempSeries);
+    setLineSeries(tempSeries);
 
     setLineSeriesBodenfeuchte(
       filteredDevices.map(e => ({
@@ -185,8 +188,6 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
         data: transformedTemperatureData,
       },
     ]);
-
-    // setLineSeries(lineSeriesTemperature);
   }, [data, groups]);
 
   const tabs: Tab[] = [

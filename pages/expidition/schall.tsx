@@ -11,11 +11,11 @@ import { PauseIcon } from '@heroicons/react/outline';
 import { PlayIcon } from '@heroicons/react/solid';
 
 export const schallColors = [
-  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light/40' },
-  { bg: 'bg-he-orange', shadow: 'shadow-he-orange/40' },
-  { bg: 'bg-he-green', shadow: 'shadow-he-green/40' },
-  { bg: 'bg-he-violet', shadow: 'shadow-he-violet/40' },
-  { bg: 'bg-he-red', shadow: 'shadow-he-red/40' },
+  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
+  { bg: 'bg-he-yellow', shadow: 'shadow-he-yellow' },
+  { bg: 'bg-he-green', shadow: 'shadow-he-green' },
+  { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
+  { bg: 'bg-he-red', shadow: 'shadow-he-red' },
 ];
 
 const Schall = () => {
@@ -132,8 +132,8 @@ const Schall = () => {
                 ),
               }}
               colors={[
-                colors.he.blue.light,
-                colors.he.orange.DEFAULT,
+                colors.he.blue.DEFAULT,
+                colors.he.yellow.DEFAULT,
                 colors.he.green.DEFAULT,
                 colors.he.violet.DEFAULT,
                 colors.he.red.DEFAULT,
@@ -147,8 +147,8 @@ const Schall = () => {
               series={series}
               yaxis={yaxis}
               colors={[
-                colors.he.blue.light,
-                colors.he.orange.DEFAULT,
+                colors.he.blue.DEFAULT,
+                colors.he.yellow.DEFAULT,
                 colors.he.green.DEFAULT,
                 colors.he.violet.DEFAULT,
                 colors.he.red.DEFAULT,
