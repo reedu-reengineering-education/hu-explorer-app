@@ -10,6 +10,7 @@ import { FeatureCollection, Point } from 'geojson';
 import prisma from '@/lib/prisma';
 import { useOsemData2 } from '@/hooks/useOsemData2';
 import { getGroups } from '@/lib/groups';
+import LineChart from '@/components/LineChart';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -114,11 +115,15 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
 
+  const [barChart, setBarChart] = useState<boolean>(true);
+
+  const [lineSeries, setLineSeries] = useState([]);
+  const [lineSeriesBodenfeuchte, setLineSeriesBodenfeuchte] = useState([]);
+  const [lineSeriesTemperature, setLineSeriesTemperature] = useState([]);
   const [series, setSeries] = useState<any[]>();
   const [temperatureSeries, setTemperatureSeries] = useState<any[]>();
   const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState<any[]>();
 
-  console.log(versiegelung);
   console.log(devices);
 
   // Fetch openSenseMap data
@@ -129,8 +134,8 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     const filteredDevices = data.filter(e =>
       groups.includes(e.box.properties.name.toLocaleLowerCase()),
     );
-    console.log('useEffect');
-    console.log(filteredDevices);
+    console.log('USE EFFECT');
+    console.log(data);
 
     const transformedTemperatureData = filteredDevices.map(e => {
       const sumWithInitial = e.temperature?.reduce(
@@ -147,6 +152,18 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
       );
       return (sumWithInitial / e.bodenfeuchte?.length).toFixed(2);
     });
+
+    setLineSeries(filteredDevices.map(e => console.log(e)));
+
+    setLineSeriesBodenfeuchte(
+      filteredDevices.map(e => ({
+        name: e.box.properties.name,
+        data: e.bodenfeuchte.map(m => ({
+          y: Number(m.value),
+          x: new Date(m.createdAt),
+        })),
+      })),
+    );
 
     setTemperatureSeries([
       {
@@ -168,6 +185,8 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
         data: transformedTemperatureData,
       },
     ]);
+
+    // setLineSeries(lineSeriesTemperature);
   }, [data, groups]);
 
   const tabs: Tab[] = [
@@ -213,6 +232,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     setTab(tab);
     switch (tab) {
       case 0:
+        setLineSeries(lineSeriesTemperature);
         setSeries(temperatureSeries);
         setYaxis([
           {
@@ -225,6 +245,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
         ]);
         break;
       case 1:
+        setLineSeries(lineSeriesBodenfeuchte);
         setSeries(bodenfeuchteSeries);
         setYaxis([
           {
@@ -275,6 +296,10 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     }
   };
 
+  const switchChart = e => {
+    setBarChart(!barChart);
+  };
+
   return (
     <>
       <div className="flex h-full w-full flex-row overflow-hidden">
@@ -285,14 +310,20 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
           <div className="mr-2 flex flex-col flex-wrap overflow-hidden">
             <Tabs tabs={tabs} onChange={onChange}></Tabs>
           </div>
+          <div>
+            <button onClick={switchChart}>Line chart</button>
+          </div>
           <div className="mb-4 w-full flex-auto pt-10">
-            {series && (
+            {series && barChart && (
               <BarChart
                 series={series}
                 yaxis={yaxis}
                 xaxis={xaxis}
                 colors={[colors.he[tabs[tab].id.toLowerCase()].DEFAULT]}
               ></BarChart>
+            )}
+            {lineSeries && !barChart && (
+              <LineChart series={lineSeries} yaxis={yaxis} />
             )}
           </div>
         </div>

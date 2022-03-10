@@ -31,8 +31,8 @@ export const useOsemData2 = (
       setData(
         boxes?.features.map((box, i) => ({
           box,
-          temperature: measurements[i === 0 ? 0 : i + 1],
-          bodenfeuchte: measurements[i === 0 ? 1 : i + 2],
+          temperature: measurements[i === 0 ? 0 : i * 2],
+          bodenfeuchte: measurements[i === 0 ? 1 : i * 2 + 1],
         })),
       );
     }
