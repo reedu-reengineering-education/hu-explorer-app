@@ -6,6 +6,7 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 export interface ChartProps {
   series: SeriesProps[];
+  xaxis?: ApexXAxis;
   yaxis?: ApexYAxis | ApexYAxis[];
   colors?: ApexCharts.ApexOptions['colors'];
   customTools?: ApexChart['toolbar']['tools']['customIcons'];
@@ -13,7 +14,7 @@ export interface ChartProps {
 
 export interface SeriesProps {
   name: string;
-  data: DataPointProps[];
+  data: DataPointProps[] | number[];
 }
 
 export interface DataPointProps {
@@ -21,7 +22,13 @@ export interface DataPointProps {
   y: number;
 }
 
-const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
+const BarChart = ({
+  series,
+  xaxis,
+  yaxis,
+  colors,
+  customTools = [],
+}: ChartProps) => {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
@@ -30,22 +37,21 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
       },
       toolbar: {
         show: true,
-        export: {
-          csv: {
-            dateFormatter(timestamp) {
-              return timestamp;
-            },
-          },
-        },
         tools: {
           customIcons: customTools,
         },
       },
     },
-    xaxis: {
-      type: 'datetime',
+    plotOptions: {
+      bar: {
+        // distributed: true,
+        horizontal: false,
+        columnWidth: '55%',
+      },
     },
-    yaxis,
+    xaxis,
+    yaxis: yaxis,
+    colors: colors,
     legend: {
       position: 'bottom',
     },
@@ -53,26 +59,31 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
       enabled: false,
     },
     stroke: {
-      curve: 'smooth',
+      show: true,
+      width: 2,
+      colors: ['transparent'],
     },
-    tooltip: {
-      shared: true,
-      x: {
-        format: 'dd.MM.yyyy HH:mm:ss',
-      },
-    },
-    colors,
   });
+
+  useEffect(() => {
+    setOptions({
+      ...options,
+      xaxis,
+      yaxis: yaxis,
+      colors: colors,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colors, yaxis, xaxis]);
 
   return (
     <Chart
       options={options}
       series={series}
-      type="area"
+      type="bar"
       width={'100%'}
       height={'100%'}
     />
   );
 };
 
-export default LineChart;
+export default BarChart;

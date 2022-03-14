@@ -11,30 +11,39 @@ datasource db {
 }
 
 model Schule {
-  id                  String                @id @default(uuid())
-  name                String
-  VersiegelungRecord  VersiegelungRecord[]
-  ArtenvielfaltRecord ArtenvielfaltRecord[]
+  id   String @id @default(uuid())
+  name String
 }
 
 model VersiegelungRecord {
-  id       String @id @default(uuid())
-  area     Float
-  school   Schule @relation(fields: [schuleId], references: [id])
-  schuleId String
-}
+  id        String   @id @default(uuid())
+  value     Float
+  group     String // maps to senseBox 1..10 or Eingang, Hof, Flur,...
+  school    String? // maps to the grouptag
+  deviceId  String // maps to the senseBox Id
+  createdAt DateTime @default(now()) @map("created_at") @db.Date
+  updatedAt DateTime @default(now()) @map("updated_at")
 
-model Animal {
-  id                  String                @id @default(uuid())
-  name                String
-  ArtenvielfaltRecord ArtenvielfaltRecord[]
+  @@unique([deviceId, group, createdAt])
 }
 
 model ArtenvielfaltRecord {
-  id       String @id @default(uuid())
-  animal   Animal @relation(fields: [animalId], references: [id])
-  count    Int
-  animalId String
-  school   Schule @relation(fields: [schuleId], references: [id])
-  schuleId String
+  id           String      @id @default(uuid())
+  simpsonIndex Float       @default(0.0)
+  arten        ArtRecord[]
+  group        String
+  deviceId     String
+  school       String?
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Date
+  updatedAt    DateTime    @default(now()) @map("updated_at")
+
+  @@unique([deviceId, group, createdAt])
+}
+
+model ArtRecord {
+  id              Int                 @id @default(autoincrement())
+  art             String
+  count           Int
+  artenvielfalt   ArtenvielfaltRecord @relation(fields: [artenvielfaltId], references: [id])
+  artenvielfaltId String
 }

@@ -1,19 +1,32 @@
-import React, { createRef, useEffect, useState } from 'react';
-import ReactMapGL, { Source, Layer, LayerProps, MapRef } from 'react-map-gl';
+import React, { useEffect, useState } from 'react';
+import ReactMapGL, {
+  Source,
+  Layer,
+  LayerProps,
+  FlyToInterpolator,
+  WebMercatorViewport,
+  ViewportProps,
+} from 'react-map-gl';
 
-import 'maplibre-gl/dist/maplibre-gl.css';
-import useSWR from 'swr';
-import LabelMarker from '@/components/Map/LabelMarker';
-import { BBox, Feature, Point, Polygon } from 'geojson';
+import { BBox, Feature, FeatureCollection, Point, Polygon } from 'geojson';
 
 import geoViewport from '@mapbox/geo-viewport';
+import bbox from '@turf/bbox';
 import bboxPolygon from '@turf/bbox-polygon';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+
+import LabelMarker from '@/components/Map/LabelMarker';
+import { schallColors } from '@/pages/expidition/schall';
+
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 export interface MapProps {
   width: number | string;
   height: number | string;
   onBoxSelect?: Function;
+  data?: FeatureCollection<Point>;
+  color?: boolean;
+  expedition?: boolean;
+  zoomLevel?: number;
 }
 
 const layerStyle: LayerProps = {
@@ -27,19 +40,27 @@ const layerStyle: LayerProps = {
   },
 };
 
-const Map = ({ width, height, onBoxSelect }: MapProps) => {
-  const [mapStyle, setMapStyle] = useState(
-    'mapbox://styles/mapbox/streets-v11',
-  );
-  const [viewport, setViewport] = useState({
-    width: width,
-    height: height,
+const Map = ({
+  width,
+  height,
+  data,
+  onBoxSelect,
+  expedition = false,
+  color,
+  zoomLevel = 13,
+}: MapProps) => {
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [viewport, setViewport] = useState<ViewportProps>({
     latitude: 52.5,
     longitude: 13.5,
     zoom: 7,
+    bearing: 0,
+    pitch: 0,
+    height: 100, // just some random defaults
+    width: 100, // just some random defaults
   });
 
-  const [bbox, setBbox] = useState<Feature<Polygon>>();
+  const [bbox2, setBbox] = useState<Feature<Polygon>>();
 
   useEffect(() => {
     const bounds: BBox = geoViewport.bounds(
@@ -53,13 +74,44 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
     }
   }, [viewport]);
 
-  // fetch berlin data
-  const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
-    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor&full=true',
-  );
+  useEffect(() => {
+    if (expedition && mapLoaded && data?.features.length > 0) {
+      flyToBbox();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapLoaded, data]);
+
+  const flyToBbox = () => {
+    // calculate the bounding box of the feature
+    const [minLng, minLat, maxLng, maxLat] = bbox(data);
+    // construct a viewport instance from the current state
+    const vp = new WebMercatorViewport({
+      ...viewport,
+      width: viewport.width,
+      height: viewport.height,
+    });
+    const { longitude, latitude, zoom } = vp.fitBounds(
+      [
+        [minLng, minLat],
+        [maxLng, maxLat],
+      ],
+      {
+        padding: 20,
+      },
+    );
+
+    setViewport({
+      ...viewport,
+      longitude,
+      latitude,
+      zoom,
+      transitionDuration: 1000,
+      transitionInterpolator: new FlyToInterpolator({ speed: 1.2 }),
+    });
+  };
 
   const onMapClick = e => {
-    if (viewport.zoom > 13) {
+    if (viewport.zoom > zoomLevel) {
       return;
     }
 
@@ -81,33 +133,33 @@ const Map = ({ width, height, onBoxSelect }: MapProps) => {
   return (
     <ReactMapGL
       {...viewport}
-      mapStyle={mapStyle}
-      onViewportChange={nextViewport => setViewport(nextViewport)}
+      height={height}
+      width={width}
+      onViewportChange={setViewport}
       mapboxApiAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
-      onClick={onMapClick}
+      onLoad={() => setMapLoaded(true)}
+      mapStyle="mapbox://styles/mapbox/streets-v11"
+      onClick={!expedition && onMapClick}
     >
-      {data && viewport.zoom <= 13 && (
+      {data && viewport.zoom <= zoomLevel && (
         <Source id="osem-data" type="geojson" data={data}>
           <Layer {...layerStyle} />
         </Source>
       )}
       {data?.features &&
-        viewport.zoom > 13 &&
-        data.features
-          .filter(b => booleanPointInPolygon(b.geometry.coordinates, bbox))
-          .map((m, i) => {
-            return (
-              <LabelMarker
-                key={i}
-                name={m.properties.name}
-                lat={m.geometry.coordinates[1]}
-                lng={m.geometry.coordinates[0]}
-                onClick={() => {
-                  onBoxSelect(m);
-                }}
-              ></LabelMarker>
-            );
-          })}
+        viewport.zoom > zoomLevel &&
+        data.features.map((m, i) => (
+          <LabelMarker
+            key={i}
+            name={m.properties.name}
+            lat={m.geometry.coordinates[1]}
+            lng={m.geometry.coordinates[0]}
+            color={color && schallColors[i].bg}
+            onClick={() => {
+              onBoxSelect && onBoxSelect(m);
+            }}
+          ></LabelMarker>
+        ))}
     </ReactMapGL>
   );
 };
