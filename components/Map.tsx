@@ -6,6 +6,7 @@ import maplibregl from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl';
 import type { GeoJSONSource } from 'react-map-gl';
 import type { ViewState } from 'react-map-gl';
+import type { LngLatLike } from 'react-map-gl';
 
 import { FeatureCollection, Point } from 'geojson';
 
@@ -83,7 +84,7 @@ const Map = ({
           }
 
           mapRef.current.easeTo({
-            center: feature.geometry.coordinates,
+            center: (feature.geometry as Point).coordinates as LngLatLike,
             zoom,
             duration: 500,
           });
