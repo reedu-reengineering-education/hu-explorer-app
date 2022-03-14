@@ -114,13 +114,7 @@ const Schall = () => {
         </LayoutTile>
         <LayoutTile>
           <div className="h-full min-h-[300px] w-full overflow-hidden rounded-xl shadow">
-            <Map
-              width="100%"
-              height="100%"
-              data={boxes}
-              expedition={true}
-              color
-            />
+            <Map data={boxes} expedition={true} color />
           </div>
         </LayoutTile>
         <LayoutTile>
