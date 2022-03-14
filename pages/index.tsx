@@ -1,16 +1,15 @@
 import Map from '@/components/Map';
 import { ReactElement, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import Navbar from '@/components/Navbar';
 import useSWR from 'swr';
-import { FeatureCollection, Point } from 'geojson';
+import { Point } from 'geojson';
 
 export default function Home() {
   const [selectedBox, setSelectedBox] = useState();
 
   // fetch berlin data
   const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
-    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor&full=true',
+    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor&full=true`,
   );
 
   return (
