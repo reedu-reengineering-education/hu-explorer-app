@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // https://github.com/apexcharts/react-apexcharts/issues/240#issuecomment-765417887
 import dynamic from 'next/dynamic';
@@ -22,10 +22,15 @@ export interface DataPointProps {
 }
 
 const LineChart = ({ series, yaxis, colors, switchChart }: ChartProps) => {
+  console.log(series);
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
+      animations: {
+        enabled: false,
+      },
       toolbar: {
+        show: true,
         export: {
           csv: {
             dateFormatter(timestamp) {

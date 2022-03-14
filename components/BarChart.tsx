@@ -32,7 +32,11 @@ const BarChart = ({
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
+      animations: {
+        enabled: false,
+      },
       toolbar: {
+        show: true,
         tools: {
           customIcons: [
             {

@@ -148,23 +148,45 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
       return (sumWithInitial / e.bodenfeuchte?.length).toFixed(2);
     });
 
+    // If no data is available create default entry
+    // so that customTools are rendered
+    // https://github.com/apexcharts/apexcharts.js/issues/299
     const tempSeries = filteredDevices.map(e => ({
       name: e.box.properties.name,
-      data: e.temperature.map(m => ({
-        y: Number(m.value),
-        x: new Date(m.createdAt),
-      })),
+      data:
+        e.temperature.length > 0
+          ? e.temperature.map(m => ({
+              y: Number(m.value),
+              x: new Date(m.createdAt),
+            }))
+          : [
+              {
+                y: null,
+                x: new Date(),
+              },
+            ],
     }));
     setLineSeriesTemperature(tempSeries);
     setLineSeries(tempSeries);
 
+    // If no data is available create default entry
+    // so that customTools are rendered
+    // https://github.com/apexcharts/apexcharts.js/issues/299
     setLineSeriesBodenfeuchte(
       filteredDevices.map(e => ({
         name: e.box.properties.name,
-        data: e.bodenfeuchte.map(m => ({
-          y: Number(m.value),
-          x: new Date(m.createdAt),
-        })),
+        data:
+          e.bodenfeuchte.length > 0
+            ? e.bodenfeuchte.map(m => ({
+                y: Number(m.value),
+                x: new Date(m.createdAt),
+              }))
+            : [
+                {
+                  y: null,
+                  x: new Date(),
+                },
+              ],
       })),
     );
 
