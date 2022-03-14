@@ -9,10 +9,10 @@ const variants = {
     'bg-white text-blue-600 hover:bg-blue-600:text-white focus:ring-white focus:ring-offset-blue-100',
   danger:
     'bg-red-600 text-white hover:bg-red-50:text-red-600 focus:ring-red-500 focus:ring-offset-red-200',
-  lufttemperatur: 'bg-he-aqua text-white focus:ring-he-aqua',
-  bodenfeuchte: 'bg-he-lilac text-white focus:ring-he-lilac',
-  undurchlaessigkeit: 'bg-he-blue text-white focus:ring-he-blue-500',
-  artenvielfalt: 'bg-he-green text-white focus:ring-he-blue-500',
+  lufttemperatur: 'bg-he-blue text-white focus:ring-he-blue',
+  bodenfeuchte: 'bg-he-yellow text-white focus:ring-he-yellow',
+  undurchlaessigkeit: 'bg-he-green text-white focus:ring-he-green',
+  artenvielfalt: 'bg-he-red text-white focus:ring-he-red',
 };
 
 const sizes = {
@@ -50,7 +50,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         type={type}
-        className={`flex justify-center items-center py-2 px-4 m-1 transition ease-in duration-100 shadow-md disabled:opacity-70 disabled:cursor-not-allowed  focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg ${variants[variant]} ${sizes[size]} ${className}`}
+        className={`m-1 flex items-center justify-center rounded-lg py-2 px-4 shadow-md transition duration-100 ease-in focus:outline-none  focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 ${variants[variant]} ${sizes[size]} ${className}`}
         {...props}
       >
         {isLoading && (

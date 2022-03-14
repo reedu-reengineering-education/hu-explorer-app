@@ -11,18 +11,18 @@ import { PauseIcon } from '@heroicons/react/outline';
 import { PlayIcon } from '@heroicons/react/solid';
 
 export const schallColors = [
-  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light/40' },
-  { bg: 'bg-he-orange', shadow: 'shadow-he-orange/40' },
-  { bg: 'bg-he-green', shadow: 'shadow-he-green/40' },
-  { bg: 'bg-he-violet', shadow: 'shadow-he-violet/40' },
-  { bg: 'bg-he-red', shadow: 'shadow-he-red/40' },
+  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
+  { bg: 'bg-he-yellow', shadow: 'shadow-he-yellow' },
+  { bg: 'bg-he-green', shadow: 'shadow-he-green' },
+  { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
+  { bg: 'bg-he-red', shadow: 'shadow-he-red' },
 ];
 
 const Schall = () => {
   const { schule } = useExpeditionParams();
 
   const [live, setLive] = useState(true);
-  const { data, boxes } = useOsemData(schule, live);
+  const { data, boxes } = useOsemData('Schallpegel', schule, live);
 
   const [series, setSeries] = useState([]);
   const [barSeries, setBarSeries] = useState([]);
@@ -49,6 +49,7 @@ const Schall = () => {
         ),
       })),
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   const colors = useTailwindColors();
@@ -68,20 +69,20 @@ const Schall = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       <div className="p-4">
         <div className="flex justify-between">
           <h1 className="text-4xl">Schall</h1>
           <>
             {!live && (
               <PlayIcon
-                className="h-8 w-8 hover:scale-110 transition cursor-pointer"
+                className="h-8 w-8 cursor-pointer transition hover:scale-110"
                 onClick={() => setLive(!live)}
               />
             )}
             {live && (
               <PauseIcon
-                className="h-8 w-8 hover:scale-110 transition cursor-pointer"
+                className="h-8 w-8 cursor-pointer transition hover:scale-110"
                 onClick={() => setLive(!live)}
               />
             )}
@@ -89,27 +90,35 @@ const Schall = () => {
         </div>
         <div className="font-semibold text-gray-500">Schule: {schule}</div>
       </div>
-      <div className="flex flex-wrap h-full w-full">
+      <div className="flex h-full w-full flex-wrap">
         <LayoutTile>
-          <div className="flex flex-row flex-wrap justify-evenly items-center h-full">
+          <div className="flex h-full flex-row flex-wrap items-center justify-evenly">
             {data?.map((e, i) => (
               <Tile
                 key={i}
-                title={e.box.properties.name.split('HU Explorer Schall')[1]}
-                min={Math.min(...e.measurements.map(m => Number(m.value)))}
-                max={Math.max(...e.measurements.map(m => Number(m.value)))}
+                title={e.box.properties.name}
+                min={
+                  e.measurements.length > 0
+                    ? Math.min(...e.measurements.map(m => Number(m.value)))
+                    : undefined
+                }
+                max={
+                  e.measurements.length > 0
+                    ? Math.max(...e.measurements.map(m => Number(m.value)))
+                    : undefined
+                }
                 color={schallColors[i]}
               ></Tile>
             ))}
           </div>
         </LayoutTile>
         <LayoutTile>
-          <div className="rounded-xl overflow-hidden shadow w-full h-full min-h-[300px]">
+          <div className="h-full min-h-[300px] w-full overflow-hidden rounded-xl shadow">
             <Map width="100%" height="100%" data={boxes} />
           </div>
         </LayoutTile>
         <LayoutTile>
-          <div className="w-full h-full">
+          <div className="h-full w-full">
             <BarChart
               series={barSeries}
               yaxis={{
@@ -123,8 +132,8 @@ const Schall = () => {
                 ),
               }}
               colors={[
-                colors.he.blue.light,
-                colors.he.orange.DEFAULT,
+                colors.he.blue.DEFAULT,
+                colors.he.yellow.DEFAULT,
                 colors.he.green.DEFAULT,
                 colors.he.violet.DEFAULT,
                 colors.he.red.DEFAULT,
@@ -133,13 +142,13 @@ const Schall = () => {
           </div>
         </LayoutTile>
         <LayoutTile>
-          <div className="w-full h-full">
+          <div className="h-full w-full">
             <LineChart
               series={series}
               yaxis={yaxis}
               colors={[
-                colors.he.blue.light,
-                colors.he.orange.DEFAULT,
+                colors.he.blue.DEFAULT,
+                colors.he.yellow.DEFAULT,
                 colors.he.green.DEFAULT,
                 colors.he.violet.DEFAULT,
                 colors.he.red.DEFAULT,

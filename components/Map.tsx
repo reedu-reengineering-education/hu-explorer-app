@@ -25,10 +25,10 @@ const LabelMarker = ({ name, lat, lng, color }) => {
   return (
     <div
       style={{ position: 'absolute', left: x - 10, top: y - 10 }}
-      className="bg-white rounded-full w-fit pr-2 pl-1 text-sm shadow hover:z-10 flex items-center"
+      className="flex w-fit items-center rounded-full bg-white pr-2 pl-1 text-sm shadow hover:z-10"
     >
       <span
-        className={`block w-3 h-3 ${color ?? 'bg-blue-500'} rounded-full mr-1`}
+        className={`block h-3 w-3 ${color ?? 'bg-blue-500'} mr-1 rounded-full`}
       ></span>
       {name}
     </div>
@@ -97,7 +97,7 @@ const Map = ({ width, height, data }: MapProps) => {
         data.features.map((m, i) => (
           <LabelMarker
             key={i}
-            name={m.properties.name.split('HU Explorer Schall')[1]}
+            name={m.properties.name}
             lat={m.geometry.coordinates[1]}
             lng={m.geometry.coordinates[0]}
             color={schallColors[i].bg}

@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroicons/react": "^1.0.5",
     "@prisma/client": "3.5.0",
+    "@silevis/reactgrid": "^4.0.2",
     "@turf/bbox": "^6.5.0",
     "add": "^2.0.6",
     "apexcharts": "^3.29.0",
@@ -19,12 +20,12 @@
     "luxon": "^2.1.1",
     "maplibre-gl": "1.15.2",
     "next": "12.0.2",
+    "next-superjson": "^0.0.2",
     "prisma": "3.5.0",
     "react": "17.0.2",
     "react-apexcharts": "^1.3.9",
     "react-dom": "17.0.2",
     "react-map-gl": "^6.1.17",
-    "react-spreadsheet": "^0.6.0",
     "superjson": "^1.8.0",
     "swr": "^1.0.1",
     "yarn": "^1.22.17"
@@ -34,7 +35,6 @@
     "@types/node": "^16.11.6",
     "@types/react": "^17.0.34",
     "autoprefixer": "^10.4.0",
-    "babel-plugin-superjson-next": "^0.4.2",
     "eslint": "7.32.0",
     "eslint-config-next": "12.0.2",
     "eslint-config-prettier": "^8.3.0",
@@ -42,6 +42,7 @@
     "lint-staged": ">=10",
     "postcss": "^8.4.5",
     "prettier": "^2.4.1",
+    "prettier-plugin-tailwindcss": "^0.1.8",
     "tailwindcss": "^3.0.1",
     "typescript": "^4.4.4"
   }

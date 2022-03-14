@@ -20,6 +20,8 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <SWRConfig
       value={{
+        refreshInterval: 0,
+        revalidateOnFocus: false,
         fetcher,
       }}
     >

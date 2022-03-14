@@ -8,13 +8,34 @@ export default async function handler(
   if (req.method === 'POST') {
     try {
       const body = JSON.parse(req.body);
-      const result = await prisma.versiegelungRecord.create({
-        data: {
-          value: parseFloat(body.value),
-          group: body.group,
+
+      const exists = await prisma.versiegelungRecord.findMany({
+        where: {
+          deviceId: body.deviceId,
+          createdAt: new Date(),
         },
       });
-      res.status(201).json(result);
+
+      if (exists.length > 0) {
+        const result = await prisma.versiegelungRecord.update({
+          where: {
+            id: exists[0].id,
+          },
+          data: {
+            value: parseFloat(body.value),
+          },
+        });
+        res.status(201).json(result);
+      } else {
+        const result = await prisma.versiegelungRecord.create({
+          data: {
+            value: parseFloat(body.value),
+            group: body.group,
+            deviceId: body.deviceId,
+          },
+        });
+        res.status(201).json(result);
+      }
     } catch (error) {
       res.status(500).json({
         error,

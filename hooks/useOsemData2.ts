@@ -1,8 +1,9 @@
+import { fetcher } from '@/lib/fetcher';
 import { Point, Feature } from 'geojson';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
-export const useOsemData = (
+export const useOsemData2 = (
   expedition: string,
   schule: string | string[],
   live: boolean = true,
@@ -12,15 +13,17 @@ export const useOsemData = (
     `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,${expedition},${schule}`,
   );
   const { data: measurements } = useSWR(
-    boxes?.features.map(
-      b =>
-        `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${b.properties.sensors[0]._id}`,
-    ),
+    boxes?.features.flatMap(b => {
+      return b.properties.sensors.map(s => {
+        return `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${s._id}`;
+      });
+    }),
+    fetcher,
     { refreshInterval: live ? 60000 : 0 },
   );
 
   const [data, setData] = useState<
-    { box: Feature<Point, any>; measurements: any[] }[]
+    { box: Feature<Point, any>; temperature: any[]; bodenfeuchte: any[] }[]
   >([]);
 
   useEffect(() => {
@@ -28,7 +31,8 @@ export const useOsemData = (
       setData(
         boxes?.features.map((box, i) => ({
           box,
-          measurements: measurements[i],
+          temperature: measurements[i === 0 ? 0 : i * 2],
+          bodenfeuchte: measurements[i === 0 ? 1 : i * 2 + 1],
         })),
       );
     }

@@ -5,15 +5,15 @@ import Navbar from '@/components/Navbar';
 
 export default function Home() {
   return (
-    <main className="relative w-full h-full">
-      <div className="w-full h-full">
+    <main className="relative h-full w-full">
+      <div className="h-full w-full">
         <Map width="100%" height="100%" />
       </div>
-      <div className="absolute top-0 left-0 h-full w-full p-8 grid grid-cols-6 grid-rows-6 gap-8 pointer-events-none">
-        <div className="col-span-5 pointer-events-auto">
+      <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-8 p-8">
+        <div className="pointer-events-auto col-span-5">
           <Navbar />
         </div>
-        <div className="row-span-6 pointer-events-auto">
+        <div className="pointer-events-auto row-span-6">
           {/* <Sidebar></Sidebar> */}
         </div>
       </div>

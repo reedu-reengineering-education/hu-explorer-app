@@ -1,210 +1,204 @@
 import React, { useEffect, useState } from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
-import InputSheet from '@/components/Artenvielfalt/InputSheet';
-import OsemSheet from '@/components/Artenvielfalt/OsemSheet';
 import Map from '@/components/Map';
 import Tabs, { Tab } from '@/components/Tabs';
 import BarChart from '@/components/BarChart';
-import { Matrix } from 'react-spreadsheet';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
+import prisma from '@/lib/prisma';
+import { FeatureCollection, Point } from 'geojson';
+import { GetServerSideProps } from 'next';
+import { useOsemData2 } from '@/hooks/useOsemData2';
+import { getGroups } from '@/lib/groups';
 
-const groups1 = [
-  'sensebox1',
-  'sensebox2',
-  'sensebox3',
-  'sensebox4',
-  'sensebox5',
-];
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  res,
+  query,
+}) => {
+  const group = query.gruppe as string;
+  const school = query.schule as string;
 
-const groups2 = [
-  'sensebox6',
-  'sensebox7',
-  'sensebox8',
-  'sensebox9',
-  'sensebox10',
-];
+  const groups = getGroups(group);
 
-const generateData = (range: number, length: number) => {
-  return Array.from({ length: length }, (_, i) => {
-    return Math.floor(Math.random() * range) + 1;
+  const devices = await fetch(
+    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,Artenvielfalt,${school}`,
+  ).then(async response => {
+    return await response.json();
   });
-};
 
-const generateRandomData = (range: number, length: number) => {
-  return Array.from({ length: length }, (_, i) => {
-    return parseFloat(Math.random().toFixed(2));
+  let filteredDevices;
+
+  if (groups.includes(group.toLocaleLowerCase())) {
+    filteredDevices = devices.features.filter(device =>
+      groups.includes(device.properties.name.toLocaleLowerCase()),
+    );
+  }
+
+  const featureCollection: FeatureCollection<Point> = {
+    type: 'FeatureCollection',
+    features: filteredDevices,
+  };
+
+  const orFilter = filteredDevices.map(device => {
+    return {
+      deviceId: device.properties._id,
+    };
   });
+
+  const versiegelung = await prisma.versiegelungRecord.findMany({
+    where: {
+      OR: orFilter,
+      createdAt: new Date(),
+    },
+    orderBy: {
+      group: 'asc',
+    },
+  });
+
+  const artenvielfalt = await prisma.artenvielfaltRecord.findMany({
+    where: {
+      OR: orFilter,
+      createdAt: new Date(),
+    },
+    orderBy: {
+      group: 'asc',
+    },
+  });
+
+  // const dataVersiegelung = versiegelung.map(entry => entry.value);
+  // const dataArtenvielfalt = artenvielfalt.map(entry => entry.simpsonIndex);
+  const dataArtenvielfalt = filteredDevices.map(device => {
+    const vers = artenvielfalt.filter(
+      entry =>
+        entry.group.toLowerCase() === device.properties.name.toLowerCase(),
+    );
+    if (vers.length > 0) {
+      return vers[0].simpsonIndex;
+    }
+
+    return 0;
+  });
+
+  const dataVersiegelung = filteredDevices.map(device => {
+    const vers = versiegelung.filter(
+      entry =>
+        entry.group.toLowerCase() === device.properties.name.toLowerCase(),
+    );
+    if (vers.length > 0) {
+      return vers[0].value;
+    }
+
+    return 0;
+  });
+
+  return {
+    props: {
+      groups: groups,
+      devices: featureCollection,
+      versiegelung: dataVersiegelung,
+      artenvielfalt: dataArtenvielfalt,
+    },
+  };
 };
 
-const temperatureData = {
-  name: 'Lufttemperatur in °C',
-  data: generateData(50, 5),
+type Props = {
+  groups: string[];
+  devices: any;
+  versiegelung: number[];
+  artenvielfalt: number[];
 };
 
-const versiegelungData = {
-  name: 'Undurchlässigkeit',
-  data: generateData(100, 5),
-};
-
-const bodenfeuchteData = {
-  name: 'Bodenfeuchte in %',
-  data: generateData(100, 5),
-};
-
-const artenvielfaltData = {
-  name: 'pflanzliche Artenvielfalt',
-  data: generateRandomData(1, 5),
-};
-
-const versiegelungCells = [
-  [
-    {
-      value: 'Undurchlässigkeit',
-      readOnly: true,
-      className: 'font-bold text-md',
-    },
-    { value: '' },
-  ],
-  [
-    {
-      value: 'Undurchlässigkeit in %',
-      readOnly: true,
-    },
-    { value: 0 },
-  ],
-  [{ value: '', readOnly: true }],
-];
-const artenvielfaltCells = [
-  [
-    {
-      value: 'Artenvielfalt',
-      readOnly: true,
-      className: 'font-bold text-md',
-    },
-    { value: '' },
-  ],
-  [
-    {
-      value: 'Art',
-      readOnly: true,
-    },
-    { value: 'Anzahl', readOnly: true },
-  ],
-  [
-    {
-      value: '',
-    },
-    { value: '' },
-  ],
-];
-
-const Artenvielfalt = () => {
-  const { schule, gruppe } = useExpeditionParams();
+const Artenvielfalt = ({
+  groups,
+  devices,
+  versiegelung,
+  artenvielfalt,
+}: Props) => {
+  const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
-  const [series, setSeries] = useState([]);
-
-  // console.log(series);
+  const [series, setSeries] = useState<any[]>();
+  const [temperatureSeries, setTemperatureSeries] = useState({
+    name: 'Lufttemperatur',
+    data: [],
+  });
+  const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState({
+    name: 'Bodenfeuchte',
+    data: [],
+  });
 
   const colors = useTailwindColors();
 
-  // const [speciesIndex, setSpeciesIndex] = useState([
-  //   {
-  //     name: 'pflanzliche Artenvielfalt',
-  //     data: [],
-  //   },
-  // ]);
+  // Fetch openSenseMap data
+  const { data, boxes } = useOsemData2('Artenvielfalt', schule, false);
 
-  // const changedData = (data: Matrix<any>) => {
-  //   const matrix = [...data];
-  //   const speciesData = matrix.slice(2);
-  //   let numberOfOrganisms = 0;
-  //   const numberOfSpecies = speciesData
-  //     .flat()
-  //     .filter((_, i) => i % 2 === 1)
-  //     .map(value => {
-  //       // Check if value is a number
-  //       if (isNaN(parseInt(value.value))) return 0;
+  useEffect(() => {
+    const filteredDevices = data.filter(e =>
+      groups.includes(e.box.properties.name.toLocaleLowerCase()),
+    );
 
-  //       numberOfOrganisms = numberOfOrganisms + parseInt(value.value);
-  //       return parseInt(value.value) * (parseInt(value.value) - 1);
-  //     })
-  //     .reduce((prev, curr) => prev + curr);
-  //   const simpsonIndex =
-  //     1 - numberOfSpecies / (numberOfOrganisms * (numberOfOrganisms - 1));
-  //   console.log('Simpson Index', simpsonIndex);
+    const transformedTemperatureData = filteredDevices.map(e => {
+      const sumWithInitial = e.temperature?.reduce(
+        (a, b) => a + (parseFloat(b['value']) || 0),
+        0,
+      );
+      return (sumWithInitial / e.temperature?.length).toFixed(2);
+    });
 
-  //   setSpeciesIndex([
-  //     {
-  //       name: 'pflanzliche Artenvielfalt',
-  //       data: [simpsonIndex, ...generateRandomData(1, 4)],
-  //     },
-  //   ]);
-  // };
+    const transformedBodenfeuchteData = filteredDevices.map(e => {
+      const sumWithInitial = e.bodenfeuchte?.reduce(
+        (a, b) => a + (parseFloat(b['value']) || 0),
+        0,
+      );
+      return (sumWithInitial / e.bodenfeuchte?.length).toFixed(2);
+    });
+
+    setTemperatureSeries({
+      name: 'Lufttemperatur',
+      data: transformedTemperatureData,
+    });
+
+    setBodenfeuchteSeries({
+      name: 'Bodenfeuchte',
+      data: transformedBodenfeuchteData,
+    });
+
+    setSeries([
+      {
+        name: 'Lufttemperatur',
+        data: transformedTemperatureData,
+      },
+      {
+        name: 'pflanzliche Artenvielfalt',
+        data: artenvielfalt,
+      },
+    ]);
+  }, [data, groups, artenvielfalt]);
 
   const tabs: Tab[] = [
-    // {
-    //   title: 'Artenvielfalt',
-    //   component: (
-    //     <InputSheet
-    //       cells={artenvielfaltCells}
-    //       hideAddButton={false}
-    //       onChange={changedData}
-    //     />
-    //   ),
-    // },
     {
       id: 'Lufttemperatur',
       title: 'Lufttemperatur',
-      component: (
-        <OsemSheet
-          series={[
-            {
-              name: 'Lufttemperatur in °C',
-              data: generateData(50, 20),
-            },
-          ]}
-        />
-      ),
       hypothesis:
         'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Bodenfeuchte',
       title: 'Bodenfeuchte',
-      component: (
-        <OsemSheet
-          series={[
-            {
-              name: 'Bodenfeuchte in %',
-              data: generateData(100, 20),
-            },
-          ]}
-        />
-      ),
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Undurchlaessigkeit',
       title: 'Undurchlässigkeit',
-      component: <InputSheet cells={versiegelungCells} />,
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
   ];
 
   const [xaxis, setXaxis] = useState({
-    categories: groups1,
+    categories: groups,
   });
-
-  useEffect(() => {
-    if (groups2.includes(gruppe as string)) {
-      setXaxis({
-        categories: groups2,
-      });
-    }
-  }, [gruppe]);
 
   const [yaxis, setYaxis] = useState<ApexYAxis[]>([
     {
@@ -220,7 +214,13 @@ const Artenvielfalt = () => {
     setTab(tab);
     switch (tab) {
       case 0:
-        setSeries([temperatureData, artenvielfaltData]);
+        setSeries([
+          temperatureSeries,
+          {
+            name: 'pflanzliche Artenvielfalt',
+            data: artenvielfalt,
+          },
+        ]);
         setYaxis([
           {
             seriesName: 'Lufttemperatur',
@@ -228,12 +228,12 @@ const Artenvielfalt = () => {
             title: {
               text: 'Lufttemperatur in °C',
               style: {
-                color: '#56bfc6',
+                color: colors.he.lufttemperatur.DEFAULT,
               },
             },
             axisBorder: {
               show: true,
-              color: '#56bfc6',
+              color: colors.he.lufttemperatur.DEFAULT,
             },
           },
           {
@@ -243,24 +243,25 @@ const Artenvielfalt = () => {
             title: {
               text: 'Artenvielfaltsindex',
               style: {
-                color: '#6bbe98',
+                color: colors.he.artenvielfalt.DEFAULT,
               },
             },
             opposite: true,
-            labels: {
-              formatter: function (value) {
-                return value.toFixed(2);
-              },
-            },
             axisBorder: {
               show: true,
-              color: '#6bbe98',
+              color: colors.he.artenvielfalt.DEFAULT,
             },
           },
         ]);
         break;
       case 1:
-        setSeries([bodenfeuchteData, artenvielfaltData]);
+        setSeries([
+          bodenfeuchteSeries,
+          {
+            name: 'pflanzliche Artenvielfalt',
+            data: artenvielfalt,
+          },
+        ]);
         setYaxis([
           {
             seriesName: 'Bodenfeuchte',
@@ -268,7 +269,7 @@ const Artenvielfalt = () => {
             title: {
               text: 'Bodenfeuchte in %',
               style: {
-                color: '#7d8bc5',
+                color: colors.he.bodenfeuchte.DEFAULT,
               },
             },
             axisBorder: {
@@ -283,24 +284,28 @@ const Artenvielfalt = () => {
             title: {
               text: 'Artenvielfaltsindex',
               style: {
-                color: '#6bbe98',
+                color: colors.he.artenvielfalt.DEFAULT,
               },
             },
             opposite: true,
-            labels: {
-              formatter: function (value) {
-                return value.toFixed(2);
-              },
-            },
             axisBorder: {
               show: true,
-              color: '#6bbe98',
+              color: colors.he.artenvielfalt.DEFAULT,
             },
           },
         ]);
         break;
       case 2:
-        setSeries([versiegelungData, artenvielfaltData]);
+        setSeries([
+          {
+            name: 'Undurchlässigkeit',
+            data: versiegelung,
+          },
+          {
+            name: 'pflanzliche Artenvielfalt',
+            data: artenvielfalt,
+          },
+        ]);
         setYaxis([
           {
             seriesName: 'Undurchlässigkeit',
@@ -308,12 +313,12 @@ const Artenvielfalt = () => {
             title: {
               text: 'Undurchlässigkeit in %',
               style: {
-                color: '#004c90',
+                color: colors.he.undurchlaessigkeit.DEFAULT,
               },
             },
             axisBorder: {
               show: true,
-              color: '#004c90',
+              color: colors.he.undurchlaessigkeit.DEFAULT,
             },
           },
           {
@@ -323,18 +328,13 @@ const Artenvielfalt = () => {
             title: {
               text: 'Artenvielfaltsindex',
               style: {
-                color: '#6bbe98',
+                color: colors.he.artenvielfalt.DEFAULT,
               },
             },
             opposite: true,
-            labels: {
-              formatter: function (value) {
-                return value.toFixed(2);
-              },
-            },
             axisBorder: {
               show: true,
-              color: '#6bbe98',
+              color: colors.he.artenvielfalt.DEFAULT,
             },
           },
         ]);
@@ -344,42 +344,28 @@ const Artenvielfalt = () => {
     }
   };
 
-  const yaxis2: ApexYAxis[] = [
-    {
-      seriesName: 'plflanzliche Artenvielfalt',
-      showAlways: true,
-      max: 1.0,
-      title: {
-        text: 'Artenvielfaltsindex',
-      },
-      labels: {
-        formatter: function (value) {
-          return value.toFixed(2);
-        },
-      },
-    },
-  ];
-
   return (
     <>
-      <div className="flex flex-row h-full w-full overflow-hidden">
-        <div className="flex flex-col w-full">
-          <div className="flex-auto w-full h-[25%] max-h-[25%] mb-4">
-            <Map width="100%" height="100%" />
+      <div className="flex h-full w-full flex-row overflow-hidden">
+        <div className="flex w-full flex-col">
+          <div className="mb-4 h-[25%] max-h-[25%] w-full flex-auto">
+            <Map width="100%" height="100%" data={devices} />
           </div>
-          <div className="flex flex-col flex-wrap overflow-hidden mr-2">
+          <div className="mr-2 flex flex-col flex-wrap overflow-hidden">
             <Tabs tabs={tabs} onChange={onChange} showHypothesis={true}></Tabs>
           </div>
-          <div className="flex-auto w-full mb-4">
-            <BarChart
-              series={series}
-              yaxis={yaxis}
-              xaxis={xaxis}
-              colors={[
-                colors.he[tabs[tab].id.toLowerCase()].DEFAULT,
-                colors.he.artenvielfalt.DEFAULT,
-              ]}
-            ></BarChart>
+          <div className="mb-4 w-full flex-auto">
+            {series && (
+              <BarChart
+                series={series}
+                yaxis={yaxis}
+                xaxis={xaxis}
+                colors={[
+                  colors.he[tabs[tab].id.toLowerCase()].DEFAULT,
+                  colors.he.artenvielfalt.DEFAULT,
+                ]}
+              ></BarChart>
+            )}
           </div>
         </div>
       </div>

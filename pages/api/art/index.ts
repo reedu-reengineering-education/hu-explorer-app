@@ -9,12 +9,8 @@ export default async function handler(
     const body = JSON.parse(req.body);
 
     try {
-      const result = await prisma.artenvielfaltRecord.create({
-        data: {
-          deviceId: body.deviceId,
-          simpsonIndex: body.simpsonIndex,
-          group: body.group,
-        },
+      const result = await prisma.artRecord.create({
+        data: body,
       });
       res.status(201).json(result);
     } catch (error) {
@@ -24,18 +20,35 @@ export default async function handler(
       });
     }
   } else if (req.method === 'GET') {
-    const results = await prisma.artenvielfaltRecord.findMany();
+    const results = await prisma.artRecord.findMany({});
     res.status(201).json(results);
+  } else if (req.method === 'DELETE') {
+    const body = JSON.parse(req.body);
+
+    try {
+      const result = await prisma.artRecord.delete({
+        where: {
+          id: body.id,
+        },
+      });
+      res.status(201).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        error,
+      });
+    }
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);
 
     try {
-      const result = await prisma.artenvielfaltRecord.update({
+      const result = await prisma.artRecord.update({
         where: {
           id: body.id,
         },
         data: {
-          simpsonIndex: body.simpsonIndex,
+          art: body.art,
+          count: body.count,
         },
       });
       res.status(201).json(result);
