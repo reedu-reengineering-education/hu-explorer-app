@@ -3,6 +3,7 @@ import { ReactElement, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import useSWR from 'swr';
 import { Point } from 'geojson';
+import Filter from '@/components/Filter';
 
 export default function Home() {
   const [selectedBox, setSelectedBox] = useState();
@@ -20,6 +21,13 @@ export default function Home() {
         <Map data={data} onBoxSelect={box => setSelectedBox(box)} />
       </div>
       <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-8">
+        <div className="pointer-events-auto col-span-1 row-start-1 h-fit">
+          <div className="flex h-full flex-col rounded-lg bg-white p-2 shadow">
+            <span>Geräte 16</span>
+            <span>Messungen 1000</span>
+            <Filter></Filter>
+          </div>
+        </div>
         <div className="pointer-events-auto col-span-1 col-start-6 row-span-6 row-start-1">
           <Sidebar box={selectedBox}></Sidebar>
         </div>
