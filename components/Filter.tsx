@@ -1,11 +1,16 @@
-import { Fragment, useState } from 'react';
-import { Disclosure, Listbox, Transition } from '@headlessui/react';
+import { Fragment, forwardRef, useState, useEffect } from 'react';
+import { Disclosure, Listbox, Popover, Transition } from '@headlessui/react';
 import {
   ChevronUpIcon,
   FilterIcon,
   CheckIcon,
   SelectorIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/outline';
+import DatePicker from 'react-datepicker';
+import { format } from 'date-fns';
 
 const expedition = [
   { name: 'Alle', value: undefined },
@@ -18,12 +23,27 @@ export interface FilterProps {
 }
 
 const Filter = ({ setExpedition }: FilterProps) => {
+  // Lerneinheit
   const [selected, setSelected] = useState(expedition[0]);
+
+  // Datum
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
 
   const onChange = e => {
     setSelected(e);
     setExpedition(e.value);
   };
+
+  useEffect(() => {
+    if (startDate > endDate) setStartDate(endDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endDate]);
+
+  useEffect(() => {
+    if (startDate > endDate) setEndDate(startDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDate]);
 
   return (
     <div className="w-full pt-4">
@@ -45,7 +65,7 @@ const Filter = ({ setExpedition }: FilterProps) => {
                   <div className="w-full">
                     <Listbox value={selected} onChange={onChange}>
                       <div className="relative mt-1">
-                        <Listbox.Label>Standort:</Listbox.Label>
+                        <Listbox.Label>Lerneinheit:</Listbox.Label>
                         <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
                           <span className="block truncate">
                             {selected.name}
@@ -63,7 +83,7 @@ const Filter = ({ setExpedition }: FilterProps) => {
                           leaveFrom="opacity-100"
                           leaveTo="opacity-0"
                         >
-                          <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                          <Listbox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                             {expedition.map((person, personIdx) => (
                               <Listbox.Option
                                 key={personIdx}
@@ -101,6 +121,189 @@ const Filter = ({ setExpedition }: FilterProps) => {
                         </Transition>
                       </div>
                     </Listbox>
+                  </div>
+                  <div className="flex w-full">
+                    <Popover className="relative">
+                      {({ open }) => (
+                        <>
+                          <Popover.Button
+                            className={`
+                              ${open ? '' : 'text-opacity-90'}
+                              group inline-flex items-center rounded-md bg-orange-700 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
+                          >
+                            {format(new Date(startDate), 'dd MMMM yyyy')}
+                            <ChevronDownIcon
+                              className={`${open ? '' : 'text-opacity-70'}
+                                ml-2 h-5 w-5 text-orange-300 transition duration-150 ease-in-out group-hover:text-opacity-80`}
+                              aria-hidden="true"
+                            />
+                          </Popover.Button>
+                          <Transition
+                            as={Fragment}
+                            enter="transition ease-out duration-200"
+                            enterFrom="opacity-0 translate-y-1"
+                            enterTo="opacity-100 translate-y-0"
+                            leave="transition ease-in duration-150"
+                            leaveFrom="opacity-100 translate-y-0"
+                            leaveTo="opacity-0 translate-y-1"
+                          >
+                            <Popover.Panel className="absolute z-10 mt-3 max-w-sm transform px-4 sm:px-0 lg:max-w-3xl">
+                              <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                <div className="relative w-full bg-white p-7">
+                                  <DatePicker
+                                    selected={startDate}
+                                    onChange={date => setStartDate(date)}
+                                    selectsStart
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                    nextMonthButtonLabel=">"
+                                    previousMonthButtonLabel="<"
+                                    popperClassName="react-datepicker-left"
+                                    // customInput={<ButtonInput />}
+                                    inline
+                                    renderCustomHeader={({
+                                      date,
+                                      decreaseMonth,
+                                      increaseMonth,
+                                      prevMonthButtonDisabled,
+                                      nextMonthButtonDisabled,
+                                    }) => (
+                                      <div className="flex w-full items-center justify-between px-2 py-2">
+                                        <span className="text-lg text-gray-700">
+                                          {format(date, 'MMMM yyyy')}
+                                        </span>
+
+                                        <div className="space-x-2">
+                                          <button
+                                            onClick={decreaseMonth}
+                                            disabled={prevMonthButtonDisabled}
+                                            type="button"
+                                            className={`
+                                                        ${
+                                                          prevMonthButtonDisabled &&
+                                                          'cursor-not-allowed opacity-50'
+                                                        }
+                                                        inline-flex rounded border border-gray-300 bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0
+                                                    `}
+                                          >
+                                            <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+                                          </button>
+
+                                          <button
+                                            onClick={increaseMonth}
+                                            disabled={nextMonthButtonDisabled}
+                                            type="button"
+                                            className={`
+                                                        ${
+                                                          nextMonthButtonDisabled &&
+                                                          'cursor-not-allowed opacity-50'
+                                                        }
+                                                        inline-flex rounded border border-gray-300 bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0
+                                                    `}
+                                          >
+                                            <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  />
+                                </div>
+                              </div>
+                            </Popover.Panel>
+                          </Transition>
+                        </>
+                      )}
+                    </Popover>
+                    <Popover className="relative">
+                      {({ open }) => (
+                        <>
+                          <Popover.Button
+                            className={`
+                              ${open ? '' : 'text-opacity-90'}
+                              group inline-flex items-center rounded-md bg-orange-700 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75`}
+                          >
+                            {format(new Date(endDate), 'dd MMMM yyyy')}
+                            <ChevronDownIcon
+                              className={`${open ? '' : 'text-opacity-70'}
+                                ml-2 h-5 w-5 text-orange-300 transition duration-150 ease-in-out group-hover:text-opacity-80`}
+                              aria-hidden="true"
+                            />
+                          </Popover.Button>
+                          <Transition
+                            as={Fragment}
+                            enter="transition ease-out duration-200"
+                            enterFrom="opacity-0 translate-y-1"
+                            enterTo="opacity-100 translate-y-0"
+                            leave="transition ease-in duration-150"
+                            leaveFrom="opacity-100 translate-y-0"
+                            leaveTo="opacity-0 translate-y-1"
+                          >
+                            <Popover.Panel className="absolute z-10 mt-3 max-w-sm transform px-4 sm:px-0 lg:max-w-3xl">
+                              <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                <div className="relative w-full bg-white p-7">
+                                  <DatePicker
+                                    selected={endDate}
+                                    onChange={date => setEndDate(date)}
+                                    selectsEnd
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                    nextMonthButtonLabel=">"
+                                    previousMonthButtonLabel="<"
+                                    popperClassName="react-datepicker-right"
+                                    inline
+                                    renderCustomHeader={({
+                                      date,
+                                      decreaseMonth,
+                                      increaseMonth,
+                                      prevMonthButtonDisabled,
+                                      nextMonthButtonDisabled,
+                                    }) => (
+                                      <div className="flex items-center justify-between px-2 py-2">
+                                        <span className="text-lg text-gray-700">
+                                          {format(date, 'MMMM yyyy')}
+                                        </span>
+
+                                        <div className="space-x-2">
+                                          <button
+                                            onClick={decreaseMonth}
+                                            disabled={prevMonthButtonDisabled}
+                                            type="button"
+                                            className={`
+                                                        ${
+                                                          prevMonthButtonDisabled &&
+                                                          'cursor-not-allowed opacity-50'
+                                                        }
+                                                        inline-flex rounded border border-gray-300 bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0
+                                                    `}
+                                          >
+                                            <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+                                          </button>
+
+                                          <button
+                                            onClick={increaseMonth}
+                                            disabled={nextMonthButtonDisabled}
+                                            type="button"
+                                            className={`
+                                                        ${
+                                                          nextMonthButtonDisabled &&
+                                                          'cursor-not-allowed opacity-50'
+                                                        }
+                                                        inline-flex rounded border border-gray-300 bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0
+                                                    `}
+                                          >
+                                            <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  />
+                                </div>
+                              </div>
+                            </Popover.Panel>
+                          </Transition>
+                        </>
+                      )}
+                    </Popover>
                   </div>
                 </form>
               </Disclosure.Panel>
