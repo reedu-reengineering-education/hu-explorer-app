@@ -7,10 +7,24 @@ import {
   SelectorIcon,
 } from '@heroicons/react/outline';
 
-const site = [{ name: 'tempelhof' }, { name: 'humitte' }];
+const expedition = [
+  { name: 'Alle', value: undefined },
+  { name: 'Schallpegel', value: 'Schallpegel' },
+  { name: 'Artenvielfalt', value: 'Artenvielfalt' },
+];
 
-export default function Filter() {
-  const [selected, setSelected] = useState(site[0]);
+export interface FilterProps {
+  setExpedition: (e) => void;
+}
+
+const Filter = ({ setExpedition }: FilterProps) => {
+  const [selected, setSelected] = useState(expedition[0]);
+
+  const onChange = e => {
+    setSelected(e);
+    setExpedition(e.value);
+  };
+
   return (
     <div className="w-full pt-4">
       <div className="mx-auto w-full max-w-md rounded-2xl bg-white">
@@ -29,7 +43,7 @@ export default function Filter() {
               <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-500">
                 <form action="/send-data-here" method="post">
                   <div className="w-full">
-                    <Listbox value={selected} onChange={setSelected}>
+                    <Listbox value={selected} onChange={onChange}>
                       <div className="relative mt-1">
                         <Listbox.Label>Standort:</Listbox.Label>
                         <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
@@ -50,7 +64,7 @@ export default function Filter() {
                           leaveTo="opacity-0"
                         >
                           <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                            {site.map((person, personIdx) => (
+                            {expedition.map((person, personIdx) => (
                               <Listbox.Option
                                 key={personIdx}
                                 className={({ active }) =>
@@ -96,4 +110,6 @@ export default function Filter() {
       </div>
     </div>
   );
-}
+};
+
+export default Filter;

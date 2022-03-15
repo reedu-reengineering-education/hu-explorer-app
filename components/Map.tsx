@@ -20,6 +20,7 @@ import {
   clusterCountLayer,
   clusterLayer,
   unclusteredPointLayer,
+  unclusteredPointNameLayer,
 } from './Map/Layers';
 
 export interface MapProps {
@@ -28,6 +29,7 @@ export interface MapProps {
   color?: boolean;
   expedition?: boolean;
   zoomLevel?: number;
+  filter?: any[];
 }
 
 const Map = ({
@@ -106,17 +108,23 @@ const Map = ({
       initialViewState={viewport}
       mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
       onLoad={() => setMapLoaded(true)}
-      mapStyle="mapbox://styles/mapbox/streets-v11"
+      mapStyle={`https://api.maptiler.com/maps/5eee3573-4adb-4f2e-b525-c9ffa1957ad3/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`}
       onClick={onMapClick}
       ref={mapRef}
       interactiveLayerIds={[clusterLayer.id, unclusteredPointLayer.id]}
       mapLib={maplibregl}
+      attributionControl={true}
     >
       {data && !expedition && viewport.zoom <= zoomLevel && (
         <Source
           id="osem-data"
           type="geojson"
           cluster={true}
+          // clusterProperties={{
+          //   // keep separate counts for each magnitude category in a cluster
+          //   'mag1': ['+', ['case', ["==", "Artenvielfalt", ['at', 1, ['get','grouptag']]], 1, 0]],
+          //   'mag2': ['+', ['case', ["==", "Schallpegel", ['at', 1, ['get','grouptag']]], 1, 0]],
+          // }}
           clusterMaxZoom={14}
           clusterRadius={50}
           data={data}
@@ -124,6 +132,7 @@ const Map = ({
           <Layer {...clusterLayer} />
           <Layer {...clusterCountLayer} />
           <Layer {...unclusteredPointLayer} />
+          <Layer {...unclusteredPointNameLayer} />
         </Source>
       )}
       {data &&
