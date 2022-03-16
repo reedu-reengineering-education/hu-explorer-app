@@ -30,10 +30,17 @@ export const unclusteredPointNameLayer: LayerProps = {
   layout: {
     'text-field': ['get', 'name'],
     'text-size': 12,
-    'text-variable-anchor': ['top'],
-    'text-offset': [0, 1],
+    // 'text-variable-anchor': ['top'],
+    'text-offset': [1, 0],
+    'text-anchor': 'left',
+    // "text-transform": 'uppercase'
   },
-  paint: {},
+  paint: {
+    'text-color': 'black',
+    'text-halo-color': 'white',
+    'text-halo-width': 2,
+    'text-halo-blur': 1,
+  },
 };
 
 export const unclusteredPointLayer: LayerProps = {

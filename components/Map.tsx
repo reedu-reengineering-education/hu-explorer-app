@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMapGL, { Source, Layer } from 'react-map-gl';
 import type { MapLayerMouseEvent } from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import maplibregl, { Marker } from 'maplibre-gl';
 
 import type { MapRef } from 'react-map-gl';
 import type { GeoJSONSource } from 'react-map-gl';
@@ -103,6 +103,15 @@ const Map = ({
     }
   };
 
+  const updateMarkers = () => {};
+
+  const onRender = () => {
+    if (!mapRef.current.isSourceLoaded('osem-data')) {
+      return;
+    }
+    updateMarkers();
+  };
+
   return (
     <ReactMapGL
       initialViewState={viewport}
@@ -110,6 +119,7 @@ const Map = ({
       onLoad={() => setMapLoaded(true)}
       mapStyle={`https://api.maptiler.com/maps/5eee3573-4adb-4f2e-b525-c9ffa1957ad3/style.json?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`}
       onClick={onMapClick}
+      onRender={onRender}
       ref={mapRef}
       interactiveLayerIds={[clusterLayer.id, unclusteredPointLayer.id]}
       mapLib={maplibregl}

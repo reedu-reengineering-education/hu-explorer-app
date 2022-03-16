@@ -21,14 +21,6 @@ export default function Home() {
     }`,
   );
 
-  const onChange = e => {
-    if (e.target.value === 'undefined') {
-      setProject(undefined);
-    } else {
-      setProject(e.target.value);
-    }
-  };
-
   return (
     <main className="relative h-full w-full">
       {/* <select name="project" id="project" onChange={onChange} value={project}>
