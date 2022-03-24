@@ -1,10 +1,10 @@
-import React from 'react';
-import LineChart, { DataPointProps } from './LineChart';
+import React, { useState } from 'react';
 import { DateTime } from 'luxon';
 import { Feature, Point } from 'geojson';
 import { format } from 'date-fns';
 import useSWR from 'swr';
 import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
+import MyModal from './Modal';
 
 const startDateTime = DateTime.local()
   .setLocale('de')
@@ -25,6 +25,7 @@ const generateData = (range: number) => {
 };
 
 const Sidebar = ({ box }: { box: Feature<Point> }) => {
+  let [isOpen, setIsOpen] = useState<boolean>(false);
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
     ArtenvielfaltRecord[]
   >(`/api/artenvielfalt/${box?.properties._id}`);
@@ -83,6 +84,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
       <div
         key={_id}
         className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl p-2 shadow ${color}`}
+        onClick={() => setIsOpen(true)}
       >
         <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
           {title}
@@ -103,12 +105,13 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
   };
 
   return (
-    <div className="flex h-full flex-col overflow-y-scroll rounded-lg bg-white p-2 shadow">
+    <div className="flex h-full overflow-y-scroll rounded-lg bg-white p-2 shadow">
       {box && (
         <h1 className="content-center text-center text-lg font-bold">
           {box.properties.name}
         </h1>
       )}
+      {/* TODO Bild der Schule einfügen */}
       {box && (
         <>
           {' '}
@@ -168,6 +171,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
           Messwerte von Umweltfaktoren an dieser Schule.
         </h1>
       )}
+      <MyModal open={isOpen} onClose={setIsOpen} />
     </div>
   );
 };
