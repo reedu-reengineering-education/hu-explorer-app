@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import { GetServerSideProps } from 'next';
@@ -100,6 +100,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 
   const group = query.gruppe as string;
   const school = query.schule as string;
+  let errorCode = 200;
 
   const devices = await fetch(
     `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?grouptag=HU Explorers,Artenvielfalt,${school}`,
@@ -110,52 +111,66 @@ export const getServerSideProps: GetServerSideProps = async ({
   const device = devices.filter(device => device.name === group);
   const today = new Date();
 
+  if (device.length === 0) {
+    errorCode = 404;
+
+    return {
+      props: { errorCode, message: 'Gruppe wurde nicht gefunden' },
+    };
+  }
+
   // Find main group entries for data types
-  const artenvielfalt = await prisma.artenvielfaltRecord.upsert({
-    where: {
-      deviceId_group_createdAt: {
+  try {
+    const artenvielfalt = await prisma.artenvielfaltRecord.upsert({
+      where: {
+        deviceId_group_createdAt: {
+          deviceId: device[0]._id,
+          group: group,
+          createdAt: today,
+        },
+      },
+      update: {},
+      create: {
         deviceId: device[0]._id,
         group: group,
-        createdAt: today,
       },
-    },
-    update: {},
-    create: {
-      deviceId: device[0]._id,
-      group: group,
-    },
-  });
+    });
 
-  // Find versiegelungs record
-  // If not existing, create record
-  const versiegelung = await prisma.versiegelungRecord.upsert({
-    where: {
-      deviceId_group_createdAt: {
+    // Find versiegelungs record
+    // If not existing, create record
+    const versiegelung = await prisma.versiegelungRecord.upsert({
+      where: {
+        deviceId_group_createdAt: {
+          deviceId: device[0]._id,
+          group: group,
+          createdAt: today,
+        },
+      },
+      update: {},
+      create: {
         deviceId: device[0]._id,
         group: group,
-        createdAt: today,
+        value: 0,
       },
-    },
-    update: {},
-    create: {
-      deviceId: device[0]._id,
-      group: group,
-      value: 0,
-    },
-  });
+    });
 
-  const arten = await prisma.artRecord.findMany({
-    where: {
-      artenvielfaltId: artenvielfalt.id,
-    },
-    orderBy: {
-      id: 'asc',
-    },
-  });
+    const arten = await prisma.artRecord.findMany({
+      where: {
+        artenvielfaltId: artenvielfalt.id,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
 
-  return {
-    props: { arten, device, artenvielfalt, versiegelung },
-  };
+    return {
+      props: { errorCode, arten, device, artenvielfalt, versiegelung },
+    };
+  } catch (err) {
+    return {
+      props: { errorCode, message: err.message },
+    };
+  }
 };
 
 type Props = {

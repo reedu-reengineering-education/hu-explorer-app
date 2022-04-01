@@ -1,4 +1,5 @@
 import { NextPage } from 'next';
+import Error from 'next/error';
 import { AppProps } from 'next/app';
 import React, { ReactElement, ReactNode } from 'react';
 import { SWRConfig } from 'swr';
@@ -16,6 +17,10 @@ type AppPropsWithLayout = AppProps & {
 
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout || Layout;
+
+  if (pageProps.errorCode) {
+    return <Error statusCode={pageProps.errorCode} title={pageProps.message} />;
+  }
 
   return (
     <SWRConfig
