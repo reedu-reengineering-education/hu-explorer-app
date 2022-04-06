@@ -100,7 +100,6 @@ export const getServerSideProps: GetServerSideProps = async ({
 
   const group = query.gruppe as string;
   const school = query.schule as string;
-  let errorCode = 200;
 
   const devices = await fetch(
     `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?grouptag=HU Explorers,Artenvielfalt,${school}`,
@@ -111,9 +110,9 @@ export const getServerSideProps: GetServerSideProps = async ({
   const device = devices.filter(device => device.name === group);
   const today = new Date();
 
-  if (device.length === 0) {
-    errorCode = 404;
+  const errorCode = device.length === 0 ? 404 : false;
 
+  if (errorCode) {
     return {
       props: { errorCode, message: 'Gruppe wurde nicht gefunden' },
     };
