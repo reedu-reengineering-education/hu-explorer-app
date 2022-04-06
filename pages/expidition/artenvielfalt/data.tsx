@@ -18,7 +18,6 @@ import {
   TextCell,
   NumberCell,
   DefaultCellTypes,
-  Cell,
 } from '@silevis/reactgrid';
 import '@silevis/reactgrid/styles.css';
 import { Button } from '@/components/Elements/Button';
