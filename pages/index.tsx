@@ -10,7 +10,7 @@ export default function Home() {
 
   // fetch berlin data
   const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
-    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor&full=true',
+    'https://api.opensensemap.org/boxes?bbox=12.398393,52.030190,14.062822,52.883716&format=geojson&exposure=outdoor,indoor&full=true',
   );
 
   return (
