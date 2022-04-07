@@ -120,6 +120,7 @@ const Schall = () => {
               data={boxes}
               expedition={true}
               color
+              zoomLevel={10}
             />
           </div>
         </LayoutTile>

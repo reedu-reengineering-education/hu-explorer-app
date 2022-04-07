@@ -96,7 +96,7 @@ const Map = ({
         [maxLng, maxLat],
       ],
       {
-        padding: 20,
+        padding: 50,
       },
     );
 
