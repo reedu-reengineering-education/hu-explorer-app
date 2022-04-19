@@ -97,6 +97,7 @@ const Map = ({
         ...feature,
         properties: {
           ...feature.properties,
+          tags: JSON.parse(feature.properties.grouptag),
           sensors: JSON.parse(feature.properties.sensors),
         },
       });
