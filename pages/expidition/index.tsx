@@ -32,22 +32,22 @@ function Lerneinheit() {
           <Button>Schall</Button>
         </Link>
         <Link
-          href={`/expidition/artenvielfalt/data?schule=tempelhof&gruppe=${group}&daten=versiegelung`}
+          href={`/expidition/artenvielfalt/data?schule=Didaktik der Physik&gruppe=${group}&daten=versiegelung`}
         >
           <Button>Datenerfassung Undurchlässigkeit</Button>
         </Link>
         <Link
-          href={`/expidition/artenvielfalt/data?schule=tempelhof&gruppe=${group}&daten=artenvielfalt`}
+          href={`/expidition/artenvielfalt/data?schule=Didaktik der Physik&gruppe=${group}&daten=artenvielfalt`}
         >
           <Button>Datenerfassung Artenvielfalt</Button>
         </Link>
         <Link
-          href={`/expidition/artenvielfalt/group?schule=tempelhof&gruppe=${group}`}
+          href={`/expidition/artenvielfalt/group?schule=Didaktik der Physik&gruppe=${group}`}
         >
           <Button>Datenvergleich Gruppen</Button>
         </Link>
         <Link
-          href={`/expidition/artenvielfalt?schule=tempelhof&gruppe=${group}`}
+          href={`/expidition/artenvielfalt?schule=Didaktik der Physik&gruppe=${group}`}
           passHref
         >
           <Button>Artenvielfalt Auswertung</Button>

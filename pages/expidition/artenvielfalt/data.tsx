@@ -357,8 +357,8 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
             />
             <Button onClick={addRow}>Art hinzufügen</Button>
           </div>
-          <div className="m-3 flex flex-col-reverse pl-4">
-            <div className="m-2 aspect-square h-32 w-32 rounded-lg bg-he-blue-light text-center text-white shadow-lg shadow-he-blue-light xl:h-48 xl:w-48">
+          <div className="flex w-full justify-center">
+            <div className="m-2 aspect-square h-48 w-48 rounded-lg bg-he-blue-light text-center text-white shadow-lg shadow-he-blue-light xl:h-48 xl:w-48">
               <div className="flex h-full flex-col justify-between p-4">
                 <span className="text-xl font-semibold">
                   Artenvielfalts-Index
