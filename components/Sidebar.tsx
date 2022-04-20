@@ -6,6 +6,19 @@ import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
 import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
 
+export interface Measurement {
+  value: string;
+  createdAt: string;
+}
+
+export interface Sensor {
+  _id: string;
+  title: string;
+  unit: string;
+  sensorType: string;
+  lastMeasurement: Measurement;
+}
+
 const Sidebar = ({ box }: { box: Feature<Point> }) => {
   let [isOpen, setIsOpen] = useState<boolean>(false);
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
@@ -15,12 +28,11 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     VersiegelungRecord[]
   >(`/api/versiegelung/${box?.properties._id}`);
 
-  const [sensorId, setSensorId] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [sensor, setSensor] = useState<Sensor>();
   const [shouldFetch, setShouldFetch] = useState(false);
   const { data } = useSWR(
     shouldFetch
-      ? `https://api.opensensemap.org/boxes/${box.properties._id}/data/${sensorId}?to-date=${toDate}`
+      ? `https://api.opensensemap.org/boxes/${box.properties._id}/data/${sensor._id}?to-date=${sensor.lastMeasurement.createdAt}`
       : null,
     fetcher,
   );
@@ -33,7 +45,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     if (data) {
       setSeries([
         {
-          name: 'Test',
+          name: sensor.title,
           data: data.map(m => ({
             y: Number(m.value),
             x: new Date(m.createdAt),
@@ -41,21 +53,22 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
         },
       ]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   useEffect(() => {
     // Cleanup after box has changed
     return () => {
       setShouldFetch(false);
-      setToDate('');
-      setSensorId('');
+      setSensor(null);
       setSeries([]);
       setIsOpen(false);
     };
   }, [box]);
 
   const tileColors = {
-    Temperatur: 'bg-red-500',
+    Lufttemperatur: 'bg-he-lufttemperatur',
+    Bodenfeuchte: 'bg-he-bodenfeuchte',
     'rel. Luftfeuchte': 'bg-blue-500',
     'PM2.5': 'bg-slate-500',
     PM10: 'bg-stone-500',
@@ -67,8 +80,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
   const openCharts = sensor => {
     console.log(sensor);
 
-    setSensorId(sensor._id);
-    setToDate(sensor.lastMeasurement.createdAt);
+    setSensor(sensor);
 
     setYAxis({
       title: {
@@ -127,7 +139,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
               {box.properties.tags.map(tag => {
                 return (
                   <span
-                    className="mr-2 inline-flex items-center justify-center rounded-full bg-red-600 px-2 py-1 text-xs font-bold leading-none text-red-100"
+                    className="mr-2 inline-flex items-center justify-center rounded-full bg-he-blue px-2 py-1 text-xs font-bold leading-none text-white"
                     key={tag}
                   >
                     {tag}
@@ -142,7 +154,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
             {artenvielfalt && artenvielfalt.length > 0 && (
               <>
                 <div
-                  className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl bg-he-green p-2 shadow`}
+                  className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl bg-he-artenvielfalt p-2 shadow`}
                 >
                   <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
                     Simpson-Index
@@ -164,7 +176,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
             {versiegelung && versiegelung.length > 0 && (
               <>
                 <div
-                  className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl bg-he-yellow p-2 shadow`}
+                  className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl bg-he-undurchlaessigkeit p-2 shadow`}
                 >
                   <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
                     Versiegelung
