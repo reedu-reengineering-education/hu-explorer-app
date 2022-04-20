@@ -12,6 +12,9 @@ export default async function handler(
         where: {
           deviceId: deviceId as string,
         },
+        include: {
+          arten: true,
+        },
         orderBy: {
           createdAt: 'desc',
         },

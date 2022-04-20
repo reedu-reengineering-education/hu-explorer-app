@@ -36,7 +36,7 @@ export default function Home() {
         {/* <div className="pointer-events-auto col-span-1 col-start-6 row-span-6 row-start-1">
           <Sidebar box={selectedBox}></Sidebar>
         </div> */}
-        <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 rounded-xl border-2">
+        <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
           <Sidebar box={selectedBox}></Sidebar>
         </div>
       </div>

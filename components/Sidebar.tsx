@@ -2,9 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Feature, Point } from 'geojson';
 import { format } from 'date-fns';
 import useSWR from 'swr';
-import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
+import {
+  ArtenvielfaltRecord,
+  ArtRecord,
+  VersiegelungRecord,
+} from '@prisma/client';
 import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
+import PieChart from './PieChart';
 
 export interface Measurement {
   value: string;
@@ -20,10 +25,12 @@ export interface Sensor {
 }
 
 const Sidebar = ({ box }: { box: Feature<Point> }) => {
-  let [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
     ArtenvielfaltRecord[]
   >(`/api/artenvielfalt/${box?.properties._id}`);
+  console.log(artenvielfalt);
   const { data: versiegelung, error: versiegelungError } = useSWR<
     VersiegelungRecord[]
   >(`/api/versiegelung/${box?.properties._id}`);
@@ -40,6 +47,8 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
 
   const [yAxis, setYAxis] = useState<ApexYAxis>();
   const [series, setSeries] = useState([]);
+  const [pieChartSeries, setPieChartSeries] = useState([]);
+  const [pieChartLabels, setPieChartLabels] = useState([]);
 
   useEffect(() => {
     if (data) {
@@ -92,6 +101,21 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     setShouldFetch(!isOpen);
   };
 
+  const openPieChart = () => {
+    const series: number[] = [];
+    const labels: string[] = [];
+
+    for (const art of artenvielfalt[0]['arten'] as Array<ArtRecord>) {
+      series.push(art.count);
+      labels.push(art.art);
+    }
+
+    setPieChartLabels(labels);
+    setPieChartSeries(series);
+
+    setIsPieChartOpen(!isPieChartOpen);
+  };
+
   const getMeasurementTile = sensor => {
     const { _id, title, unit } = sensor;
 
@@ -128,9 +152,9 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
   };
 
   return (
-    <div className="flex h-full divide-x-2 overflow-y-scroll rounded-lg bg-white p-2 shadow">
+    <div className="flex h-full divide-x-2 overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
       {box && (
-        <div className="min-w[35%] flex w-[35%] flex-col divide-y-2">
+        <div className="min-w[35%] flex w-[35%] flex-col divide-y-2 overflow-hidden">
           <div className="mb-2">
             <h1 className="mb-2 content-center text-center text-lg font-bold">
               {box.properties.name}
@@ -147,14 +171,14 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
                 );
               })}
             </div>
-            {/* <hr className="my-8" /> */}
           </div>
-          <div className="flex h-full flex-wrap justify-center align-middle">
+          <div className="flex h-full flex-wrap justify-center overflow-auto align-middle">
             {box.properties.sensors.map(s => getMeasurementTile(s))}
             {artenvielfalt && artenvielfalt.length > 0 && (
               <>
                 <div
                   className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl bg-he-artenvielfalt p-2 shadow`}
+                  onClick={() => openPieChart()}
                 >
                   <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
                     Simpson-Index
@@ -209,7 +233,12 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
           <LineChart series={series} yaxis={yAxis} />
         </div>
       )}
-      {!isOpen && (
+      {isPieChartOpen && (
+        <div className="m-2 h-[95%] w-full overflow-hidden">
+          <PieChart series={pieChartSeries} labels={pieChartLabels} />
+        </div>
+      )}
+      {!isOpen && !isPieChartOpen && (
         <div className="flex h-full w-full items-center justify-center text-center">
           <h1>
             Klicke auf eine Kachel um dir die Daten in einem Graphen anzuzeigen.
