@@ -1,29 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { DateTime } from 'luxon';
 import { Feature, Point } from 'geojson';
 import { format } from 'date-fns';
 import useSWR from 'swr';
 import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
 import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
-
-const startDateTime = DateTime.local()
-  .setLocale('de')
-  .minus({ hours: 12 })
-  .toUTC();
-
-const generateData = (range: number) => {
-  return Array.from({ length: 72 }, (_, i) => {
-    return {
-      y: Math.floor(Math.random() * range) + 1,
-      x: startDateTime
-        .plus({ minutes: 10 * i })
-        .toUTC()
-        .setLocale('de')
-        .toString(),
-    };
-  });
-};
 
 const Sidebar = ({ box }: { box: Feature<Point> }) => {
   let [isOpen, setIsOpen] = useState<boolean>(false);
@@ -34,10 +15,12 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     VersiegelungRecord[]
   >(`/api/versiegelung/${box?.properties._id}`);
 
+  const [sensorId, setSensorId] = useState('');
+  const [toDate, setToDate] = useState('');
   const [shouldFetch, setShouldFetch] = useState(false);
   const { data } = useSWR(
     shouldFetch
-      ? 'https://api.opensensemap.org/boxes/625544d2757be9001c7fca6f/data/625544d2757be9001c7fca70?to-date=2022-04-13T14:40:36.745Z'
+      ? `https://api.opensensemap.org/boxes/${box.properties._id}/data/${sensorId}?to-date=${toDate}`
       : null,
     fetcher,
   );
@@ -60,6 +43,17 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     }
   }, [data]);
 
+  useEffect(() => {
+    // Cleanup after box has changed
+    return () => {
+      setShouldFetch(false);
+      setToDate('');
+      setSensorId('');
+      setSeries([]);
+      setIsOpen(false);
+    };
+  }, [box]);
+
   const tileColors = {
     Temperatur: 'bg-red-500',
     'rel. Luftfeuchte': 'bg-blue-500',
@@ -72,6 +66,9 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
 
   const openCharts = sensor => {
     console.log(sensor);
+
+    setSensorId(sensor._id);
+    setToDate(sensor.lastMeasurement.createdAt);
 
     setYAxis({
       title: {
@@ -119,26 +116,28 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
   };
 
   return (
-    <div className="flex h-full overflow-y-scroll rounded-lg bg-white p-2 shadow">
+    <div className="flex h-full divide-x-2 overflow-y-scroll rounded-lg bg-white p-2 shadow">
       {box && (
-        <div className="min-w[35%] flex w-[35%] flex-col">
-          <h1 className="content-center text-center text-lg font-bold">
-            {box.properties.name}
-          </h1>
-          <div>
-            {box.properties.tags.map(tag => {
-              return (
-                <span
-                  className="mr-2 inline-flex items-center justify-center rounded-full bg-red-600 px-2 py-1 text-xs font-bold leading-none text-red-100"
-                  key={tag}
-                >
-                  {tag}
-                </span>
-              );
-            })}
+        <div className="min-w[35%] flex w-[35%] flex-col divide-y-2">
+          <div className="mb-2">
+            <h1 className="mb-2 content-center text-center text-lg font-bold">
+              {box.properties.name}
+            </h1>
+            <div className="flex justify-center">
+              {box.properties.tags.map(tag => {
+                return (
+                  <span
+                    className="mr-2 inline-flex items-center justify-center rounded-full bg-red-600 px-2 py-1 text-xs font-bold leading-none text-red-100"
+                    key={tag}
+                  >
+                    {tag}
+                  </span>
+                );
+              })}
+            </div>
+            {/* <hr className="my-8" /> */}
           </div>
-          <hr className="my-8" />
-          <div className="flex flex-wrap justify-center">
+          <div className="flex h-full flex-wrap justify-center align-middle">
             {box.properties.sensors.map(s => getMeasurementTile(s))}
             {artenvielfalt && artenvielfalt.length > 0 && (
               <>
@@ -194,7 +193,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
         </h1>
       )}
       {isOpen && (
-        <div className="m-2 h-[90%] w-full">
+        <div className="m-2 h-[95%] w-full overflow-hidden">
           <LineChart series={series} yaxis={yAxis} />
         </div>
       )}
