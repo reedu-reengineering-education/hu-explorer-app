@@ -10,6 +10,7 @@ import {
 import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
 import PieChart from './PieChart';
+import useSharedCompareMode from '@/hooks/useCompareMode';
 
 export interface Measurement {
   value: string;
@@ -25,6 +26,8 @@ export interface Sensor {
 }
 
 const Sidebar = ({ box }: { box: Feature<Point> }) => {
+  const { setCompare } = useSharedCompareMode();
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
@@ -97,6 +100,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
       },
     });
 
+    setCompare(!isOpen);
     setIsOpen(!isOpen);
     setShouldFetch(!isOpen);
   };

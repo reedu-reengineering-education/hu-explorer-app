@@ -25,6 +25,7 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'apexchart-example',
+      // defaultLocale: 'de',
       animations: {
         enabled: false,
       },

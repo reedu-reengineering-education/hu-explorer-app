@@ -5,14 +5,14 @@ import useSWR from 'swr';
 import { Point } from 'geojson';
 import Filter from '@/components/Filter';
 import Stats from '@/components/Stats';
+import useSharedCompareMode from '@/hooks/useCompareMode';
 
 export default function Home() {
   const [selectedBox, setSelectedBox] = useState();
   const [project, setProject] = useState<string | undefined>(undefined);
 
-  // TODO: only fetch humboldt explorer devices
-  // Wait for PR on Grouptag in openSenseMap API
-  // fetch berlin data
+  const { compare } = useSharedCompareMode();
+
   const { data, error } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
     `${
       process.env.NEXT_PUBLIC_OSEM_API
@@ -21,10 +21,20 @@ export default function Home() {
     }`,
   );
 
+  const onBoxSelect = box => {
+    console.log('COMPARE MODE: ', compare);
+
+    if (compare) {
+      // TODO: ADD box into compare array
+    } else {
+      setSelectedBox(box);
+    }
+  };
+
   return (
     <main className="relative h-full w-full">
       <div className="h-full w-full">
-        <Map data={data} onBoxSelect={box => setSelectedBox(box)} />
+        <Map data={data} onBoxSelect={box => onBoxSelect(box)} />
       </div>
       <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-8">
         <div className="pointer-events-auto col-span-3 row-start-1 h-fit md:col-span-2 lg:col-span-2 xl:col-span-1">
