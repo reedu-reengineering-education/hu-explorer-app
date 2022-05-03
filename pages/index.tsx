@@ -1,14 +1,19 @@
-import Map from '@/components/Map';
 import { ReactElement, useState } from 'react';
-import Sidebar from '@/components/Sidebar';
 import useSWR from 'swr';
 import { Point } from 'geojson';
+
+// Own components
 import Filter from '@/components/Filter';
+import Map from '@/components/Map';
+import Sidebar from '@/components/Sidebar';
 import Stats from '@/components/Stats';
+
+// Own hooks
 import useSharedCompareMode from '@/hooks/useCompareMode';
 
 export default function Home() {
   const [selectedBox, setSelectedBox] = useState();
+  const [compareBoxes, setCompareBoxes] = useState([]);
   const [project, setProject] = useState<string | undefined>(undefined);
 
   const { compare } = useSharedCompareMode();
@@ -22,10 +27,9 @@ export default function Home() {
   );
 
   const onBoxSelect = box => {
-    console.log('COMPARE MODE: ', compare);
-
+    // Check if Compare mode is active
     if (compare) {
-      // TODO: ADD box into compare array
+      setCompareBoxes([...compareBoxes, box]);
     } else {
       setSelectedBox(box);
     }
@@ -43,11 +47,10 @@ export default function Home() {
             <Filter setExpedition={setProject}></Filter>
           </div>
         </div>
-        {/* <div className="pointer-events-auto col-span-1 col-start-6 row-span-6 row-start-1">
-          <Sidebar box={selectedBox}></Sidebar>
-        </div> */}
+
+        {/* Sidebar / Bottombar */}
         <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
-          <Sidebar box={selectedBox}></Sidebar>
+          <Sidebar box={selectedBox} compareBoxes={compareBoxes} />
         </div>
       </div>
     </main>

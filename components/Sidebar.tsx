@@ -11,6 +11,7 @@ import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
 import PieChart from './PieChart';
 import useSharedCompareMode from '@/hooks/useCompareMode';
+import { useTailwindColors } from '@/hooks/useTailwindColors';
 
 export interface Measurement {
   value: string;
@@ -25,8 +26,15 @@ export interface Sensor {
   lastMeasurement: Measurement;
 }
 
-const Sidebar = ({ box }: { box: Feature<Point> }) => {
+const Sidebar = ({
+  box,
+  compareBoxes,
+}: {
+  box: Feature<Point>;
+  compareBoxes: Feature<Point>[];
+}) => {
   const { setCompare } = useSharedCompareMode();
+  const colors = useTailwindColors();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
@@ -39,6 +47,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
   >(`/api/versiegelung/${box?.properties._id}`);
 
   const [sensor, setSensor] = useState<Sensor>();
+  const [sensor2, setSensor2] = useState<Sensor>();
   const [shouldFetch, setShouldFetch] = useState(false);
   const { data } = useSWR(
     shouldFetch
@@ -47,6 +56,14 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     fetcher,
   );
   console.log(data);
+  // const [shouldFetch2, setShouldFetch2] = useState(false);
+  // const { data: data2 } = useSWR(
+  //   shouldFetch2
+  //     ? `https://api.opensensemap.org/boxes/${compareBoxes[compareBoxes.length-1].properties._id}/data/${sensor2._id}?to-date=${sensor2.lastMeasurement.createdAt}`
+  //     : null,
+  //   fetcher,
+  // );
+  // console.log(data2);
 
   const [yAxis, setYAxis] = useState<ApexYAxis>();
   const [series, setSeries] = useState([]);
@@ -57,7 +74,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     if (data) {
       setSeries([
         {
-          name: sensor.title,
+          name: box.properties.name,
           data: data.map(m => ({
             y: Number(m.value),
             x: new Date(m.createdAt),
@@ -68,6 +85,22 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
+  // useEffect(() => {
+  //   if (data2) {
+  //     setSeries([
+  //       ...series,
+  //       {
+  //         name: compareBoxes[compareBoxes.length-1].properties.name,
+  //         data: data2.map(m => ({
+  //           y: Number(m.value),
+  //           x: new Date(m.createdAt),
+  //         })),
+  //       },
+  //     ]);
+  //   }
+  // // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [data2])
+
   useEffect(() => {
     // Cleanup after box has changed
     return () => {
@@ -77,6 +110,16 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
       setIsOpen(false);
     };
   }, [box]);
+
+  // useEffect(() => {
+  //   if (compareBoxes.length > 0) {
+  //     setSensor2(compareBoxes[compareBoxes.length - 1].properties.sensors[0])
+  //     setShouldFetch2(true);
+  //   }
+  //   return () => {
+
+  //   }
+  // }, [compareBoxes])
 
   const tileColors = {
     Lufttemperatur: 'bg-he-lufttemperatur',
@@ -100,7 +143,7 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
       },
     });
 
-    setCompare(!isOpen);
+    // setCompare(!isOpen);
     setIsOpen(!isOpen);
     setShouldFetch(!isOpen);
   };
@@ -118,6 +161,25 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     setPieChartSeries(series);
 
     setIsPieChartOpen(!isPieChartOpen);
+  };
+
+  const handleCompare = event => {
+    console.log(event.target.checked);
+    setCompare(event.target.checked);
+  };
+
+  const handleCompareBoxes = event => {
+    console.log(event);
+    console.log(event.target.id);
+    const box = compareBoxes.find(
+      box => (box.properties._id = event.target.id),
+    );
+    console.log(box);
+  };
+
+  const handleSensorChange = event => {
+    console.log(event);
+    console.log(event.target.id);
   };
 
   const getMeasurementTile = sensor => {
@@ -233,8 +295,57 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
         </h1>
       )}
       {isOpen && (
-        <div className="m-2 h-[95%] w-full overflow-hidden">
-          <LineChart series={series} yaxis={yAxis} />
+        <div className="flex w-full flex-col">
+          <div className="m-2">
+            <label htmlFor="compare">Vergleichen</label>
+            <input type="checkbox" name="compare" onChange={handleCompare} />
+            {compareBoxes &&
+              compareBoxes.map(box => {
+                return (
+                  <div className="flex flex-row" key={box.properties._id}>
+                    <label
+                      htmlFor={`${box.properties.name}-${box.properties._id}`}
+                    >
+                      {box.properties.name}
+                    </label>
+                    <input
+                      type="checkbox"
+                      name={`${box.properties.name}-${box.properties._id}`}
+                      id={box.properties._id}
+                      onChange={handleCompareBoxes}
+                    />
+                    {box.properties.sensors.map(sensor => {
+                      console.log(sensor);
+                      return (
+                        <div key={sensor._id}>
+                          <label htmlFor={`${sensor.title}-${sensor._id}`}>
+                            {sensor.title}
+                          </label>
+                          <input
+                            type="checkbox"
+                            name={`${sensor.title}-${sensor._id}`}
+                            id={sensor._id}
+                            onChange={handleSensorChange}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+          </div>
+          <div className="m-2 h-[90%] w-full overflow-hidden">
+            <LineChart
+              series={series}
+              yaxis={yAxis}
+              colors={[
+                colors.he[sensor.title.toLocaleLowerCase()].DEFAULT,
+                colors.he.red.DEFAULT,
+                colors.he.aqua.DEFAULT,
+                colors.he.lilac.DEFAULT,
+              ]}
+            />
+          </div>
         </div>
       )}
       {isPieChartOpen && (
