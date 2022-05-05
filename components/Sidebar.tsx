@@ -12,19 +12,19 @@ import { fetcher } from '@/lib/fetcher';
 import PieChart from './PieChart';
 import useSharedCompareMode from '@/hooks/useCompareMode';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
+import Toggle from './Toggle';
+import { Sensor } from '@/types/osem';
 
-export interface Measurement {
-  value: string;
-  createdAt: string;
-}
-
-export interface Sensor {
-  _id: string;
-  title: string;
-  unit: string;
-  sensorType: string;
-  lastMeasurement: Measurement;
-}
+const tileColors = {
+  Lufttemperatur: 'bg-he-lufttemperatur',
+  Bodenfeuchte: 'bg-he-bodenfeuchte',
+  'rel. Luftfeuchte': 'bg-blue-500',
+  'PM2.5': 'bg-slate-500',
+  PM10: 'bg-stone-500',
+  Luftdruck: 'bg-teal-500',
+  Beleuchtungsstärke: 'bg-amber-400',
+  'UV-Intensität': 'bg-green-400',
+};
 
 const Sidebar = ({
   box,
@@ -41,13 +41,11 @@ const Sidebar = ({
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
     ArtenvielfaltRecord[]
   >(`/api/artenvielfalt/${box?.properties._id}`);
-  console.log(artenvielfalt);
   const { data: versiegelung, error: versiegelungError } = useSWR<
     VersiegelungRecord[]
   >(`/api/versiegelung/${box?.properties._id}`);
 
   const [sensor, setSensor] = useState<Sensor>();
-  const [sensor2, setSensor2] = useState<Sensor>();
   const [shouldFetch, setShouldFetch] = useState(false);
   const { data } = useSWR(
     shouldFetch
@@ -55,15 +53,16 @@ const Sidebar = ({
       : null,
     fetcher,
   );
-  console.log(data);
-  // const [shouldFetch2, setShouldFetch2] = useState(false);
-  // const { data: data2 } = useSWR(
-  //   shouldFetch2
-  //     ? `https://api.opensensemap.org/boxes/${compareBoxes[compareBoxes.length-1].properties._id}/data/${sensor2._id}?to-date=${sensor2.lastMeasurement.createdAt}`
-  //     : null,
-  //   fetcher,
-  // );
-  // console.log(data2);
+
+  const [compareDevice, setCompareDevice] = useState<Feature<Point>>();
+  const [sensor2, setSensor2] = useState<Sensor>();
+  const [shouldFetch2, setShouldFetch2] = useState(false);
+  const { data: data2 } = useSWR(
+    shouldFetch2
+      ? `https://api.opensensemap.org/boxes/${compareDevice?.properties._id}/data/${sensor2._id}?to-date=${sensor2.lastMeasurement.createdAt}`
+      : null,
+    fetcher,
+  );
 
   const [yAxis, setYAxis] = useState<ApexYAxis>();
   const [series, setSeries] = useState([]);
@@ -74,7 +73,8 @@ const Sidebar = ({
     if (data) {
       setSeries([
         {
-          name: box.properties.name,
+          id: `${box.properties._id}-${sensor._id}`,
+          name: `${box.properties.name}-${sensor.title}`,
           data: data.map(m => ({
             y: Number(m.value),
             x: new Date(m.createdAt),
@@ -85,21 +85,22 @@ const Sidebar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  // useEffect(() => {
-  //   if (data2) {
-  //     setSeries([
-  //       ...series,
-  //       {
-  //         name: compareBoxes[compareBoxes.length-1].properties.name,
-  //         data: data2.map(m => ({
-  //           y: Number(m.value),
-  //           x: new Date(m.createdAt),
-  //         })),
-  //       },
-  //     ]);
-  //   }
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [data2])
+  useEffect(() => {
+    if (data2) {
+      setSeries([
+        ...series,
+        {
+          id: `${compareDevice.properties._id}-${sensor2._id}`,
+          name: `${compareDevice.properties.name}-${sensor2.title}`,
+          data: data2.map(m => ({
+            y: Number(m.value),
+            x: new Date(m.createdAt),
+          })),
+        },
+      ]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data2]);
 
   useEffect(() => {
     // Cleanup after box has changed
@@ -111,32 +112,8 @@ const Sidebar = ({
     };
   }, [box]);
 
-  // useEffect(() => {
-  //   if (compareBoxes.length > 0) {
-  //     setSensor2(compareBoxes[compareBoxes.length - 1].properties.sensors[0])
-  //     setShouldFetch2(true);
-  //   }
-  //   return () => {
-
-  //   }
-  // }, [compareBoxes])
-
-  const tileColors = {
-    Lufttemperatur: 'bg-he-lufttemperatur',
-    Bodenfeuchte: 'bg-he-bodenfeuchte',
-    'rel. Luftfeuchte': 'bg-blue-500',
-    'PM2.5': 'bg-slate-500',
-    PM10: 'bg-stone-500',
-    Luftdruck: 'bg-teal-500',
-    Beleuchtungsstärke: 'bg-amber-400',
-    'UV-Intensität': 'bg-green-400',
-  };
-
   const openCharts = sensor => {
-    console.log(sensor);
-
     setSensor(sensor);
-
     setYAxis({
       title: {
         text: sensor.title + ' ' + sensor.unit,
@@ -164,25 +141,28 @@ const Sidebar = ({
   };
 
   const handleCompare = event => {
-    console.log(event.target.checked);
     setCompare(event.target.checked);
   };
 
-  const handleCompareBoxes = event => {
-    console.log(event);
-    console.log(event.target.id);
-    const box = compareBoxes.find(
-      box => (box.properties._id = event.target.id),
-    );
-    console.log(box);
+  const updateSeries = (
+    enabled: boolean,
+    device: Feature<Point>,
+    sensor: Sensor,
+  ) => {
+    if (enabled) {
+      setCompareDevice(device);
+      setSensor2(sensor);
+    } else {
+      setSeries(
+        series.filter(
+          serie => serie.id !== `${device.properties._id}-${sensor._id}`,
+        ),
+      );
+    }
+    setShouldFetch2(enabled);
   };
 
-  const handleSensorChange = event => {
-    console.log(event);
-    console.log(event.target.id);
-  };
-
-  const getMeasurementTile = sensor => {
+  const getMeasurementTile = (sensor: Sensor) => {
     const { _id, title, unit } = sensor;
 
     const value = Number(sensor.lastMeasurement?.value);
@@ -289,10 +269,12 @@ const Sidebar = ({
         </div>
       )}
       {!box && (
-        <h1 className="text-md content-center text-center font-bold">
-          Wählt per Klick auf die Karte einen Schulstandort aus und ihr seht
-          Messwerte von Umweltfaktoren an dieser Schule.
-        </h1>
+        <div className="flex h-full w-full items-center justify-center">
+          <h1 className="text-md content-center text-center font-bold">
+            Wählt per Klick auf die Karte einen Schulstandort aus und ihr seht
+            Messwerte von Umweltfaktoren an dieser Schule.
+          </h1>
+        </div>
       )}
       {isOpen && (
         <div className="flex w-full flex-col">
@@ -308,24 +290,16 @@ const Sidebar = ({
                     >
                       {box.properties.name}
                     </label>
-                    <input
-                      type="checkbox"
-                      name={`${box.properties.name}-${box.properties._id}`}
-                      id={box.properties._id}
-                      onChange={handleCompareBoxes}
-                    />
                     {box.properties.sensors.map(sensor => {
-                      console.log(sensor);
                       return (
                         <div key={sensor._id}>
                           <label htmlFor={`${sensor.title}-${sensor._id}`}>
                             {sensor.title}
                           </label>
-                          <input
-                            type="checkbox"
-                            name={`${sensor.title}-${sensor._id}`}
-                            id={sensor._id}
-                            onChange={handleSensorChange}
+                          <Toggle
+                            updateSeries={updateSeries}
+                            device={box}
+                            sensor={sensor}
                           />
                         </div>
                       );
@@ -353,7 +327,7 @@ const Sidebar = ({
           <PieChart series={pieChartSeries} labels={pieChartLabels} />
         </div>
       )}
-      {!isOpen && !isPieChartOpen && (
+      {box !== undefined && !isOpen && !isPieChartOpen && (
         <div className="flex h-full w-full items-center justify-center text-center">
           <h1>
             Klicke auf eine Kachel um dir die Daten in einem Graphen anzuzeigen.

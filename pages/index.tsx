@@ -1,6 +1,6 @@
 import { ReactElement, useState } from 'react';
 import useSWR from 'swr';
-import { Point } from 'geojson';
+import { Feature, Point } from 'geojson';
 
 // Own components
 import Filter from '@/components/Filter';
@@ -12,8 +12,8 @@ import Stats from '@/components/Stats';
 import useSharedCompareMode from '@/hooks/useCompareMode';
 
 export default function Home() {
-  const [selectedBox, setSelectedBox] = useState();
-  const [compareBoxes, setCompareBoxes] = useState([]);
+  const [selectedBox, setSelectedBox] = useState<Feature<Point>>();
+  const [compareBoxes, setCompareBoxes] = useState<Feature<Point>[]>([]);
   const [project, setProject] = useState<string | undefined>(undefined);
 
   const { compare } = useSharedCompareMode();
