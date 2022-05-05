@@ -16,17 +16,7 @@ import Toggle from './Toggle';
 import { Device, Sensor } from '@/types/osem';
 import { Button } from './Elements/Button';
 import BarChart from './BarChart';
-
-const tileColors = {
-  Lufttemperatur: 'bg-he-lufttemperatur',
-  Bodenfeuchte: 'bg-he-bodenfeuchte',
-  'rel. Luftfeuchte': 'bg-blue-500',
-  'PM2.5': 'bg-slate-500',
-  PM10: 'bg-stone-500',
-  Luftdruck: 'bg-teal-500',
-  Beleuchtungsstärke: 'bg-amber-400',
-  'UV-Intensität': 'bg-green-400',
-};
+import MeasurementTile from './MeasurementTile';
 
 const Sidebar = ({
   box,
@@ -246,41 +236,6 @@ const Sidebar = ({
     );
   };
 
-  const getMeasurementTile = (sensor: Sensor) => {
-    const { _id, title, unit } = sensor;
-
-    const value = Number(sensor.lastMeasurement?.value);
-
-    let color = tileColors[title] ?? 'bg-violet-500';
-
-    if (!value || isNaN(value)) {
-      return;
-    }
-
-    return (
-      <div
-        key={_id}
-        className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl p-2 shadow ${color}`}
-        onClick={() => openCharts(sensor)}
-      >
-        <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
-          {title}
-        </h1>
-        <h1 className="text-3xl font-semibold text-white">
-          {value.toFixed(1)} {unit}
-        </h1>
-        <div className="mt-2 border-t-2">
-          <kbd className="text-xs text-white">
-            {format(
-              new Date(sensor.lastMeasurement?.createdAt),
-              'dd.MM.yyyy HH:mm',
-            )}
-          </kbd>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="flex h-full divide-x-2 overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
       {box && (
@@ -303,7 +258,15 @@ const Sidebar = ({
             </div>
           </div>
           <div className="flex h-full flex-wrap justify-center overflow-auto align-middle">
-            {box.properties.sensors.map(s => getMeasurementTile(s))}
+            {box.properties.sensors.map(sensor => {
+              return (
+                <MeasurementTile
+                  key={sensor._id}
+                  sensor={sensor}
+                  openChart={openCharts}
+                />
+              );
+            })}
             {artenvielfalt && artenvielfalt.length > 0 && (
               <>
                 <div
@@ -330,7 +293,7 @@ const Sidebar = ({
             {versiegelung && versiegelung.length > 0 && (
               <>
                 <div
-                  className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl bg-he-undurchlaessigkeit p-2 shadow`}
+                  className={`h-34 w-34 m-2 flex aspect-square flex-col items-center justify-center rounded-xl bg-he-undurchlaessigkeit p-2 shadow`}
                   onClick={() => openBarChart()}
                 >
                   <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
