@@ -65,6 +65,15 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
     colors,
   });
 
+  useEffect(() => {
+    setOptions({
+      ...options,
+      yaxis: yaxis,
+      colors: colors,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colors, yaxis]);
+
   return (
     <Chart
       options={options}

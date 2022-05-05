@@ -31,6 +31,7 @@ export default function Home() {
     if (compare) {
       setCompareBoxes([...compareBoxes, box]);
     } else {
+      setCompareBoxes([]);
       setSelectedBox(box);
     }
   };
@@ -50,7 +51,11 @@ export default function Home() {
 
         {/* Sidebar / Bottombar */}
         <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
-          <Sidebar box={selectedBox} compareBoxes={compareBoxes} />
+          <Sidebar
+            box={selectedBox}
+            compareBoxes={compareBoxes}
+            setCompareBoxes={setCompareBoxes}
+          />
         </div>
       </div>
     </main>

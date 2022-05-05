@@ -13,7 +13,8 @@ import PieChart from './PieChart';
 import useSharedCompareMode from '@/hooks/useCompareMode';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import Toggle from './Toggle';
-import { Sensor } from '@/types/osem';
+import { Device, Sensor } from '@/types/osem';
+import { Button } from './Elements/Button';
 
 const tileColors = {
   Lufttemperatur: 'bg-he-lufttemperatur',
@@ -29,9 +30,11 @@ const tileColors = {
 const Sidebar = ({
   box,
   compareBoxes,
+  setCompareBoxes,
 }: {
   box: Feature<Point>;
   compareBoxes: Feature<Point>[];
+  setCompareBoxes: React.Dispatch<React.SetStateAction<any>>;
 }) => {
   const { setCompare } = useSharedCompareMode();
   const colors = useTailwindColors();
@@ -64,14 +67,29 @@ const Sidebar = ({
     fetcher,
   );
 
-  const [yAxis, setYAxis] = useState<ApexYAxis>();
-  const [series, setSeries] = useState([]);
-  const [pieChartSeries, setPieChartSeries] = useState([]);
+  const [yAxis, setYAxis] = useState<ApexYAxis[]>();
+  const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
+  const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
   const [pieChartLabels, setPieChartLabels] = useState([]);
 
   useEffect(() => {
+    return () => {
+      // Cleanup everything before a new device is selected!!!
+      setCompare(false);
+      setSeries([]);
+      setShouldFetch(false);
+      setShouldFetch2(false);
+      setSensor(null);
+      setSensor2(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [box]);
+
+  useEffect(() => {
+    console.log('useEffect on data state');
     if (data) {
       setSeries([
+        ...series,
         {
           id: `${box.properties._id}-${sensor._id}`,
           name: `${box.properties.name}-${sensor.title}`,
@@ -112,17 +130,55 @@ const Sidebar = ({
     };
   }, [box]);
 
-  const openCharts = sensor => {
+  const openCharts = (sensor: Sensor) => {
     setSensor(sensor);
-    setYAxis({
-      title: {
-        text: sensor.title + ' ' + sensor.unit,
-      },
-    });
 
-    // setCompare(!isOpen);
-    setIsOpen(!isOpen);
-    setShouldFetch(!isOpen);
+    if (!isOpen) {
+      setYAxis([
+        {
+          title: {
+            text: sensor.title + ' ' + sensor.unit,
+          },
+        },
+      ]);
+      setIsOpen(!isOpen);
+      setShouldFetch(!isOpen);
+    } else {
+      // Handle open chart
+      const serie = series.find(serie => serie.id.includes(sensor._id));
+
+      if (serie) {
+        // Stop fetching data
+        setShouldFetch(false);
+        const newSeries = series.filter(
+          serie => !serie.id.includes(sensor._id),
+        );
+        setSeries(newSeries);
+
+        // If now series data existing, close chart and clean up
+        if (newSeries.length === 0) {
+          setIsOpen(false);
+          setYAxis([]);
+        }
+      } else {
+        setShouldFetch(true);
+
+        // Check if axis is available
+        const axisTitle = sensor.title + ' ' + sensor.unit;
+        const axis = yAxis.find(yAxis => yAxis.title.text === axisTitle);
+        if (!axis) {
+          setYAxis([
+            ...yAxis,
+            {
+              title: {
+                text: axisTitle,
+              },
+              opposite: true,
+            },
+          ]);
+        }
+      }
+    }
   };
 
   const openPieChart = () => {
@@ -160,6 +216,16 @@ const Sidebar = ({
       );
     }
     setShouldFetch2(enabled);
+  };
+
+  const removeCompareDevice = (device: Feature<Point>) => {
+    const deviceProps = device.properties as Device;
+    setSeries(
+      series.filter(serie => serie.id.startsWith(device.properties._id)),
+    );
+    setCompareBoxes(
+      compareBoxes.filter(box => box.properties._id !== deviceProps._id),
+    );
   };
 
   const getMeasurementTile = (sensor: Sensor) => {
@@ -304,6 +370,9 @@ const Sidebar = ({
                         </div>
                       );
                     })}
+                    <Button onClick={() => removeCompareDevice(box)}>
+                      Entfernen
+                    </Button>
                   </div>
                 );
               })}
