@@ -2,7 +2,7 @@ import { Feature, Point } from 'geojson';
 
 export interface Measurement {
   value: string;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export interface Sensor {

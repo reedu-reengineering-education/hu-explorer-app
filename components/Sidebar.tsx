@@ -59,6 +59,8 @@ const Sidebar = ({
     fetcher,
   );
 
+  console.log(artenvielfalt);
+
   const [yAxis, setYAxis] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
   const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
@@ -236,6 +238,34 @@ const Sidebar = ({
     );
   };
 
+  const getArtenvielfaltTile = (artenvielfalt: ArtenvielfaltRecord[]) => {
+    const sensor: Sensor = {
+      _id: artenvielfalt[0].id,
+      title: 'Simpson-Index',
+      unit: '',
+      sensorType: '',
+      lastMeasurement: {
+        value: artenvielfalt[0].simpsonIndex.toFixed(2),
+        createdAt: artenvielfalt[0].updatedAt,
+      },
+    };
+    return <MeasurementTile sensor={sensor} openChart={openBarChart} />;
+  };
+
+  const getVersiegelungTile = (versiegelung: VersiegelungRecord[]) => {
+    const sensor: Sensor = {
+      _id: versiegelung[0].id,
+      title: 'Versiegelung',
+      unit: '%',
+      sensorType: '',
+      lastMeasurement: {
+        value: versiegelung[0].value.toFixed(2),
+        createdAt: versiegelung[0].updatedAt,
+      },
+    };
+    return <MeasurementTile sensor={sensor} openChart={openPieChart} />;
+  };
+
   return (
     <div className="flex h-full divide-x-2 overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
       {box && (
@@ -267,52 +297,14 @@ const Sidebar = ({
                 />
               );
             })}
-            {artenvielfalt && artenvielfalt.length > 0 && (
-              <>
-                <div
-                  className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl bg-he-artenvielfalt p-2 shadow`}
-                  onClick={() => openPieChart()}
-                >
-                  <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
-                    Simpson-Index
-                  </h1>
-                  <h1 className="text-3xl font-semibold text-white">
-                    {artenvielfalt[0].simpsonIndex.toFixed(1)}
-                  </h1>
-                  <div className="mt-2 border-t-2">
-                    <kbd className="text-xs text-white">
-                      {format(
-                        new Date(artenvielfalt[0].updatedAt),
-                        'dd.MM.yyyy HH:mm',
-                      )}
-                    </kbd>
-                  </div>
-                </div>
-              </>
-            )}
-            {versiegelung && versiegelung.length > 0 && (
-              <>
-                <div
-                  className={`h-34 w-34 m-2 flex aspect-square flex-col items-center justify-center rounded-xl bg-he-undurchlaessigkeit p-2 shadow`}
-                  onClick={() => openBarChart()}
-                >
-                  <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
-                    Versiegelung
-                  </h1>
-                  <h1 className="text-3xl font-semibold text-white">
-                    {versiegelung[0].value.toFixed(1)} %
-                  </h1>
-                  <div className="mt-2 border-t-2">
-                    <kbd className="text-xs text-white">
-                      {format(
-                        new Date(versiegelung[0].updatedAt),
-                        'dd.MM.yyyy HH:mm',
-                      )}
-                    </kbd>
-                  </div>
-                </div>
-              </>
-            )}
+
+            {artenvielfalt &&
+              artenvielfalt.length > 0 &&
+              getArtenvielfaltTile(artenvielfalt)}
+
+            {versiegelung &&
+              versiegelung.length > 0 &&
+              getVersiegelungTile(versiegelung)}
           </div>
         </div>
       )}

@@ -15,6 +15,8 @@ const tileColors = {
   PM10: 'bg-stone-500',
   Luftdruck: 'bg-teal-500',
   Beleuchtungsstärke: 'bg-amber-400',
+  Versiegelung: 'bg-he-undurchlaessigkeit',
+  'Simpson-Index': 'bg-he-artenvielfalt',
   'UV-Intensität': 'bg-green-400',
 };
 
