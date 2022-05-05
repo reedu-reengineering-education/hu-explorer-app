@@ -15,6 +15,7 @@ import { useTailwindColors } from '@/hooks/useTailwindColors';
 import Toggle from './Toggle';
 import { Device, Sensor } from '@/types/osem';
 import { Button } from './Elements/Button';
+import BarChart from './BarChart';
 
 const tileColors = {
   Lufttemperatur: 'bg-he-lufttemperatur',
@@ -41,6 +42,7 @@ const Sidebar = ({
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
+  const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
     ArtenvielfaltRecord[]
   >(`/api/artenvielfalt/${box?.properties._id}`);
@@ -70,6 +72,7 @@ const Sidebar = ({
   const [yAxis, setYAxis] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
   const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
+  const [barChartSeries, setBarChartSeries] = useState([]); // Holding data for chart (Pie)
   const [pieChartLabels, setPieChartLabels] = useState([]);
 
   useEffect(() => {
@@ -87,7 +90,6 @@ const Sidebar = ({
   }, [box]);
 
   useEffect(() => {
-    console.log('useEffect on data state');
     if (data) {
       setSeries([
         ...series,
@@ -195,6 +197,21 @@ const Sidebar = ({
     setPieChartSeries(series);
 
     setIsPieChartOpen(!isPieChartOpen);
+  };
+
+  const openBarChart = () => {
+    setBarChartSeries([
+      {
+        id: 'versiegelung-1',
+        name: 'versieglung',
+        data: versiegelung.reverse().map(v => ({
+          y: Number(v.value),
+          x: new Date(v.createdAt).toLocaleDateString(),
+        })),
+      },
+    ]);
+
+    setIsBarChartOpen(!isBarChartOpen);
   };
 
   const handleCompare = event => {
@@ -314,6 +331,7 @@ const Sidebar = ({
               <>
                 <div
                   className={`m-2 flex aspect-square h-36 w-36 flex-col items-center justify-center rounded-xl bg-he-undurchlaessigkeit p-2 shadow`}
+                  onClick={() => openBarChart()}
                 >
                   <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-sm font-bold text-white">
                     Versiegelung
@@ -393,12 +411,21 @@ const Sidebar = ({
           </div>
         </div>
       )}
+      {isBarChartOpen && (
+        <div className="m-2 h-[90%] w-full overflow-hidden">
+          <BarChart
+            series={barChartSeries}
+            yaxis={yAxis}
+            // colors={[colors.he[tabs[tab].id.toLowerCase()].DEFAULT]}
+          />
+        </div>
+      )}
       {isPieChartOpen && (
         <div className="m-2 h-[95%] w-full overflow-hidden">
           <PieChart series={pieChartSeries} labels={pieChartLabels} />
         </div>
       )}
-      {box !== undefined && !isOpen && !isPieChartOpen && (
+      {box !== undefined && !isOpen && !isPieChartOpen && !isBarChartOpen && (
         <div className="flex h-full w-full items-center justify-center text-center">
           <h1>
             Klicke auf eine Kachel um dir die Daten in einem Graphen anzuzeigen.
