@@ -26,10 +26,23 @@ export default function Home() {
     }`,
   );
 
-  const onBoxSelect = box => {
+  const onBoxSelect = (box: Feature<Point>) => {
     // Check if Compare mode is active
     if (compare) {
-      setCompareBoxes([...compareBoxes, box]);
+      const isSelectedDevice =
+        selectedBox.properties._id === box.properties._id;
+      const alreadyInCompareDevices =
+        compareBoxes.findIndex(
+          device => device.properties._id === box.properties._id,
+        ) !== -1;
+
+      if (
+        !isSelectedDevice &&
+        !alreadyInCompareDevices &&
+        compareBoxes.length < 5
+      ) {
+        setCompareBoxes([...compareBoxes, box]);
+      }
     } else {
       setCompareBoxes([]);
       setSelectedBox(box);

@@ -75,6 +75,7 @@ const Sidebar = ({
   useEffect(() => {
     return () => {
       // Cleanup everything before a new device is selected!!!
+      setIsOpen(false);
       setCompare(false);
       setSeries([]);
       setShouldFetch(false);
@@ -346,6 +347,7 @@ const Sidebar = ({
         <div className="flex w-full flex-col">
           <div className="m-2">
             <label htmlFor="compare">Vergleichen</label>
+            <span>{compareBoxes.length} / 5</span>
             <input type="checkbox" name="compare" onChange={handleCompare} />
             {compareBoxes &&
               compareBoxes.map(box => {

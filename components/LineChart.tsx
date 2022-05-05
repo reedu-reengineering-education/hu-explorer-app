@@ -48,6 +48,7 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
     },
     yaxis,
     legend: {
+      showForSingleSeries: true,
       position: 'bottom',
     },
     dataLabels: {
