@@ -37,13 +37,15 @@ module.exports = {
             DEFAULT: '#f6a03e',
           },
           lufttemperatur: {
-            DEFAULT: '#5394d0',
-          },
-          bodenfeuchte: {
+            // DEFAULT: '#5394d0',
             DEFAULT: '#f6a03e',
           },
+          bodenfeuchte: {
+            // DEFAULT: '#f6a03e',
+            DEFAULT: '#5394d0',
+          },
           undurchlaessigkeit: {
-            light: '#5394d0',
+            // light: '#5394d0',
             DEFAULT: '#6bbe98',
           },
           artenvielfalt: {

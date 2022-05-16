@@ -190,7 +190,7 @@ const Artenvielfalt = ({
     },
     {
       id: 'Undurchlaessigkeit',
-      title: 'Undurchlässigkeit',
+      title: 'Versiegelungsanteil',
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
@@ -198,6 +198,11 @@ const Artenvielfalt = ({
 
   const [xaxis, setXaxis] = useState({
     categories: groups,
+    labels: {
+      style: {
+        fontSize: '16px',
+      },
+    },
   });
 
   const [yaxis, setYaxis] = useState<ApexYAxis[]>([
@@ -206,6 +211,10 @@ const Artenvielfalt = ({
       showAlways: true,
       title: {
         text: 'Temperatur in °C',
+        style: {
+          fontSize: '16px',
+          color: colors.he.lufttemperatur.DEFAULT,
+        },
       },
     },
   ]);
@@ -228,6 +237,7 @@ const Artenvielfalt = ({
             title: {
               text: 'Lufttemperatur in °C',
               style: {
+                fontSize: '16px',
                 color: colors.he.lufttemperatur.DEFAULT,
               },
             },
@@ -243,6 +253,7 @@ const Artenvielfalt = ({
             title: {
               text: 'Artenvielfaltsindex',
               style: {
+                fontSize: '16px',
                 color: colors.he.artenvielfalt.DEFAULT,
               },
             },
@@ -269,6 +280,7 @@ const Artenvielfalt = ({
             title: {
               text: 'Bodenfeuchte in %',
               style: {
+                fontSize: '16px',
                 color: colors.he.bodenfeuchte.DEFAULT,
               },
             },
@@ -284,6 +296,7 @@ const Artenvielfalt = ({
             title: {
               text: 'Artenvielfaltsindex',
               style: {
+                fontSize: '16px',
                 color: colors.he.artenvielfalt.DEFAULT,
               },
             },
@@ -298,7 +311,7 @@ const Artenvielfalt = ({
       case 2:
         setSeries([
           {
-            name: 'Undurchlässigkeit',
+            name: 'Versiegelungsanteil',
             data: versiegelung,
           },
           {
@@ -308,11 +321,12 @@ const Artenvielfalt = ({
         ]);
         setYaxis([
           {
-            seriesName: 'Undurchlässigkeit',
+            seriesName: 'Versiegelungsanteil',
             showAlways: true,
             title: {
-              text: 'Undurchlässigkeit in %',
+              text: 'Versieglungsanteil in %',
               style: {
+                fontSize: '16px',
                 color: colors.he.undurchlaessigkeit.DEFAULT,
               },
             },
@@ -328,6 +342,7 @@ const Artenvielfalt = ({
             title: {
               text: 'Artenvielfaltsindex',
               style: {
+                fontSize: '16px',
                 color: colors.he.artenvielfalt.DEFAULT,
               },
             },

@@ -49,11 +49,12 @@ const BarChart = ({
         columnWidth: '55%',
       },
     },
-    xaxis,
+    xaxis: xaxis,
     yaxis: yaxis,
     colors: colors,
     legend: {
       position: 'bottom',
+      fontSize: '14px',
     },
     dataLabels: {
       enabled: false,
@@ -68,7 +69,7 @@ const BarChart = ({
   useEffect(() => {
     setOptions({
       ...options,
-      xaxis,
+      xaxis: xaxis,
       yaxis: yaxis,
       colors: colors,
     });

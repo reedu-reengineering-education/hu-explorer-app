@@ -44,10 +44,16 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
     },
     xaxis: {
       type: 'datetime',
+      labels: {
+        style: {
+          fontSize: '14px',
+        },
+      },
     },
     yaxis,
     legend: {
       position: 'bottom',
+      fontSize: '14px',
     },
     dataLabels: {
       enabled: false,

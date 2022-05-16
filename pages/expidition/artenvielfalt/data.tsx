@@ -36,7 +36,7 @@ const getColumns = (): Column[] => [
 
 const getColumnsVersieglung = (): Column[] => [
   { columnId: 'rowId', width: 150 },
-  { columnId: 'count', width: 180 },
+  { columnId: 'count', width: 200 },
 ];
 
 const headerRow: Row = {
@@ -53,7 +53,7 @@ const headerRowVersieglung: Row = {
   rowId: 'header',
   cells: [
     { type: 'header', text: '' },
-    { type: 'header', text: 'Undurchlässigkeit in %' },
+    { type: 'header', text: 'Versiegelungsanteil in %' },
   ],
 };
 

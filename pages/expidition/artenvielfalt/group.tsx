@@ -227,7 +227,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     },
     {
       id: 'Undurchlaessigkeit',
-      title: 'Undurchlässigkeit',
+      title: 'Versiegelungsanteil',
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
@@ -239,6 +239,11 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
 
   const [xaxis, setXaxis] = useState({
     categories: groups,
+    labels: {
+      style: {
+        fontSize: '16px',
+      },
+    },
   });
 
   const [yaxis, setYaxis] = useState<ApexYAxis[]>([
@@ -247,6 +252,9 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
       showAlways: true,
       title: {
         text: 'Lufttemperatur in °C',
+        style: {
+          fontSize: '16px',
+        },
       },
     },
   ]);
@@ -263,6 +271,9 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             showAlways: true,
             title: {
               text: 'Lufttemperatur in °C',
+              style: {
+                fontSize: '16px',
+              },
             },
           },
         ]);
@@ -276,6 +287,9 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             showAlways: true,
             title: {
               text: 'Bodenfeuchte in %',
+              style: {
+                fontSize: '16px',
+              },
             },
           },
         ]);
@@ -292,7 +306,10 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             seriesName: 'Undurchlässigkeit',
             showAlways: true,
             title: {
-              text: 'Undurchlässigkeit in %',
+              text: 'Versiegelungsanteil in %',
+              style: {
+                fontSize: '16px',
+              },
             },
           },
         ]);
@@ -310,6 +327,9 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             showAlways: true,
             title: {
               text: 'Artenvielfaltsindex',
+              style: {
+                fontSize: '16px',
+              },
             },
           },
         ]);
