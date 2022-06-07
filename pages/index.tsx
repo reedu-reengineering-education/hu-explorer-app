@@ -71,11 +71,7 @@ export default function Home() {
 
         {/* Sidebar / Bottombar */}
         <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
-          <Sidebar
-            box={selectedBox}
-            compareBoxes={compareBoxes}
-            setCompareBoxes={setCompareBoxes}
-          />
+          <Sidebar box={selectedBox} />
         </div>
       </div>
     </main>

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Feature, Point } from 'geojson';
-import { format } from 'date-fns';
 import useSWR from 'swr';
 import {
   ArtenvielfaltRecord,
@@ -10,25 +9,20 @@ import {
 import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
 import PieChart from './PieChart';
-import useSharedCompareMode from '@/hooks/useCompareMode';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
-import Toggle from './Toggle';
 import { Device, Sensor } from '@/types/osem';
-import { Button } from './Elements/Button';
 import BarChart from './BarChart';
 import MeasurementTile from './MeasurementTile';
+import useSharedCompareDevices from '@/hooks/useCompareDevices';
 
-const Sidebar = ({
-  box,
-  compareBoxes,
-  setCompareBoxes,
-}: {
-  box: Feature<Point>;
-  compareBoxes: Feature<Point>[];
-  setCompareBoxes: React.Dispatch<React.SetStateAction<any>>;
-}) => {
-  const { setCompare } = useSharedCompareMode();
+const Sidebar = ({ box }: { box: Feature<Point> }) => {
   const colors = useTailwindColors();
+  const { compareDevices } = useSharedCompareDevices();
+
+  useEffect(() => {
+    console.log('Shared devices updated');
+    console.log(compareDevices);
+  }, [compareDevices]);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
@@ -71,7 +65,6 @@ const Sidebar = ({
     return () => {
       // Cleanup everything before a new device is selected!!!
       setIsOpen(false);
-      setCompare(false);
       setSeries([]);
       setShouldFetch(false);
       setShouldFetch2(false);
@@ -206,37 +199,33 @@ const Sidebar = ({
     setIsBarChartOpen(!isBarChartOpen);
   };
 
-  const handleCompare = event => {
-    setCompare(event.target.checked);
-  };
+  // const updateSeries = (
+  //   enabled: boolean,
+  //   device: Feature<Point>,
+  //   sensor: Sensor,
+  // ) => {
+  //   if (enabled) {
+  //     setCompareDevice(device);
+  //     setSensor2(sensor);
+  //   } else {
+  //     setSeries(
+  //       series.filter(
+  //         serie => serie.id !== `${device.properties._id}-${sensor._id}`,
+  //       ),
+  //     );
+  //   }
+  //   setShouldFetch2(enabled);
+  // };
 
-  const updateSeries = (
-    enabled: boolean,
-    device: Feature<Point>,
-    sensor: Sensor,
-  ) => {
-    if (enabled) {
-      setCompareDevice(device);
-      setSensor2(sensor);
-    } else {
-      setSeries(
-        series.filter(
-          serie => serie.id !== `${device.properties._id}-${sensor._id}`,
-        ),
-      );
-    }
-    setShouldFetch2(enabled);
-  };
-
-  const removeCompareDevice = (device: Feature<Point>) => {
-    const deviceProps = device.properties as Device;
-    setSeries(
-      series.filter(serie => serie.id.startsWith(device.properties._id)),
-    );
-    setCompareBoxes(
-      compareBoxes.filter(box => box.properties._id !== deviceProps._id),
-    );
-  };
+  // const removeCompareDevice = (device: Feature<Point>) => {
+  //   const deviceProps = device.properties as Device;
+  //   setSeries(
+  //     series.filter(serie => serie.id.startsWith(device.properties._id)),
+  //   );
+  //   setCompareBoxes(
+  //     compareBoxes.filter(box => box.properties._id !== deviceProps._id),
+  //   );
+  // };
 
   const getArtenvielfaltTile = (artenvielfalt: ArtenvielfaltRecord[]) => {
     const sensor: Sensor = {

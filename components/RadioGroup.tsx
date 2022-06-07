@@ -1,3 +1,4 @@
+import useSharedCompareDevices from '@/hooks/useCompareDevices';
 import { Sensor } from '@/types/osem';
 import { useState } from 'react';
 
@@ -10,14 +11,29 @@ export interface Props {
 
 export default function RadioGroupButton({ sensor }: Props) {
   const [selected, setSelected] = useState(false);
+  const { setCompareDevices } = useSharedCompareDevices();
+
+  const handleClick = () => {
+    setSelected(!selected);
+
+    setCompareDevices([
+      {
+        name: 'test',
+        exposure: 'outdoor',
+        grouptag: [],
+        sensors: [],
+        location: {
+          lat: 7,
+          lng: 52,
+        },
+      },
+    ]);
+  };
 
   return (
     <div className="w-full px-4">
       <div className="mx-auto w-full max-w-md">
-        <button
-          className={`${selected ? inverse : ''}`}
-          onClick={() => setSelected(!selected)}
-        >
+        <button className={`${selected ? inverse : ''}`} onClick={handleClick}>
           {sensor.title}
         </button>
       </div>
