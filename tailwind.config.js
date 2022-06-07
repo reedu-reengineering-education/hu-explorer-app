@@ -50,6 +50,9 @@ module.exports = {
             light: '#bad580',
             DEFAULT: '#ec656b',
           },
+          lautstärke: {
+            DEFAULT: '#14B8A6',
+          },
         },
       },
     },

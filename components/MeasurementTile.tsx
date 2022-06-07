@@ -18,6 +18,7 @@ const tileColors = {
   Versiegelung: 'bg-he-undurchlaessigkeit',
   'Simpson-Index': 'bg-he-artenvielfalt',
   'UV-Intensität': 'bg-green-400',
+  Lautstärke: 'bg-teal-500',
 };
 
 const MeasurementTile = ({ sensor, openChart }: TileProps) => {
