@@ -11,8 +11,8 @@ const variants = {
     'bg-red-600 text-white hover:bg-red-50:text-red-600 focus:ring-red-500 focus:ring-offset-red-200',
   lufttemperatur: 'bg-he-yellow text-white focus:ring-he-yellow',
   bodenfeuchte: 'bg-he-blue text-white focus:ring-he-blue',
-  undurchlaessigkeit: 'bg-he-green text-white focus:ring-he-green',
-  artenvielfalt: 'bg-he-red text-white focus:ring-he-red',
+  artenvielfalt: 'bg-he-green text-white focus:ring-he-green',
+  undurchlaessigkeit: 'bg-he-red text-white focus:ring-he-red',
 };
 
 const sizes = {

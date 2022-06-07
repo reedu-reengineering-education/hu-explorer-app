@@ -179,20 +179,14 @@ const Artenvielfalt = ({
     {
       id: 'Lufttemperatur',
       title: 'Lufttemperatur',
-      hypothesis:
-        'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Bodenfeuchte',
       title: 'Bodenfeuchte',
-      hypothesis:
-        'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Undurchlaessigkeit',
       title: 'Versiegelungsanteil',
-      hypothesis:
-        'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
   ];
 

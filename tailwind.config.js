@@ -46,11 +46,14 @@ module.exports = {
           },
           undurchlaessigkeit: {
             // light: '#5394d0',
-            DEFAULT: '#6bbe98',
+            // DEFAULT: '#6bbe98',
+            DEFAULT: '#ec656b',
           },
           artenvielfalt: {
+            // light: '#bad580',
             light: '#bad580',
-            DEFAULT: '#ec656b',
+            // DEFAULT: '#ec656b',
+            DEFAULT: '#6bbe98',
           },
         },
       },

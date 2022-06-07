@@ -28,7 +28,7 @@ import {
 } from '@/components/ButtonCellTemplate';
 
 const getColumns = (): Column[] => [
-  { columnId: 'rowId', width: 150 },
+  { columnId: 'rowId', width: 50 },
   { columnId: 'art', width: 150 },
   { columnId: 'count', width: 150 },
   { columnId: 'actions', width: 150 },
