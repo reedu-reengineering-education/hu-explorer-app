@@ -7,6 +7,7 @@ import Filter from '@/components/Filter';
 import Map from '@/components/Map';
 import Sidebar from '@/components/Sidebar';
 import Stats from '@/components/Stats';
+import CompareList from '@/components/CompareList';
 
 // Own hooks
 import useSharedCompareMode from '@/hooks/useCompareMode';
@@ -59,6 +60,12 @@ export default function Home() {
           <div className="flex h-full flex-col rounded-lg bg-white p-2 shadow">
             <Stats></Stats>
             <Filter setExpedition={setProject}></Filter>
+            {selectedBox ? (
+              <CompareList
+                devices={compareBoxes}
+                setCompareBoxes={setCompareBoxes}
+              />
+            ) : null}
           </div>
         </div>
 

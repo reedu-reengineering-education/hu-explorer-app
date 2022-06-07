@@ -318,10 +318,7 @@ const Sidebar = ({
       )}
       {isOpen && (
         <div className="flex w-full flex-col">
-          <div className="m-2">
-            <label htmlFor="compare">Vergleichen</label>
-            <span>{compareBoxes.length} / 5</span>
-            <input type="checkbox" name="compare" onChange={handleCompare} />
+          {/* <div className="m-2">
             {compareBoxes &&
               compareBoxes.map(box => {
                 return (
@@ -351,7 +348,7 @@ const Sidebar = ({
                   </div>
                 );
               })}
-          </div>
+          </div> */}
           <div className="m-2 h-[90%] w-full overflow-hidden">
             <LineChart
               series={series}
