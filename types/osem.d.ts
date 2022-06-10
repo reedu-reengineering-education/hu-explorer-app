@@ -34,3 +34,9 @@ export interface Device {
   access_token?: string;
   transfer?: Transfer;
 }
+
+export interface CompareDevice {
+  enabled: boolean;
+  device: Feature<Point>;
+  sensor: Sensor;
+}

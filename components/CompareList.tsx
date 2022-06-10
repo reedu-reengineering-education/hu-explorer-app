@@ -1,6 +1,6 @@
 import useSharedCompareMode from '@/hooks/useCompareMode';
 import { Device } from '@/types/osem';
-import { Disclosure, RadioGroup } from '@headlessui/react';
+import { Disclosure } from '@headlessui/react';
 import { ChevronUpIcon, ScaleIcon } from '@heroicons/react/outline';
 import { Feature, Point } from 'geojson';
 import { Button } from './Elements/Button';
@@ -12,7 +12,7 @@ export interface CompareDevice {
 }
 
 const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
-  const { setCompare } = useSharedCompareMode();
+  const { compare, setCompare } = useSharedCompareMode();
 
   const handleCompare = event => {
     setCompare(event.target.checked);
@@ -46,6 +46,7 @@ const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
                     type="checkbox"
                     name="compare"
                     onChange={handleCompare}
+                    checked={compare}
                   />
                   <label htmlFor="compare">Aktivieren</label>
                 </div>
@@ -61,6 +62,7 @@ const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
                           return (
                             <RadioGroupButton
                               sensor={sensor}
+                              device={device}
                               key={`${sensor._id}-${new Date()}`}
                             />
                           );

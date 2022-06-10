@@ -10,18 +10,35 @@ import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
 import PieChart from './PieChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
-import { Device, Sensor } from '@/types/osem';
+import { Sensor } from '@/types/osem';
 import BarChart from './BarChart';
 import MeasurementTile from './MeasurementTile';
 import useSharedCompareDevices from '@/hooks/useCompareDevices';
 
-const Sidebar = ({ box }: { box: Feature<Point> }) => {
+const Sidebar = ({
+  box,
+  dateRange,
+}: {
+  box: Feature<Point>;
+  dateRange: Date[];
+}) => {
   const colors = useTailwindColors();
   const { compareDevices } = useSharedCompareDevices();
+
+  console.log(dateRange);
 
   useEffect(() => {
     console.log('Shared devices updated');
     console.log(compareDevices);
+
+    if (compareDevices) {
+      updateSeries(
+        compareDevices.enabled,
+        compareDevices.device,
+        compareDevices.sensor,
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compareDevices]);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -38,7 +55,15 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
   const [shouldFetch, setShouldFetch] = useState(false);
   const { data } = useSWR(
     shouldFetch
-      ? `https://api.opensensemap.org/boxes/${box.properties._id}/data/${sensor._id}?to-date=${sensor.lastMeasurement.createdAt}`
+      ? `https://api.opensensemap.org/boxes/${box.properties._id}/data/${
+          sensor._id
+        }?${
+          dateRange[0] ? `from-date=${dateRange[0].toISOString()}&` : ''
+        }to-date=${
+          dateRange[1]
+            ? dateRange[1].toISOString()
+            : sensor.lastMeasurement.createdAt
+        }`
       : null,
     fetcher,
   );
@@ -75,9 +100,10 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
   }, [box]);
 
   useEffect(() => {
+    // console.log("useEffect data", data)
     if (data) {
       setSeries([
-        ...series,
+        ...series.filter(serie => !serie.id.includes(sensor._id)),
         {
           id: `${box.properties._id}-${sensor._id}`,
           name: `${box.properties.name}-${sensor.title}`,
@@ -199,33 +225,23 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
     setIsBarChartOpen(!isBarChartOpen);
   };
 
-  // const updateSeries = (
-  //   enabled: boolean,
-  //   device: Feature<Point>,
-  //   sensor: Sensor,
-  // ) => {
-  //   if (enabled) {
-  //     setCompareDevice(device);
-  //     setSensor2(sensor);
-  //   } else {
-  //     setSeries(
-  //       series.filter(
-  //         serie => serie.id !== `${device.properties._id}-${sensor._id}`,
-  //       ),
-  //     );
-  //   }
-  //   setShouldFetch2(enabled);
-  // };
-
-  // const removeCompareDevice = (device: Feature<Point>) => {
-  //   const deviceProps = device.properties as Device;
-  //   setSeries(
-  //     series.filter(serie => serie.id.startsWith(device.properties._id)),
-  //   );
-  //   setCompareBoxes(
-  //     compareBoxes.filter(box => box.properties._id !== deviceProps._id),
-  //   );
-  // };
+  const updateSeries = (
+    enabled: boolean,
+    device: Feature<Point>,
+    sensor: Sensor,
+  ) => {
+    if (enabled) {
+      setCompareDevice(device);
+      setSensor2(sensor);
+    } else {
+      setSeries(
+        series.filter(
+          serie => serie.id !== `${device.properties._id}-${sensor._id}`,
+        ),
+      );
+    }
+    setShouldFetch2(enabled);
+  };
 
   const getArtenvielfaltTile = (artenvielfalt: ArtenvielfaltRecord[]) => {
     const sensor: Sensor = {
@@ -307,37 +323,6 @@ const Sidebar = ({ box }: { box: Feature<Point> }) => {
       )}
       {isOpen && (
         <div className="flex w-full flex-col">
-          {/* <div className="m-2">
-            {compareBoxes &&
-              compareBoxes.map(box => {
-                return (
-                  <div className="flex flex-row" key={box.properties._id}>
-                    <label
-                      htmlFor={`${box.properties.name}-${box.properties._id}`}
-                    >
-                      {box.properties.name}
-                    </label>
-                    {box.properties.sensors.map(sensor => {
-                      return (
-                        <div key={sensor._id}>
-                          <label htmlFor={`${sensor.title}-${sensor._id}`}>
-                            {sensor.title}
-                          </label>
-                          <Toggle
-                            updateSeries={updateSeries}
-                            device={box}
-                            sensor={sensor}
-                          />
-                        </div>
-                      );
-                    })}
-                    <Button onClick={() => removeCompareDevice(box)}>
-                      Entfernen
-                    </Button>
-                  </div>
-                );
-              })}
-          </div> */}
           <div className="m-2 h-[90%] w-full overflow-hidden">
             <LineChart
               series={series}
