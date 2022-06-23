@@ -25,12 +25,7 @@ const Sidebar = ({
   const colors = useTailwindColors();
   const { compareSensors } = useSharedCompareSensors();
 
-  console.log(dateRange);
-
   useEffect(() => {
-    console.log('Shared sensors updated');
-    console.log(compareSensors);
-
     if (compareSensors.length > 0) {
       const { active, sensor, device } = compareSensors[0];
       updateSeries(active, device, sensor);
@@ -75,8 +70,6 @@ const Sidebar = ({
     fetcher,
   );
 
-  console.log(artenvielfalt);
-
   const [yAxis, setYAxis] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
   const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
@@ -97,7 +90,6 @@ const Sidebar = ({
   }, [box]);
 
   useEffect(() => {
-    // console.log("useEffect data", data)
     if (data) {
       setSeries([
         ...series.filter(serie => !serie.id.includes(sensor._id)),

@@ -62,7 +62,7 @@ const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
                         key={device.properties._id}
                       >
                         {/* <span>{device.properties.name}</span> */}
-                        <div className="flex flex-row justify-evenly">
+                        <div className="flex flex-row overflow-auto">
                           {device.properties.sensors.map((sensor, idx) => {
                             return (
                               <RadioGroupButton

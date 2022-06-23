@@ -60,7 +60,7 @@ export default function Home() {
         <Map data={data} onBoxSelect={box => onBoxSelect(box)} />
       </div>
       <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-8">
-        <div className="pointer-events-auto col-span-3 row-start-1 h-fit md:col-span-2 lg:col-span-2 xl:col-span-2">
+        <div className="pointer-events-auto col-span-3 row-start-1 h-fit md:col-span-2 lg:col-span-2 xl:col-span-1">
           <div className="flex h-full flex-col rounded-lg bg-white p-2 shadow">
             <Stats></Stats>
             <Filter
