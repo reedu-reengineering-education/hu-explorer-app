@@ -28,7 +28,20 @@ export const unclusteredPointNameLayer: LayerProps = {
   source: 'osem-data',
   filter: ['!', ['has', 'point_count']],
   layout: {
-    'text-field': ['get', 'name'],
+    'text-field': [
+      'concat',
+      [
+        'match',
+        ['at', 1, ['get', 'grouptag']],
+        'Schallpegel',
+        ['at', 3, ['get', 'grouptag']],
+        'Artenvielfalt',
+        ['at', 2, ['get', 'grouptag']],
+        '',
+      ],
+      ' - ',
+      ['get', 'name'],
+    ],
     'text-size': 12,
     // 'text-variable-anchor': ['top'],
     'text-offset': [1, 0],
