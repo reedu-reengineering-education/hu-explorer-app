@@ -1,7 +1,11 @@
 import useSharedCompareMode from '@/hooks/useCompareMode';
 import { Device } from '@/types/osem';
 import { Disclosure } from '@headlessui/react';
-import { ChevronUpIcon, ScaleIcon } from '@heroicons/react/outline';
+import {
+  ChevronUpIcon,
+  ScaleIcon,
+  XCircleIcon,
+} from '@heroicons/react/outline';
 import { Feature, Point } from 'geojson';
 import { Button } from './Elements/Button';
 import RadioGroupButton from './RadioGroup';
@@ -54,22 +58,33 @@ const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
                   devices.map(device => {
                     return (
                       <div
-                        className="flex flex-row"
+                        className="flex flex-col pt-2"
                         key={device.properties._id}
                       >
-                        <span>{device.properties.name}</span>
-                        {device.properties.sensors.map((sensor, idx) => {
-                          return (
-                            <RadioGroupButton
-                              sensor={sensor}
-                              device={device}
-                              key={`${sensor._id}-${new Date()}`}
-                            />
-                          );
-                        })}
-                        <Button onClick={() => removeCompareDevice(device)}>
-                          Entfernen
-                        </Button>
+                        {/* <span>{device.properties.name}</span> */}
+                        <div className="flex flex-row justify-evenly">
+                          {device.properties.sensors.map((sensor, idx) => {
+                            return (
+                              <RadioGroupButton
+                                device={device}
+                                sensor={sensor}
+                                key={`${sensor._id}-${new Date()}`}
+                              />
+                            );
+                          })}
+                        </div>
+                        <div className="mx-auto flex flex-row">
+                          <Button
+                            variant="danger"
+                            className="w-full"
+                            onClick={() => removeCompareDevice(device)}
+                          >
+                            <div className="inline-flex">
+                              <XCircleIcon className="h-5 w-5" />
+                              <span className="pl-2">Entfernen</span>
+                            </div>
+                          </Button>
+                        </div>
                       </div>
                     );
                   })

@@ -1,12 +1,11 @@
-import useSharedCompareDevices from '@/hooks/useCompareDevices';
-import { Device, Sensor } from '@/types/osem';
+import useSharedCompareSensors from '@/hooks/useCompareSensors';
+import { Sensor } from '@/types/osem';
 import { Feature, Point } from 'geojson';
 import { useState } from 'react';
 
-const inactive =
-  'rounded-l px-6 py-2 border-2 border-blue-600 text-blue-600 font-medium text-xs leading-tight uppercase hover:bg-black hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out';
-const active =
-  'rounded-l px-6 py-2 border-2 bg-blue-600 border-blue-600 text-white font-medium text-xs leading-tight uppercase hover:bg-black hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out';
+const inverse =
+  'py-2 px-6 text-md border-2 rounded-md text-gray-500 bg-white border-green-500 bg-green-200 bg-opacity-10 hover:bg-blue-600:text-white focus:ring-white focus:ring-offset-blue-100';
+const notSelected = 'py-2 px-6 text-md text-gray-500 border-2 rounded-md';
 
 export interface Props {
   sensor: Sensor;
@@ -15,31 +14,31 @@ export interface Props {
 
 export default function RadioGroupButton({ sensor, device }: Props) {
   const [selected, setSelected] = useState(false);
-  const { setCompareDevices } = useSharedCompareDevices();
+  const { setCompareSensors } = useSharedCompareSensors();
 
   const handleClick = () => {
     setSelected(!selected);
 
-    setCompareDevices({
-      enabled: !selected,
-      device: device,
+    const sensorDevice = {
       sensor: sensor,
-    });
+      active: !selected,
+      device: device,
+    };
+
+    setCompareSensors([sensorDevice]);
   };
 
   return (
-    <div className="w-full px-4">
-      <div className="mx-auto inline-flex w-full max-w-md">
+    <div className="pr-2">
+      <div className="mx-auto w-full max-w-md">
         <button
-          className={`${selected ? active : inactive}`}
+          className={`${selected ? inverse : notSelected}`}
           onClick={handleClick}
         >
-          {sensor.title}
-          {selected ? (
-            <div className="shrink-0 text-white">
-              <CheckIcon className="h-6 w-6" />
-            </div>
-          ) : null}
+          <div className="flex flex-col">
+            <span className="text-sm">{device.properties.name}</span>
+            <span>{sensor.title}</span>
+          </div>
         </button>
       </div>
     </div>

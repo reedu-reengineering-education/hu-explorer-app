@@ -13,7 +13,7 @@ import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { Sensor } from '@/types/osem';
 import BarChart from './BarChart';
 import MeasurementTile from './MeasurementTile';
-import useSharedCompareDevices from '@/hooks/useCompareDevices';
+import useSharedCompareSensors from '@/hooks/useCompareSensors';
 
 const Sidebar = ({
   box,
@@ -23,23 +23,20 @@ const Sidebar = ({
   dateRange: Date[];
 }) => {
   const colors = useTailwindColors();
-  const { compareDevices } = useSharedCompareDevices();
+  const { compareSensors } = useSharedCompareSensors();
 
   console.log(dateRange);
 
   useEffect(() => {
-    console.log('Shared devices updated');
-    console.log(compareDevices);
+    console.log('Shared sensors updated');
+    console.log(compareSensors);
 
-    if (compareDevices) {
-      updateSeries(
-        compareDevices.enabled,
-        compareDevices.device,
-        compareDevices.sensor,
-      );
+    if (compareSensors.length > 0) {
+      const { active, sensor, device } = compareSensors[0];
+      updateSeries(active, device, sensor);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [compareDevices]);
+  }, [compareSensors]);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
@@ -243,6 +240,16 @@ const Sidebar = ({
     setShouldFetch2(enabled);
   };
 
+  // const removeCompareDevice = (device: Feature<Point>) => {
+  //   const deviceProps = device.properties as Device;
+  //   setSeries(
+  //     series.filter(serie => serie.id.startsWith(device.properties._id)),
+  //   );
+  //   setCompareBoxes(
+  //     compareBoxes.filter(box => box.properties._id !== deviceProps._id),
+  //   );
+  // };
+
   const getArtenvielfaltTile = (artenvielfalt: ArtenvielfaltRecord[]) => {
     const sensor: Sensor = {
       _id: artenvielfalt[0].id,
@@ -254,7 +261,7 @@ const Sidebar = ({
         createdAt: artenvielfalt[0].updatedAt,
       },
     };
-    return <MeasurementTile sensor={sensor} openChart={openBarChart} />;
+    return <MeasurementTile sensor={sensor} openChart={openPieChart} />;
   };
 
   const getVersiegelungTile = (versiegelung: VersiegelungRecord[]) => {
@@ -268,7 +275,7 @@ const Sidebar = ({
         createdAt: versiegelung[0].updatedAt,
       },
     };
-    return <MeasurementTile sensor={sensor} openChart={openPieChart} />;
+    return <MeasurementTile sensor={sensor} openChart={openBarChart} />;
   };
 
   return (
