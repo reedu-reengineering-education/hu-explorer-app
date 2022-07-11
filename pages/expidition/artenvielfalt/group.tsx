@@ -12,6 +12,12 @@ import { useOsemData2 } from '@/hooks/useOsemData2';
 import { getGroups } from '@/lib/groups';
 import LineChart from '@/components/LineChart';
 import Image from 'next/image';
+import {
+  ArtenvielfaltIcon,
+  BodenfeuchteIcon,
+  LufttemperaturIcon,
+  VersiegelungIcon,
+} from '@/components/Artenvielfalt/Icons';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -217,56 +223,28 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     {
       id: 'Lufttemperatur',
       title: 'Lufttemperatur',
-      icon: (
-        <Image
-          src="/ICON-MARKER-AUSWIRKEND-LUFTTEMPERATUR-W.png"
-          alt="Lufttemperatur"
-          width={32}
-          height={32}
-        />
-      ),
+      icon: <LufttemperaturIcon />,
       hypothesis:
         'Eine hohe Temperatur hängt zusammen mit einer geringen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Bodenfeuchte',
       title: 'Bodenfeuchte',
-      icon: (
-        <Image
-          src="/ICON-MARKER-AUSWIRKEND-BODENFEUCHTE-W.png"
-          alt="Bodenfeuchte"
-          width={32}
-          height={32}
-        />
-      ),
+      icon: <BodenfeuchteIcon />,
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Undurchlaessigkeit',
       title: 'Versiegelungsanteil',
-      icon: (
-        <Image
-          src="/ICON-MARKER-AUSWIRKEND-VERSIEGELUNG-W.png"
-          alt="Versiegelung"
-          width={32}
-          height={32}
-        />
-      ),
+      icon: <VersiegelungIcon />,
       hypothesis:
         'Eine hohe Bodenfeuchte hängt zusammen mit einer hohen pflanzlichen Artenvielfalt.',
     },
     {
       id: 'Artenvielfalt',
       title: 'Artenvielfalt',
-      icon: (
-        <Image
-          src="/ICON-MARKER-EINWIRKEND-ARTENVIELFALT-W.png"
-          alt="Versiegelung"
-          width={32}
-          height={32}
-        />
-      ),
+      icon: <ArtenvielfaltIcon />,
     },
   ];
 

@@ -42,9 +42,9 @@ const Tabs = ({ tabs, onChange, showHypothesis }: TabProps) => {
             variant={variants[t.id.toLowerCase()]}
             key={`artenvielfalt_tab_${i}`}
             className="w-full text-center"
+            startIcon={t.icon}
           >
             <div className="flex space-x-2">
-              {t.icon}
               <span className="text-center">{t.title}</span>
             </div>
           </Button>
