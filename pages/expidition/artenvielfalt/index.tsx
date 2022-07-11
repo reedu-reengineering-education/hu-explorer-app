@@ -10,6 +10,7 @@ import { FeatureCollection, Point } from 'geojson';
 import { GetServerSideProps } from 'next';
 import { useOsemData2 } from '@/hooks/useOsemData2';
 import { getGroups } from '@/lib/groups';
+import Image from 'next/image';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -179,14 +180,38 @@ const Artenvielfalt = ({
     {
       id: 'Lufttemperatur',
       title: 'Lufttemperatur',
+      icon: (
+        <Image
+          src="/ICON-MARKER-AUSWIRKEND-LUFTTEMPERATUR-W.png"
+          alt="Lufttemperatur"
+          width={32}
+          height={32}
+        />
+      ),
     },
     {
       id: 'Bodenfeuchte',
       title: 'Bodenfeuchte',
+      icon: (
+        <Image
+          src="/ICON-MARKER-AUSWIRKEND-BODENFEUCHTE-W.png"
+          alt="Bodenfeuchte"
+          width={32}
+          height={32}
+        />
+      ),
     },
     {
       id: 'Undurchlaessigkeit',
       title: 'Versiegelungsanteil',
+      icon: (
+        <Image
+          src="/ICON-MARKER-AUSWIRKEND-VERSIEGELUNG-W.png"
+          alt="Versiegelung"
+          width={32}
+          height={32}
+        />
+      ),
     },
   ];
 

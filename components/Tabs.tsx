@@ -4,6 +4,7 @@ import { Button } from './Elements/Button';
 export type Tab = {
   id: string;
   title: string;
+  icon?: JSX.Element;
   component?: JSX.Element;
   hypothesis?: string;
 };
@@ -42,7 +43,10 @@ const Tabs = ({ tabs, onChange, showHypothesis }: TabProps) => {
             key={`artenvielfalt_tab_${i}`}
             className="w-full text-center"
           >
-            {t.title}
+            <div className="flex space-x-2">
+              {t.icon}
+              <span className="text-center">{t.title}</span>
+            </div>
           </Button>
         ))}
       </div>
