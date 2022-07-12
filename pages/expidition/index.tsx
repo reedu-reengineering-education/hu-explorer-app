@@ -28,7 +28,7 @@ function Lerneinheit() {
           <option value="senseBox9">senseBox9</option>
           <option value="senseBox10">senseBox10</option>
         </select>
-        <Link href="/expidition/schall?schule=humitte" passHref>
+        <Link href="/expidition/schall?schule=LNDW Campus Mitte HU" passHref>
           <Button>Schall</Button>
         </Link>
         <Link

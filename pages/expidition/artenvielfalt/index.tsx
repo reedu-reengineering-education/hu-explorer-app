@@ -366,13 +366,7 @@ const Artenvielfalt = ({
       <div className="flex h-full w-full flex-row overflow-hidden">
         <div className="flex w-full flex-col">
           <div className="mb-4 h-[25%] max-h-[25%] w-full flex-auto">
-            <Map
-              width="100%"
-              height="100%"
-              data={devices}
-              expedition={true}
-              color
-            />
+            <Map width="100%" height="100%" data={devices} expedition={true} />
           </div>
           <div className="mr-2 flex flex-col flex-wrap overflow-hidden">
             <Tabs tabs={tabs} onChange={onChange} showHypothesis={true}></Tabs>
