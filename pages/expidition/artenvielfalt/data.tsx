@@ -355,10 +355,12 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
               onCellsChanged={handleChanges}
               customCellTemplates={{ button: new ButtonCellTemplate() }}
             />
-            <Button onClick={addRow}>Art hinzufügen</Button>
+            <Button className="bg-he-artenvielfalt" onClick={addRow}>
+              Art hinzufügen
+            </Button>
           </div>
           <div className="flex w-full justify-center">
-            <div className="m-2 aspect-square h-48 w-48 rounded-lg bg-he-blue-light text-center text-white shadow-lg shadow-he-blue-light xl:h-48 xl:w-48">
+            <div className="m-2 aspect-square h-48 w-48 rounded-lg bg-he-artenvielfalt text-center text-white shadow-lg shadow-he-artenvielfalt xl:h-48 xl:w-48">
               <div className="flex h-full flex-col justify-between p-4">
                 <span className="text-xl font-semibold">
                   Artenvielfalts-Index
