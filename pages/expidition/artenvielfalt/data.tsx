@@ -355,7 +355,7 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
               onCellsChanged={handleChanges}
               customCellTemplates={{ button: new ButtonCellTemplate() }}
             />
-            <Button className="bg-he-artenvielfalt" onClick={addRow}>
+            <Button variant="artenvielfalt" onClick={addRow}>
               Art hinzufügen
             </Button>
           </div>
