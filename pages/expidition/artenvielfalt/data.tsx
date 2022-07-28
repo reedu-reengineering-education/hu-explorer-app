@@ -347,7 +347,7 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   } else if (daten === 'artenvielfalt') {
     return (
       <>
-        <div className="flex">
+        <div className="flex w-full md:container md:mx-auto md:p-4">
           <div className="flex flex-col">
             <ReactGrid
               rows={rows}
