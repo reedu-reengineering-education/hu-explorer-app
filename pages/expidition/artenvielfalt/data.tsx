@@ -28,21 +28,19 @@ import {
 } from '@/components/ButtonCellTemplate';
 
 const getColumns = (): Column[] => [
-  { columnId: 'rowId', width: 50 },
   { columnId: 'art', width: 150 },
   { columnId: 'count', width: 150 },
   { columnId: 'actions', width: 150 },
 ];
 
 const getColumnsVersieglung = (): Column[] => [
-  { columnId: 'rowId', width: 150 },
-  { columnId: 'count', width: 200 },
+  { columnId: 'count', width: 250 },
 ];
 
 const headerRow: Row = {
   rowId: 'header',
+  height: 40,
   cells: [
-    { type: 'header', text: '' },
     { type: 'header', text: 'Art' },
     { type: 'header', text: 'Häufigkeit' },
     { type: 'header', text: 'Aktionen' },
@@ -51,18 +49,17 @@ const headerRow: Row = {
 
 const headerRowVersieglung: Row = {
   rowId: 'header',
-  cells: [
-    { type: 'header', text: '' },
-    { type: 'header', text: 'Versiegelungsanteil in %' },
-  ],
+  height: 40,
+  cells: [{ type: 'header', text: 'Versiegelungsanteil in %' }],
 };
 
 const getRows = (arten: ArtRecord[]): Row<DefaultCellTypes | ButtonCell>[] => [
   headerRow,
   ...arten.map<Row<DefaultCellTypes | ButtonCell>>((art, idx) => ({
     rowId: art.id,
+    height: 35,
     cells: [
-      { type: 'text', text: `${idx + 1}`, nonEditable: true },
+      // { type: 'text', text: `${idx + 1}`, nonEditable: true },
       { type: 'text', text: art.art },
       { type: 'number', value: art.count },
       { type: 'button', text: 'Löschen', action: 'DELETE' },
@@ -76,18 +73,9 @@ const getRowsVersieglung = (
   headerRowVersieglung,
   {
     rowId: versieglung.id,
-    cells: [
-      { type: 'text', text: '1', nonEditable: true },
-      { type: 'number', value: versieglung.value },
-    ],
+    height: 35,
+    cells: [{ type: 'number', value: versieglung.value }],
   },
-  // ...versieglung.map<Row<DefaultCellTypes | ButtonCell>>((art, idx) => ({
-  //   rowId: art.id,
-  //   cells: [
-  //     { type: 'text', text: `${idx + 1}`, nonEditable: true },
-  //     { type: 'number', value: art.value },
-  //   ],
-  // })),
 ];
 
 export const getServerSideProps: GetServerSideProps = async ({
@@ -181,11 +169,6 @@ type Props = {
 const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   const { schule, gruppe, daten } = useExpeditionParams();
   const router = useRouter();
-
-  // console.log(artenvielfalt);
-  // console.log(arten);
-  // console.log(versiegelung);
-  // console.log(device);
 
   // Call this function whenever you want to
   // refresh props!
@@ -337,18 +320,22 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   if (daten === 'versiegelung') {
     return (
       <>
-        <ReactGrid
-          rows={rowsVersiegelung}
-          columns={columnsVersieglung}
-          onCellsChanged={handleChangeVersieglung}
-        />
+        <div className="flex w-full md:container md:mx-auto md:p-4">
+          <div className="flex w-full flex-col items-center text-xl">
+            <ReactGrid
+              rows={rowsVersiegelung}
+              columns={columnsVersieglung}
+              onCellsChanged={handleChangeVersieglung}
+            />
+          </div>
+        </div>
       </>
     );
   } else if (daten === 'artenvielfalt') {
     return (
       <>
         <div className="flex w-full md:container md:mx-auto md:p-4">
-          <div className="flex flex-col">
+          <div className="flex w-full flex-col items-center text-xl">
             <ReactGrid
               rows={rows}
               columns={columns}
