@@ -44,7 +44,7 @@ const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
                   } h-5 w-5 text-purple-500`}
                 />
               </Disclosure.Button>
-              <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-500">
+              <Disclosure.Panel className="h-full px-4 pt-4 pb-2 text-sm text-gray-500">
                 <div>
                   <input
                     type="checkbox"
