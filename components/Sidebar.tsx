@@ -72,6 +72,7 @@ const Sidebar = ({
 
   const [yAxis, setYAxis] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
+  const [seriesColors, setSeriesColors] = useState([]);
   const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
   const [barChartSeries, setBarChartSeries] = useState([]); // Holding data for chart (Pie)
   const [pieChartLabels, setPieChartLabels] = useState([]);
@@ -129,12 +130,15 @@ const Sidebar = ({
       setShouldFetch(false);
       setSensor(null);
       setSeries([]);
+      setYAxis([]);
+      setSeriesColors([]);
       setIsOpen(false);
     };
   }, [box]);
 
   const openCharts = (sensor: Sensor) => {
     setSensor(sensor);
+    const sensorColor = colors.he[sensor.title.toLocaleLowerCase()].DEFAULT;
 
     if (!isOpen) {
       setYAxis([
@@ -145,6 +149,7 @@ const Sidebar = ({
         },
       ]);
       setIsOpen(!isOpen);
+      setSeriesColors([...seriesColors, sensorColor]);
       setShouldFetch(!isOpen);
     } else {
       // Handle open chart
@@ -161,7 +166,11 @@ const Sidebar = ({
         // If now series data existing, close chart and clean up
         if (newSeries.length === 0) {
           setIsOpen(false);
+          setSeriesColors([]);
           setYAxis([]);
+        } else {
+          const colors = seriesColors.filter(color => color !== sensorColor);
+          setSeriesColors(colors);
         }
       } else {
         setShouldFetch(true);
@@ -180,6 +189,7 @@ const Sidebar = ({
             },
           ]);
         }
+        setSeriesColors([...seriesColors, sensorColor]);
       }
     }
   };
@@ -244,13 +254,22 @@ const Sidebar = ({
 
   const getArtenvielfaltTile = (artenvielfalt: ArtenvielfaltRecord[]) => {
     const sensor: Sensor = {
-      _id: artenvielfalt[0].id,
+      _id:
+        artenvielfalt !== undefined && artenvielfalt[0] !== undefined
+          ? artenvielfalt[0].id
+          : '',
       title: 'Simpson-Index',
       unit: '',
       sensorType: '',
       lastMeasurement: {
-        value: artenvielfalt[0].simpsonIndex.toFixed(2),
-        createdAt: artenvielfalt[0].updatedAt,
+        value:
+          artenvielfalt !== undefined && artenvielfalt[0] !== undefined
+            ? artenvielfalt[0].simpsonIndex.toFixed(2)
+            : '',
+        createdAt:
+          artenvielfalt !== undefined && artenvielfalt[0] !== undefined
+            ? artenvielfalt[0].updatedAt
+            : new Date(),
       },
     };
     return <MeasurementTile sensor={sensor} openChart={openPieChart} />;
@@ -258,13 +277,22 @@ const Sidebar = ({
 
   const getVersiegelungTile = (versiegelung: VersiegelungRecord[]) => {
     const sensor: Sensor = {
-      _id: versiegelung[0].id,
+      _id:
+        versiegelung !== undefined && versiegelung[0] !== undefined
+          ? versiegelung[0].id
+          : '',
       title: 'Versiegelung',
       unit: '%',
       sensorType: '',
       lastMeasurement: {
-        value: versiegelung[0].value.toFixed(2),
-        createdAt: versiegelung[0].updatedAt,
+        value:
+          versiegelung !== undefined && versiegelung[0] !== undefined
+            ? versiegelung[0].value.toFixed(2)
+            : '',
+        createdAt:
+          versiegelung !== undefined && versiegelung[0] !== undefined
+            ? versiegelung[0].updatedAt
+            : new Date(),
       },
     };
     return <MeasurementTile sensor={sensor} openChart={openBarChart} />;
@@ -273,16 +301,20 @@ const Sidebar = ({
   return (
     <div className="flex h-full divide-x-2 overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
       {box && (
-        <div className="min-w[35%] flex w-[35%] flex-col divide-y-2 overflow-hidden">
+        <div className="min-w[40%] flex w-[40%] flex-col divide-y-2 overflow-hidden">
           <div className="mb-2">
             <h1 className="mb-2 content-center text-center text-lg font-bold">
               {box.properties.name}
             </h1>
             <div className="flex justify-center">
-              {box.properties.tags.map(tag => {
+              {box.properties.tags.map((tag, idx) => {
+                // First index is HU Explorers tag
+                if (idx === 0) {
+                  return;
+                }
                 return (
                   <span
-                    className="mr-2 inline-flex items-center justify-center rounded-full bg-he-blue px-2 py-1 text-xs font-bold leading-none text-white"
+                    className="mr-2 inline-flex items-center justify-center rounded-full bg-he-violet px-2 py-1 text-xs font-bold leading-none text-white"
                     key={tag}
                   >
                     {tag}
@@ -302,13 +334,12 @@ const Sidebar = ({
               );
             })}
 
-            {artenvielfalt &&
-              artenvielfalt.length > 0 &&
-              getArtenvielfaltTile(artenvielfalt)}
-
-            {versiegelung &&
-              versiegelung.length > 0 &&
-              getVersiegelungTile(versiegelung)}
+            {box.properties.tags.includes('Artenvielfalt') && (
+              <>
+                {getArtenvielfaltTile(artenvielfalt)}
+                {getVersiegelungTile(versiegelung)}
+              </>
+            )}
           </div>
         </div>
       )}
@@ -321,18 +352,9 @@ const Sidebar = ({
         </div>
       )}
       {isOpen && (
-        <div className="flex w-full flex-col">
-          <div className="m-2 h-[90%] w-full overflow-hidden">
-            <LineChart
-              series={series}
-              yaxis={yAxis}
-              colors={[
-                colors.he[sensor.title.toLocaleLowerCase()].DEFAULT,
-                colors.he.red.DEFAULT,
-                colors.he.aqua.DEFAULT,
-                colors.he.lilac.DEFAULT,
-              ]}
-            />
+        <div className="flex w-[95%] flex-col overflow-hidden">
+          <div className="m-2 h-[95%] w-full overflow-hidden">
+            <LineChart series={series} yaxis={yAxis} colors={seriesColors} />
           </div>
         </div>
       )}
