@@ -44,53 +44,62 @@ const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
                   } h-5 w-5 text-purple-500`}
                 />
               </Disclosure.Button>
-              <Disclosure.Panel className="h-full px-4 pt-4 pb-2 text-sm text-gray-500">
-                <div>
-                  <input
-                    type="checkbox"
-                    name="compare"
-                    onChange={handleCompare}
-                    checked={compare}
-                  />
-                  <label htmlFor="compare">Aktivieren</label>
+              <Disclosure.Panel className="h-full px-4 pt-2 pb-2 text-sm text-gray-500">
+                <div className="flex justify-between">
+                  <div className="flex flex-row items-center">
+                    <label className="text-xs" htmlFor="compare">
+                      Vergleichsmodus aktivieren
+                    </label>
+                    <input
+                      className="ml-2"
+                      type="checkbox"
+                      name="compare"
+                      onChange={handleCompare}
+                      checked={compare}
+                    />
+                  </div>
                 </div>
-                {devices.length ? (
-                  devices.map(device => {
-                    return (
-                      <div
-                        className="flex flex-col pt-2"
-                        key={device.properties._id}
-                      >
-                        {/* <span>{device.properties.name}</span> */}
-                        <div className="flex flex-row overflow-auto">
-                          {device.properties.sensors.map((sensor, idx) => {
-                            return (
-                              <RadioGroupButton
-                                device={device}
-                                sensor={sensor}
-                                key={`${sensor._id}-${new Date()}`}
-                              />
-                            );
-                          })}
+                {devices.length
+                  ? devices.map(device => {
+                      return (
+                        <div
+                          className="flex flex-col pt-2"
+                          key={device.properties._id}
+                        >
+                          {/* <span>{device.properties.name}</span> */}
+                          <div className="flex flex-row overflow-auto">
+                            {device.properties.sensors.map((sensor, idx) => {
+                              return (
+                                <RadioGroupButton
+                                  device={device}
+                                  sensor={sensor}
+                                  key={`${sensor._id}-${new Date()}`}
+                                />
+                              );
+                            })}
+                          </div>
+                          <div className="mx-auto flex flex-row">
+                            <Button
+                              variant="danger"
+                              className="w-full"
+                              onClick={() => removeCompareDevice(device)}
+                            >
+                              <div className="inline-flex">
+                                <XCircleIcon className="h-5 w-5" />
+                                <span className="pl-2">Entfernen</span>
+                              </div>
+                            </Button>
+                          </div>
                         </div>
-                        <div className="mx-auto flex flex-row">
-                          <Button
-                            variant="danger"
-                            className="w-full"
-                            onClick={() => removeCompareDevice(device)}
-                          >
-                            <div className="inline-flex">
-                              <XCircleIcon className="h-5 w-5" />
-                              <span className="pl-2">Entfernen</span>
-                            </div>
-                          </Button>
-                        </div>
+                      );
+                    })
+                  : compare && (
+                      <div className="mt-2 flex justify-center">
+                        <span className="text-center text-xs">
+                          Keine Station zum Vergleichen ausgewählt!
+                        </span>
                       </div>
-                    );
-                  })
-                ) : (
-                  <span>Keine Station zum Vergleichen ausgewählt!</span>
-                )}
+                    )}
               </Disclosure.Panel>
             </>
           )}
