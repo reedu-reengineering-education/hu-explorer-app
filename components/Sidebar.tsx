@@ -26,6 +26,8 @@ const Sidebar = ({
   const { compareSensors } = useSharedCompareSensors();
 
   useEffect(() => {
+    // TODO: Check Artenvielfalt und Versieglungs data
+
     if (compareSensors.length > 0) {
       const { active, sensor, device } = compareSensors[0];
       updateSeries(active, device, sensor);
@@ -63,6 +65,8 @@ const Sidebar = ({
   const [compareDevice, setCompareDevice] = useState<Feature<Point>>();
   const [sensor2, setSensor2] = useState<Sensor>();
   const [shouldFetch2, setShouldFetch2] = useState(false);
+
+  // TODO: Handle Artenvielfalt und Versieglungs data of compare device
   const { data: data2 } = useSWR(
     shouldFetch2
       ? `https://api.opensensemap.org/boxes/${compareDevice?.properties._id}/data/${sensor2._id}?to-date=${sensor2.lastMeasurement.createdAt}`
@@ -81,7 +85,11 @@ const Sidebar = ({
     return () => {
       // Cleanup everything before a new device is selected!!!
       setIsOpen(false);
+      setIsBarChartOpen(false);
+      setIsPieChartOpen(false);
       setSeries([]);
+      setBarChartSeries([]);
+      setPieChartSeries([]);
       setShouldFetch(false);
       setShouldFetch2(false);
       setSensor(null);
@@ -355,11 +363,11 @@ const Sidebar = ({
         </div>
       )}
       {isBarChartOpen && (
-        <div className="m-2 h-[90%] w-full overflow-hidden">
+        <div className="m-2 h-[95%] w-full overflow-hidden">
           <BarChart
             series={barChartSeries}
             yaxis={yAxis}
-            // colors={[colors.he[tabs[tab].id.toLowerCase()].DEFAULT]}
+            colors={[colors.he.undurchlaessigkeit.DEFAULT]}
           />
         </div>
       )}

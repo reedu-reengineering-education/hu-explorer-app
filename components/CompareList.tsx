@@ -77,6 +77,34 @@ const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
                                 />
                               );
                             })}
+                            {device.properties.tags.includes(
+                              'Artenvielfalt',
+                            ) && (
+                              <>
+                                <RadioGroupButton
+                                  device={device}
+                                  sensor={{
+                                    title: 'Artenvielfalt',
+                                    unit: '',
+                                    sensorType: '',
+                                  }}
+                                  key={`${
+                                    device.properties._id
+                                  }-artenvielfalt-${new Date()}`}
+                                />
+                                <RadioGroupButton
+                                  device={device}
+                                  sensor={{
+                                    title: 'Versiegelung',
+                                    unit: '%',
+                                    sensorType: '',
+                                  }}
+                                  key={`${
+                                    device.properties._id
+                                  }-versiegelung-${new Date()}`}
+                                />
+                              </>
+                            )}
                           </div>
                           <div className="mx-auto flex flex-row">
                             <Button
