@@ -42,7 +42,7 @@ const MeasurementTile = ({ sensor, openChart }: TileProps) => {
         {title}
       </h1>
       <h1 className="text-lg font-semibold text-white">
-        {value.toFixed(1)} {unit}
+        {isNaN(value) ? '--' : value.toFixed(1)} {unit}
       </h1>
       <div className="mt-2 border-t-2">
         {sensor.lastMeasurement && (

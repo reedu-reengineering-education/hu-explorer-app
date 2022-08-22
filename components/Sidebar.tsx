@@ -120,6 +120,10 @@ const Sidebar = ({
           })),
         },
       ]);
+      setSeriesColors([
+        ...seriesColors,
+        colors.he[sensor2.title.toLocaleLowerCase()].DEFAULT,
+      ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data2]);
@@ -233,24 +237,20 @@ const Sidebar = ({
       setCompareDevice(device);
       setSensor2(sensor);
     } else {
+      const seriesIndex = series.findIndex(
+        serie => serie.id === `${device.properties._id}-${sensor._id}`,
+      );
       setSeries(
         series.filter(
           serie => serie.id !== `${device.properties._id}-${sensor._id}`,
         ),
       );
+      setSeriesColors(
+        seriesColors.filter((colors, idx) => idx !== seriesIndex),
+      );
     }
     setShouldFetch2(enabled);
   };
-
-  // const removeCompareDevice = (device: Feature<Point>) => {
-  //   const deviceProps = device.properties as Device;
-  //   setSeries(
-  //     series.filter(serie => serie.id.startsWith(device.properties._id)),
-  //   );
-  //   setCompareBoxes(
-  //     compareBoxes.filter(box => box.properties._id !== deviceProps._id),
-  //   );
-  // };
 
   const getArtenvielfaltTile = (artenvielfalt: ArtenvielfaltRecord[]) => {
     const sensor: Sensor = {
@@ -261,16 +261,14 @@ const Sidebar = ({
       title: 'Simpson-Index',
       unit: '',
       sensorType: '',
-      lastMeasurement: {
-        value:
-          artenvielfalt !== undefined && artenvielfalt[0] !== undefined
-            ? artenvielfalt[0].simpsonIndex.toFixed(2)
-            : '',
-        createdAt:
-          artenvielfalt !== undefined && artenvielfalt[0] !== undefined
-            ? artenvielfalt[0].updatedAt
-            : new Date(),
-      },
+      ...(artenvielfalt !== undefined && artenvielfalt[0] !== undefined
+        ? {
+            lastMeasurement: {
+              value: artenvielfalt[0].simpsonIndex.toFixed(2),
+              createdAt: artenvielfalt[0].updatedAt,
+            },
+          }
+        : {}),
     };
     return <MeasurementTile sensor={sensor} openChart={openPieChart} />;
   };
@@ -284,16 +282,14 @@ const Sidebar = ({
       title: 'Versiegelung',
       unit: '%',
       sensorType: '',
-      lastMeasurement: {
-        value:
-          versiegelung !== undefined && versiegelung[0] !== undefined
-            ? versiegelung[0].value.toFixed(2)
-            : '',
-        createdAt:
-          versiegelung !== undefined && versiegelung[0] !== undefined
-            ? versiegelung[0].updatedAt
-            : new Date(),
-      },
+      ...(versiegelung !== undefined && versiegelung[0] !== undefined
+        ? {
+            lastMeasurement: {
+              value: versiegelung[0].value.toFixed(2),
+              createdAt: versiegelung[0].updatedAt,
+            },
+          }
+        : {}),
     };
     return <MeasurementTile sensor={sensor} openChart={openBarChart} />;
   };
