@@ -13,7 +13,7 @@ export default async function handler(
           deviceId: deviceId as string,
         },
         orderBy: {
-          createdAt: 'desc',
+          createdAt: 'asc',
         },
       });
       res.status(201).json(results);

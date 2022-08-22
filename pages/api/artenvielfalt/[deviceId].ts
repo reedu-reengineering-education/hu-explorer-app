@@ -16,7 +16,7 @@ export default async function handler(
           arten: true,
         },
         orderBy: {
-          createdAt: 'desc',
+          updatedAt: 'desc',
         },
       });
       res.status(201).json(results);

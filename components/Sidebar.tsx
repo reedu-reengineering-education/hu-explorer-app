@@ -44,6 +44,7 @@ const Sidebar = ({
   const { data: versiegelung, error: versiegelungError } = useSWR<
     VersiegelungRecord[]
   >(`/api/versiegelung/${box?.properties._id}`);
+  console.log(versiegelung);
 
   const [sensor, setSensor] = useState<Sensor>();
   const [shouldFetch, setShouldFetch] = useState(false);
@@ -75,6 +76,7 @@ const Sidebar = ({
   );
 
   const [yAxis, setYAxis] = useState<ApexYAxis[]>();
+  const [yAxisBarChart, setYAxisBarChart] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
   const [seriesColors, setSeriesColors] = useState([]);
   const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
@@ -226,10 +228,18 @@ const Sidebar = ({
       {
         id: 'versiegelung-1',
         name: 'versieglung',
-        data: versiegelung.reverse().map(v => ({
+        data: versiegelung.map(v => ({
           y: Number(v.value),
           x: new Date(v.createdAt).toLocaleDateString(),
         })),
+      },
+    ]);
+
+    setYAxisBarChart([
+      {
+        title: {
+          text: 'Versiegelung in %',
+        },
       },
     ]);
 
@@ -293,8 +303,8 @@ const Sidebar = ({
       ...(versiegelung !== undefined && versiegelung[0] !== undefined
         ? {
             lastMeasurement: {
-              value: versiegelung[0].value.toFixed(2),
-              createdAt: versiegelung[0].updatedAt,
+              value: versiegelung[versiegelung.length - 1].value.toFixed(2),
+              createdAt: versiegelung[versiegelung.length - 1].updatedAt,
             },
           }
         : {}),
@@ -305,7 +315,7 @@ const Sidebar = ({
   return (
     <div className="flex h-full divide-x-2 overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
       {box && (
-        <div className="min-w[40%] flex w-[40%] flex-col divide-y-2 overflow-hidden">
+        <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
           <div className="mb-2">
             <h1 className="mb-2 content-center text-center text-lg font-bold">
               {box.properties.name}
@@ -347,42 +357,50 @@ const Sidebar = ({
           </div>
         </div>
       )}
-      {!box && (
-        <div className="flex h-full w-full items-center justify-center">
-          <h1 className="text-md content-center text-center font-bold">
-            Wählt per Klick auf die Karte einen Schulstandort aus und ihr seht
-            Messwerte von Umweltfaktoren an dieser Schule.
-          </h1>
-        </div>
-      )}
-      {isOpen && (
-        <div className="flex w-[95%] flex-col overflow-hidden">
-          <div className="m-2 h-[95%] w-full overflow-hidden">
+      <div className="ml-2 flex w-[70%]">
+        {!box && (
+          <div className="flex h-full w-full items-center justify-center">
+            <h1 className="text-md content-center text-center font-bold">
+              Wählt per Klick auf die Karte einen Schulstandort aus und ihr seht
+              Messwerte von Umweltfaktoren an dieser Schule.
+            </h1>
+          </div>
+        )}
+
+        {isOpen && (
+          <div className="block w-full overflow-hidden">
+            {/* <div className="m-2 min-h-0 h-[95%] w-full overflow-hidden"> */}
             <LineChart series={series} yaxis={yAxis} colors={seriesColors} />
           </div>
-        </div>
-      )}
-      {isBarChartOpen && (
-        <div className="m-2 h-[95%] w-full overflow-hidden">
-          <BarChart
-            series={barChartSeries}
-            yaxis={yAxis}
-            colors={[colors.he.undurchlaessigkeit.DEFAULT]}
-          />
-        </div>
-      )}
-      {isPieChartOpen && (
-        <div className="m-2 h-[95%] w-full overflow-hidden">
-          <PieChart series={pieChartSeries} labels={pieChartLabels} />
-        </div>
-      )}
-      {box !== undefined && !isOpen && !isPieChartOpen && !isBarChartOpen && (
-        <div className="flex h-full w-full items-center justify-center text-center">
-          <h1>
-            Klicke auf eine Kachel um dir die Daten in einem Graphen anzuzeigen.
-          </h1>
-        </div>
-      )}
+          // </div>
+        )}
+
+        {isBarChartOpen && (
+          <div className="flex w-full overflow-hidden">
+            <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
+              <BarChart
+                series={barChartSeries}
+                yaxis={yAxisBarChart}
+                colors={[colors.he.undurchlaessigkeit.DEFAULT]}
+              />
+            </div>
+          </div>
+        )}
+
+        {isPieChartOpen && (
+          <div className="m-2 h-[95%] w-full overflow-hidden">
+            <PieChart series={pieChartSeries} labels={pieChartLabels} />
+          </div>
+        )}
+        {box !== undefined && !isOpen && !isPieChartOpen && !isBarChartOpen && (
+          <div className="flex h-full w-full items-center justify-center text-center">
+            <h1>
+              Klicke auf eine Kachel um dir die Daten in einem Graphen
+              anzuzeigen.
+            </h1>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
