@@ -28,6 +28,9 @@ const PieChart = ({ series, labels }: PieChartProps) => {
         },
       },
     ],
+    noData: {
+      text: 'Keine Daten',
+    },
   });
 
   return (

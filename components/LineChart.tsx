@@ -22,7 +22,6 @@ export interface DataPointProps {
 }
 
 const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
-  console.log('RENDER AREA CHART');
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'sidebar-linechart',
@@ -43,7 +42,7 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
           customIcons: customTools,
         },
       },
-      width: 100,
+      redrawOnParentResize: true,
     },
     xaxis: {
       type: 'datetime',

@@ -29,7 +29,6 @@ const BarChart = ({
   colors,
   customTools = [],
 }: ChartProps) => {
-  console.log('RENDER BAR CHART', series);
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'sidebar-barchart',

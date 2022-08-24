@@ -208,7 +208,8 @@ const Sidebar = ({
     }
   };
 
-  const openPieChart = () => {
+  const openPieChart = (sensor: Sensor) => {
+    console.log(sensor);
     const series: number[] = [];
     const labels: string[] = [];
 
@@ -223,11 +224,12 @@ const Sidebar = ({
     setIsPieChartOpen(!isPieChartOpen);
   };
 
-  const openBarChart = () => {
+  const openBarChart = (sensor: Sensor) => {
+    console.log(sensor);
     setBarChartSeries([
       {
         id: 'versiegelung-1',
-        name: 'versieglung',
+        name: 'Versieglung',
         data: versiegelung.map(v => ({
           y: Number(v.value),
           x: new Date(v.createdAt).toLocaleDateString(),
@@ -288,7 +290,9 @@ const Sidebar = ({
           }
         : {}),
     };
-    return <MeasurementTile sensor={sensor} openChart={openPieChart} />;
+    return (
+      <MeasurementTile sensor={sensor} openChart={() => openPieChart(sensor)} />
+    );
   };
 
   const getVersiegelungTile = (versiegelung: VersiegelungRecord[]) => {
@@ -309,7 +313,9 @@ const Sidebar = ({
           }
         : {}),
     };
-    return <MeasurementTile sensor={sensor} openChart={openBarChart} />;
+    return (
+      <MeasurementTile sensor={sensor} openChart={() => openBarChart(sensor)} />
+    );
   };
 
   return (
@@ -357,7 +363,7 @@ const Sidebar = ({
           </div>
         </div>
       )}
-      <div className="ml-2 flex w-[70%]">
+      <div className="ml-2 flex w-[70%] min-w-[70%]">
         {!box && (
           <div className="flex h-full w-full items-center justify-center">
             <h1 className="text-md content-center text-center font-bold">
@@ -368,11 +374,11 @@ const Sidebar = ({
         )}
 
         {isOpen && (
-          <div className="block w-full overflow-hidden">
-            {/* <div className="m-2 min-h-0 h-[95%] w-full overflow-hidden"> */}
-            <LineChart series={series} yaxis={yAxis} colors={seriesColors} />
+          <div className="flex w-full overflow-hidden">
+            <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
+              <LineChart series={series} yaxis={yAxis} colors={seriesColors} />
+            </div>
           </div>
-          // </div>
         )}
 
         {isBarChartOpen && (

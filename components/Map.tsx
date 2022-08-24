@@ -42,9 +42,9 @@ const Map = ({
   const mapRef = useRef<MapRef>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [viewport, setViewport] = useState<ViewState>({
-    latitude: 52.5,
-    longitude: 13.5,
-    zoom: 7,
+    latitude: 52.45791435499493,
+    longitude: 13.31263148785925,
+    zoom: 9,
     bearing: 0,
     pitch: 0,
     padding: null,
