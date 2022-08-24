@@ -46,6 +46,10 @@ module.exports = {
             light: '#5394d0',
             DEFAULT: '#ec656b',
           },
+          versiegelung: {
+            light: '#5394d0',
+            DEFAULT: '#ec656b',
+          },
           artenvielfalt: {
             light: '#bad580',
             DEFAULT: '#ec656b',

@@ -11,6 +11,14 @@ import CompareList from '@/components/CompareList';
 
 // Own hooks
 import useSharedCompareMode from '@/hooks/useCompareMode';
+import { Button } from '@/components/Elements/Button';
+import { TemplateIcon } from '@heroicons/react/outline';
+import { Switch } from '@headlessui/react';
+
+export enum LayoutMode {
+  MAP,
+  DATA,
+}
 
 export default function Home() {
   const [selectedBox, setSelectedBox] = useState<Feature<Point>>();
@@ -19,6 +27,7 @@ export default function Home() {
   // const [dateFrom, setDateFrom] = useState<Date>();
   // const [dateTo, setDateTo] = useState<Date>();
 
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>(LayoutMode.MAP);
   const [dateRange, setDateRange] = useState<Date[]>([null, null]);
 
   const { compare } = useSharedCompareMode();
@@ -54,35 +63,100 @@ export default function Home() {
     }
   };
 
+  const switchLayout = () => {
+    switch (layoutMode) {
+      case LayoutMode.MAP:
+        setLayoutMode(LayoutMode.DATA);
+        break;
+      case LayoutMode.DATA:
+        setLayoutMode(LayoutMode.MAP);
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <main className="relative h-full w-full">
       <div className="h-full w-full">
         <Map data={data} onBoxSelect={box => onBoxSelect(box)} />
       </div>
-      <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-8">
-        {/* <div className="pointer-events-auto col-span-3 row-start-1 h-fit md:col-span-2 lg:col-span-2 xl:col-span-1"> */}
-        <div className="pointer-events-auto col-span-3 row-span-4 row-start-1 overflow-x-auto md:col-span-2 lg:col-span-2 xl:col-span-1">
-          <div className="flex h-fit flex-col overflow-x-auto rounded-lg bg-white p-2 shadow">
-            <Stats></Stats>
-            <Filter
-              setExpedition={setProject}
+      {/* <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-2"> */}
+      {layoutMode === LayoutMode.MAP ? (
+        <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-2">
+          <div className="pointer-events-auto col-span-3 row-span-4 row-start-1 overflow-x-auto md:col-span-2 lg:col-span-2 xl:col-span-2">
+            <div className="flex h-fit flex-col overflow-x-auto rounded-lg bg-white p-2 shadow">
+              <Stats></Stats>
+              {selectedBox && (
+                <Button
+                  size="sm"
+                  variant="inverse"
+                  startIcon={<TemplateIcon className="h-5 w-5" />}
+                  onClick={switchLayout}
+                >
+                  Switch to data mode
+                </Button>
+              )}
+              <Filter
+                setExpedition={setProject}
+                dateRange={dateRange}
+                setDateRange={setDateRange}
+              ></Filter>
+              {selectedBox ? (
+                <CompareList
+                  devices={compareBoxes}
+                  setCompareBoxes={setCompareBoxes}
+                />
+              ) : null}
+            </div>
+          </div>
+
+          {/* Sidebar / Bottombar */}
+          <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
+            <Sidebar
+              layout={LayoutMode.MAP}
+              box={selectedBox}
               dateRange={dateRange}
-              setDateRange={setDateRange}
-            ></Filter>
-            {selectedBox ? (
-              <CompareList
-                devices={compareBoxes}
-                setCompareBoxes={setCompareBoxes}
-              />
-            ) : null}
+            />
           </div>
         </div>
+      ) : (
+        <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-2">
+          <div className="pointer-events-auto col-span-3 row-span-6 row-start-1 overflow-x-auto md:col-span-2 lg:col-span-2 xl:col-span-2">
+            <div className="flex h-full flex-col overflow-x-auto rounded-lg bg-white p-2 shadow">
+              <Stats></Stats>
+              <Button
+                size="sm"
+                variant="inverse"
+                startIcon={<TemplateIcon className="h-5 w-5" />}
+                onClick={switchLayout}
+              >
+                Switch to map mode
+              </Button>
+              <Filter
+                setExpedition={setProject}
+                dateRange={dateRange}
+                setDateRange={setDateRange}
+              ></Filter>
+              {selectedBox ? (
+                <CompareList
+                  devices={compareBoxes}
+                  setCompareBoxes={setCompareBoxes}
+                />
+              ) : null}
+            </div>
+          </div>
 
-        {/* Sidebar / Bottombar */}
-        <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
-          <Sidebar box={selectedBox} dateRange={dateRange} />
+          {/* Sidebar / Bottombar */}
+          <div className="pointer-events-auto col-start-3 col-end-7 row-span-6 row-start-1 overflow-hidden rounded-xl border-2">
+            <Sidebar
+              layout={LayoutMode.DATA}
+              box={selectedBox}
+              dateRange={dateRange}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

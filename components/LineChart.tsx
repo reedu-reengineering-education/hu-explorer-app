@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // https://github.com/apexcharts/react-apexcharts/issues/240#issuecomment-765417887
 import dynamic from 'next/dynamic';
@@ -25,6 +25,7 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
   const [options, setOptions] = useState<ApexCharts.ApexOptions>({
     chart: {
       id: 'sidebar-linechart',
+      type: 'line',
       // defaultLocale: 'de',
       animations: {
         enabled: false,
@@ -55,7 +56,15 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
     dataLabels: {
       enabled: false,
     },
+    plotOptions: {
+      bar: {
+        // distributed: true,
+        horizontal: false,
+        columnWidth: '55%',
+      },
+    },
     stroke: {
+      show: true,
       curve: 'smooth',
     },
     tooltip: {
@@ -77,13 +86,7 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
   }, [colors, yaxis]);
 
   return (
-    <Chart
-      options={options}
-      series={series}
-      type="area"
-      width={'100%'}
-      height={'100%'}
-    />
+    <Chart options={options} series={series} width={'100%'} height={'100%'} />
   );
 };
 

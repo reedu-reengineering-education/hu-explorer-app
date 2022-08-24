@@ -14,13 +14,16 @@ import { Sensor } from '@/types/osem';
 import BarChart from './BarChart';
 import MeasurementTile from './MeasurementTile';
 import useSharedCompareSensors from '@/hooks/useCompareSensors';
+import { LayoutMode } from '@/pages';
 
 const Sidebar = ({
   box,
   dateRange,
+  layout,
 }: {
   box: Feature<Point>;
   dateRange: Date[];
+  layout: LayoutMode;
 }) => {
   const colors = useTailwindColors();
   const { compareSensors } = useSharedCompareSensors();
@@ -107,6 +110,7 @@ const Sidebar = ({
         {
           id: `${box.properties._id}-${sensor._id}`,
           name: `${box.properties.name}-${sensor.title}`,
+          type: 'line',
           data: data.map(m => ({
             y: Number(m.value),
             x: new Date(m.createdAt),
@@ -164,7 +168,30 @@ const Sidebar = ({
       ]);
       setIsOpen(!isOpen);
       setSeriesColors([...seriesColors, sensorColor]);
-      setShouldFetch(!isOpen);
+      if (sensor.title.toLowerCase() === 'versiegelung') {
+        setSeries([
+          {
+            id: `versiegelung-${sensor._id}`,
+            name: 'Versiegelung',
+            type: 'column',
+            data: versiegelung.map(v => ({
+              y: Number(v.value),
+              x: new Date(v.createdAt).toLocaleDateString(),
+            })),
+          },
+        ]);
+
+        setYAxis([
+          ...yAxis,
+          {
+            title: {
+              text: 'Versiegelung in %',
+            },
+          },
+        ]);
+      } else {
+        setShouldFetch(!isOpen);
+      }
     } else {
       // Handle open chart
       const serie = series.find(serie => serie.id.includes(sensor._id));
@@ -224,29 +251,43 @@ const Sidebar = ({
     setIsPieChartOpen(!isPieChartOpen);
   };
 
-  const openBarChart = (sensor: Sensor) => {
-    console.log(sensor);
-    setBarChartSeries([
-      {
-        id: 'versiegelung-1',
-        name: 'Versieglung',
-        data: versiegelung.map(v => ({
-          y: Number(v.value),
-          x: new Date(v.createdAt).toLocaleDateString(),
-        })),
-      },
-    ]);
+  // const openBarChart = (sensor: Sensor) => {
+  //   console.log(sensor);
 
-    setYAxisBarChart([
-      {
-        title: {
-          text: 'Versiegelung in %',
-        },
-      },
-    ]);
+  //   setSeries([
+  //     ...series,
+  //     {
+  //       id: `versiegelung-${sensor._id}`,
+  //       name: 'Versiegelung',
+  //       type: 'column',
+  //       data: versiegelung.map(v => ({
+  //         y: Number(v.value),
+  //         x: new Date(v.createdAt).toLocaleDateString()
+  //       }))
+  //     }
+  //   ])
 
-    setIsBarChartOpen(!isBarChartOpen);
-  };
+  //   setSeriesColors([
+  //     ...seriesColors,
+  //     colors.he[sensor.title.toLocaleLowerCase()].DEFAULT,
+  //   ]);
+
+  //   setYAxis([
+  //     ...yAxis,
+  //     {
+  //       title: {
+  //         text: 'Versiegelung in %',
+  //       }
+  //     },
+  //   ])
+
+  //   if (!isOpen) {
+  //     setIsOpen(!isOpen);
+  //   }
+  //   // setIsOpen(!isOpen)
+
+  //   // setIsBarChartOpen(!isBarChartOpen);
+  // };
 
   const updateSeries = (
     enabled: boolean,
@@ -314,99 +355,207 @@ const Sidebar = ({
         : {}),
     };
     return (
-      <MeasurementTile sensor={sensor} openChart={() => openBarChart(sensor)} />
+      <MeasurementTile sensor={sensor} openChart={() => openCharts(sensor)} />
     );
   };
 
   return (
-    <div className="flex h-full divide-x-2 overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
-      {box && (
-        <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
-          <div className="mb-2">
-            <h1 className="mb-2 content-center text-center text-lg font-bold">
-              {box.properties.name}
-            </h1>
-            <div className="flex justify-center">
-              {box.properties.tags.map((tag, idx) => {
-                // First index is HU Explorers tag
-                if (idx === 0) {
-                  return;
-                }
-                return (
-                  <span
-                    className="mr-2 inline-flex items-center justify-center rounded-full bg-he-violet px-2 py-1 text-xs font-bold leading-none text-white"
-                    key={tag}
-                  >
-                    {tag}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-          <div className="flex h-full flex-wrap justify-center overflow-auto align-middle">
-            {box.properties.sensors.map(sensor => {
-              return (
-                <MeasurementTile
-                  key={sensor._id}
-                  sensor={sensor}
-                  openChart={openCharts}
-                />
-              );
-            })}
+    <div className="flex h-full w-full overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
+      {layout === LayoutMode.MAP ? (
+        <div className="flex h-full divide-x-2 overflow-hidden overflow-y-scroll">
+          {box && (
+            <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
+              <div className="mb-2">
+                <h1 className="mb-2 content-center text-center text-lg font-bold">
+                  {box.properties.name}
+                </h1>
+                <div className="flex justify-center">
+                  {box.properties.tags.map((tag, idx) => {
+                    // First index is HU Explorers tag
+                    if (idx === 0) {
+                      return;
+                    }
+                    return (
+                      <span
+                        className="mr-2 inline-flex items-center justify-center rounded-full bg-he-violet px-2 py-1 text-xs font-bold leading-none text-white"
+                        key={tag}
+                      >
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex h-full flex-wrap justify-center overflow-auto align-middle">
+                {box.properties.sensors.map(sensor => {
+                  return (
+                    <MeasurementTile
+                      key={sensor._id}
+                      sensor={sensor}
+                      openChart={openCharts}
+                    />
+                  );
+                })}
 
-            {box.properties.tags.includes('Artenvielfalt') && (
-              <>
-                {getArtenvielfaltTile(artenvielfalt)}
-                {getVersiegelungTile(versiegelung)}
-              </>
+                {box.properties.tags.includes('Artenvielfalt') && (
+                  <>
+                    {getArtenvielfaltTile(artenvielfalt)}
+                    {getVersiegelungTile(versiegelung)}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="ml-2 flex w-[70%] min-w-[70%]">
+            {!box && (
+              <div className="flex h-full w-full items-center justify-center">
+                <h1 className="text-md content-center text-center font-bold">
+                  Wählt per Klick auf die Karte einen Schulstandort aus und ihr
+                  seht Messwerte von Umweltfaktoren an dieser Schule.
+                </h1>
+              </div>
             )}
+
+            {isOpen && (
+              <div className="flex w-full overflow-hidden">
+                <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
+                  <LineChart
+                    series={series}
+                    yaxis={yAxis}
+                    colors={seriesColors}
+                  />
+                </div>
+              </div>
+            )}
+
+            {isBarChartOpen && (
+              <div className="flex w-full overflow-hidden">
+                <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
+                  <BarChart
+                    series={barChartSeries}
+                    yaxis={yAxisBarChart}
+                    colors={[colors.he.undurchlaessigkeit.DEFAULT]}
+                  />
+                </div>
+              </div>
+            )}
+
+            {isPieChartOpen && (
+              <div className="m-2 h-[95%] w-full overflow-hidden">
+                <PieChart series={pieChartSeries} labels={pieChartLabels} />
+              </div>
+            )}
+            {box !== undefined &&
+              !isOpen &&
+              !isPieChartOpen &&
+              !isBarChartOpen && (
+                <div className="flex h-full w-full items-center justify-center text-center">
+                  <h1>
+                    Klicke auf eine Kachel um dir die Daten in einem Graphen
+                    anzuzeigen.
+                  </h1>
+                </div>
+              )}
           </div>
         </div>
+      ) : (
+        <div className="flex h-full w-full overflow-hidden overflow-y-scroll">
+          {box && (
+            <div className="flex w-full flex-col">
+              <div className="mb-2">
+                <h1 className="mb-2 content-center text-center text-lg font-bold">
+                  {box.properties.name}
+                </h1>
+                <div className="flex justify-center">
+                  {box.properties.tags.map((tag, idx) => {
+                    // First index is HU Explorers tag
+                    if (idx === 0) {
+                      return;
+                    }
+                    return (
+                      <span
+                        className="mr-2 inline-flex items-center justify-center rounded-full bg-he-violet px-2 py-1 text-xs font-bold leading-none text-white"
+                        key={tag}
+                      >
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex justify-evenly">
+                {box.properties.sensors.map(sensor => {
+                  return (
+                    <MeasurementTile
+                      key={sensor._id}
+                      sensor={sensor}
+                      openChart={openCharts}
+                    />
+                  );
+                })}
+
+                {box.properties.tags.includes('Artenvielfalt') && (
+                  <>
+                    {getArtenvielfaltTile(artenvielfalt)}
+                    {getVersiegelungTile(versiegelung)}
+                  </>
+                )}
+              </div>
+              <div className="mt-2 flex h-full w-full">
+                {!box && (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <h1 className="text-md content-center text-center font-bold">
+                      Wählt per Klick auf die Karte einen Schulstandort aus und
+                      ihr seht Messwerte von Umweltfaktoren an dieser Schule.
+                    </h1>
+                  </div>
+                )}
+
+                {isOpen && (
+                  <div className="flex w-full overflow-hidden">
+                    <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
+                      <LineChart
+                        series={series}
+                        yaxis={yAxis}
+                        colors={seriesColors}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {isBarChartOpen && (
+                  <div className="flex w-full overflow-hidden">
+                    <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
+                      <BarChart
+                        series={barChartSeries}
+                        yaxis={yAxisBarChart}
+                        colors={[colors.he.undurchlaessigkeit.DEFAULT]}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {isPieChartOpen && (
+                  <div className="m-2 h-[95%] w-full overflow-hidden">
+                    <PieChart series={pieChartSeries} labels={pieChartLabels} />
+                  </div>
+                )}
+                {box !== undefined &&
+                  !isOpen &&
+                  !isPieChartOpen &&
+                  !isBarChartOpen && (
+                    <div className="flex h-full w-full items-center justify-center text-center">
+                      <h1>
+                        Klicke auf eine Kachel um dir die Daten in einem Graphen
+                        anzuzeigen.
+                      </h1>
+                    </div>
+                  )}
+              </div>
+            </div>
+          )}
+        </div>
       )}
-      <div className="ml-2 flex w-[70%] min-w-[70%]">
-        {!box && (
-          <div className="flex h-full w-full items-center justify-center">
-            <h1 className="text-md content-center text-center font-bold">
-              Wählt per Klick auf die Karte einen Schulstandort aus und ihr seht
-              Messwerte von Umweltfaktoren an dieser Schule.
-            </h1>
-          </div>
-        )}
-
-        {isOpen && (
-          <div className="flex w-full overflow-hidden">
-            <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
-              <LineChart series={series} yaxis={yAxis} colors={seriesColors} />
-            </div>
-          </div>
-        )}
-
-        {isBarChartOpen && (
-          <div className="flex w-full overflow-hidden">
-            <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
-              <BarChart
-                series={barChartSeries}
-                yaxis={yAxisBarChart}
-                colors={[colors.he.undurchlaessigkeit.DEFAULT]}
-              />
-            </div>
-          </div>
-        )}
-
-        {isPieChartOpen && (
-          <div className="m-2 h-[95%] w-full overflow-hidden">
-            <PieChart series={pieChartSeries} labels={pieChartLabels} />
-          </div>
-        )}
-        {box !== undefined && !isOpen && !isPieChartOpen && !isBarChartOpen && (
-          <div className="flex h-full w-full items-center justify-center text-center">
-            <h1>
-              Klicke auf eine Kachel um dir die Daten in einem Graphen
-              anzuzeigen.
-            </h1>
-          </div>
-        )}
-      </div>
     </div>
   );
 };
