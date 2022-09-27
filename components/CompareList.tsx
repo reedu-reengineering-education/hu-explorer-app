@@ -19,6 +19,7 @@ const CompareList = ({ devices, setCompareBoxes }: CompareDevice) => {
   const { compare, setCompare } = useSharedCompareMode();
 
   const handleCompare = event => {
+    console.log(event);
     setCompare(event.target.checked);
   };
 

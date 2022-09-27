@@ -29,8 +29,6 @@ const Sidebar = ({
   const { compareSensors } = useSharedCompareSensors();
 
   useEffect(() => {
-    // TODO: Check Artenvielfalt und Versieglungs data
-
     if (compareSensors.length > 0) {
       const { active, sensor, device } = compareSensors[0];
       updateSeries(active, device, sensor);
@@ -70,7 +68,6 @@ const Sidebar = ({
   const [sensor2, setSensor2] = useState<Sensor>();
   const [shouldFetch2, setShouldFetch2] = useState(false);
 
-  // TODO: Handle Artenvielfalt und Versieglungs data of compare device
   const { data: data2 } = useSWR(
     shouldFetch2
       ? `https://api.opensensemap.org/boxes/${compareDevice?.properties._id}/data/${sensor2._id}?to-date=${sensor2.lastMeasurement.createdAt}`
@@ -78,7 +75,27 @@ const Sidebar = ({
     fetcher,
   );
 
-  const [yAxis, setYAxis] = useState<ApexYAxis[]>();
+  const [shouldFetchVersiegelung, setshouldFetchVersiegelung] = useState(false);
+  const { data: versiegelung2, error: versiegelung2Error } = useSWR<
+    VersiegelungRecord[]
+  >(
+    shouldFetchVersiegelung
+      ? `/api/versiegelung/${compareDevice?.properties._id}`
+      : null,
+  );
+  console.log('Versieglung 2: ', versiegelung2);
+  const [shouldFetchArtenvielfalt, setshouldFetchArtenvielfalt] =
+    useState(false);
+  const { data: artenvielfalt2, error: artenvielfalt2Error } = useSWR<
+    VersiegelungRecord[]
+  >(
+    shouldFetchArtenvielfalt
+      ? `/api/artenvielfalt/${compareDevice?.properties._id}`
+      : null,
+  );
+  console.log('Artenvielfalt 2: ', artenvielfalt2);
+
+  const [yAxis, setYAxis] = useState<ApexYAxis[]>([]);
   const [yAxisBarChart, setYAxisBarChart] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
   const [seriesColors, setSeriesColors] = useState([]);
@@ -97,6 +114,8 @@ const Sidebar = ({
       setPieChartSeries([]);
       setShouldFetch(false);
       setShouldFetch2(false);
+      setshouldFetchArtenvielfalt(false);
+      setshouldFetchVersiegelung(false);
       setSensor(null);
       setSensor2(null);
     };
@@ -122,6 +141,42 @@ const Sidebar = ({
   }, [data]);
 
   useEffect(() => {
+    if (versiegelung2) {
+      setSeries([
+        ...series.filter(serie => !serie.id.includes(sensor2.title)),
+        {
+          id: `${compareDevice.properties._id}-${sensor2.title}`,
+          name: `${compareDevice.properties.name}-${sensor2.title}`,
+          type: 'line',
+          data: versiegelung2.map(m => ({
+            y: Number(m.value),
+            x: new Date(m.createdAt),
+          })),
+        },
+      ]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [versiegelung2]);
+
+  useEffect(() => {
+    if (artenvielfalt2) {
+      setSeries([
+        ...series.filter(serie => !serie.id.includes(sensor2.title)),
+        {
+          id: `${compareDevice.properties._id}-${sensor2.title}`,
+          name: `${compareDevice.properties.name}-${sensor2.title}`,
+          type: 'line',
+          data: artenvielfalt2.map(m => ({
+            y: Number(m.value),
+            x: new Date(m.createdAt),
+          })),
+        },
+      ]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artenvielfalt2]);
+
+  useEffect(() => {
     if (data2) {
       setSeries([
         ...series,
@@ -142,18 +197,6 @@ const Sidebar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data2]);
 
-  useEffect(() => {
-    // Cleanup after box has changed
-    return () => {
-      setShouldFetch(false);
-      setSensor(null);
-      setSeries([]);
-      setYAxis([]);
-      setSeriesColors([]);
-      setIsOpen(false);
-    };
-  }, [box]);
-
   const openCharts = (sensor: Sensor) => {
     setSensor(sensor);
     const sensorColor = colors.he[sensor.title.toLocaleLowerCase()].DEFAULT;
@@ -173,10 +216,10 @@ const Sidebar = ({
           {
             id: `versiegelung-${sensor._id}`,
             name: 'Versiegelung',
-            type: 'column',
+            type: 'line',
             data: versiegelung.map(v => ({
-              y: Number(v.value),
-              x: new Date(v.createdAt).toLocaleDateString(),
+              y: v.value,
+              x: new Date(v.createdAt),
             })),
           },
         ]);
@@ -310,7 +353,17 @@ const Sidebar = ({
         seriesColors.filter((colors, idx) => idx !== seriesIndex),
       );
     }
-    setShouldFetch2(enabled);
+    switch (sensor.title) {
+      case 'Artenvielfalt':
+        setshouldFetchArtenvielfalt(enabled);
+        break;
+      case 'Versiegelung':
+        setshouldFetchVersiegelung(enabled);
+        break;
+      default:
+        setShouldFetch2(enabled);
+        break;
+    }
   };
 
   const getArtenvielfaltTile = (artenvielfalt: ArtenvielfaltRecord[]) => {
