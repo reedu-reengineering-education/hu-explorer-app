@@ -286,6 +286,9 @@ const Artenvielfalt = ({
                 color: colors.he.bodenfeuchte.DEFAULT,
               },
             },
+            forceNiceScale: false,
+            min: 0,
+            max: 50,
             axisBorder: {
               show: true,
               color: '#7d8bc5',
@@ -332,6 +335,9 @@ const Artenvielfalt = ({
                 color: colors.he.undurchlaessigkeit.DEFAULT,
               },
             },
+            forceNiceScale: false,
+            min: 0,
+            max: 100,
             axisBorder: {
               show: true,
               color: colors.he.undurchlaessigkeit.DEFAULT,
