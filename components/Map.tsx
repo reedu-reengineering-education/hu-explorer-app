@@ -154,7 +154,9 @@ const Map = ({
             name={m.properties.name}
             lat={m.geometry.coordinates[1]}
             lng={m.geometry.coordinates[0]}
-            color={color && schallColors[i].bg}
+            color={
+              color && schallColors[m.properties.name.toLocaleLowerCase()].bg
+            }
             onClick={() => {
               onBoxSelect && onBoxSelect(m);
             }}

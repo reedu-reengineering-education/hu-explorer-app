@@ -10,13 +10,13 @@ import { useOsemData } from '@/hooks/useOsemData';
 import { PauseIcon } from '@heroicons/react/outline';
 import { PlayIcon } from '@heroicons/react/solid';
 
-export const schallColors = [
-  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
-  { bg: 'bg-he-yellow', shadow: 'shadow-he-yellow' },
-  { bg: 'bg-he-green', shadow: 'shadow-he-green' },
-  { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
-  { bg: 'bg-he-red', shadow: 'shadow-he-red' },
-];
+export const schallColors = {
+  straße: { bg: 'bg-he-yellow', shadow: 'shadow-he-yellow' },
+  eingang: { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
+  hof: { bg: 'bg-he-green', shadow: 'shadow-he-green' },
+  flur: { bg: 'bg-he-red', shadow: 'shadow-he-red' },
+  klingel: { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
+};
 
 const Schall = () => {
   const { schule } = useExpeditionParams();
@@ -107,7 +107,7 @@ const Schall = () => {
                     ? Math.max(...e.measurements.map(m => Number(m.value)))
                     : undefined
                 }
-                color={schallColors[i]}
+                color={schallColors[e.box.properties.name.toLocaleLowerCase()]}
               ></Tile>
             ))}
           </div>
