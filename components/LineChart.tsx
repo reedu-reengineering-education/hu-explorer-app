@@ -45,6 +45,7 @@ const LineChart = ({ series, yaxis, colors, customTools = [] }: ChartProps) => {
     xaxis: {
       type: 'datetime',
       labels: {
+        datetimeUTC: false,
         style: {
           fontSize: '14px',
         },
