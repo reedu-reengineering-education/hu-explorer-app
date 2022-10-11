@@ -347,6 +347,9 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
                 fontSize: '16px',
               },
             },
+            forceNiceScale: false,
+            min: 0,
+            max: 1,
           },
         ]);
         break;
