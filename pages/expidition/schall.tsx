@@ -1,5 +1,3 @@
-import LineChart from '@/components/LineChart';
-import BarChart from '@/components/BarChart';
 import Tile from '@/components/Tile';
 import Map from '@/components/Map';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
@@ -26,9 +24,6 @@ const Schall = () => {
 
   const [live, setLive] = useState(true);
   const { data, boxes } = useOsemData('Schallpegel', schule, live);
-
-  const [series, setSeries] = useState([]);
-  const [barSeries, setBarSeries] = useState([]);
 
   const colors = useTailwindColors();
   const [chartOptions, setChartOptions] = useState<Highcharts.Options>({
@@ -150,16 +145,6 @@ const Schall = () => {
       })),
     });
 
-    // setSeries(
-    //   data.map(e => ({
-    //     name: e.box.properties.name,
-    //     data: e.measurements.map(m => ({
-    //       y: Number(m.value),
-    //       x: new Date(m.createdAt),
-    //     })),
-    //   })),
-    // );
-
     setBarChartOptions({
       series: data.map(e => ({
         name: e.box.properties.name,
@@ -172,18 +157,6 @@ const Schall = () => {
         ),
       })),
     });
-
-    setBarSeries(
-      data.map(e => ({
-        name: e.box.properties.name,
-        data: barChartCategories.map(
-          c =>
-            e.measurements
-              .map(m => Number(m.value))
-              .filter(x => c[0] <= x && x <= c[1], c).length,
-        ),
-      })),
-    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
@@ -194,12 +167,6 @@ const Schall = () => {
     [60, 79],
     [80, 99],
   ];
-
-  const yaxis = {
-    title: {
-      text: 'Lautstärke in dB',
-    },
-  };
 
   return (
     <div className="flex h-full flex-col">
