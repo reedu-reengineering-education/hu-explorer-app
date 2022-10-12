@@ -10,6 +10,20 @@ import { useOsemData } from '@/hooks/useOsemData';
 import { PauseIcon } from '@heroicons/react/outline';
 import { PlayIcon } from '@heroicons/react/solid';
 
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+
+const options = {
+  title: {
+    text: 'My chart',
+  },
+  series: [
+    {
+      data: [1, 2, 3],
+    },
+  ],
+};
+
 export const schallColors = {
   straße: { bg: 'bg-he-yellow', shadow: 'shadow-he-yellow' },
   eingang: { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
@@ -161,6 +175,11 @@ const Schall = () => {
                 colors.he.red.DEFAULT,
               ]}
             />
+          </div>
+        </LayoutTile>
+        <LayoutTile>
+          <div className="h-full w-full">
+            <HighchartsReact highcharts={Highcharts} options={options} />
           </div>
         </LayoutTile>
       </div>
