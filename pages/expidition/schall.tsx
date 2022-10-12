@@ -260,6 +260,7 @@ const Schall = () => {
         <LayoutTile>
           <div className="h-full w-full">
             <HighchartsReact
+              containerProps={{ style: { height: '100%' } }}
               highcharts={Highcharts}
               options={barChartOptions}
             />
@@ -267,7 +268,11 @@ const Schall = () => {
         </LayoutTile>
         <LayoutTile>
           <div className="h-full w-full">
-            <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+            <HighchartsReact
+              containerProps={{ style: { height: '100%' } }}
+              highcharts={Highcharts}
+              options={chartOptions}
+            />
           </div>
         </LayoutTile>
       </div>
