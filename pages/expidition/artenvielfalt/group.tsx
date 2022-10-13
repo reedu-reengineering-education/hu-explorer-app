@@ -3,20 +3,22 @@ import React, { useEffect, useState } from 'react';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import Map from '@/components/Map';
 import Tabs, { Tab } from '@/components/Tabs';
-import BarChart from '@/components/BarChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { GetServerSideProps } from 'next';
 import { FeatureCollection, Point } from 'geojson';
 import prisma from '@/lib/prisma';
 import { useOsemData2 } from '@/hooks/useOsemData2';
 import { getGroups } from '@/lib/groups';
-import LineChart from '@/components/LineChart';
+// import LineChart from '@/components/LineChart';
 import {
   ArtenvielfaltIcon,
   BodenfeuchteIcon,
   LufttemperaturIcon,
   VersiegelungIcon,
 } from '@/components/Artenvielfalt/Icons';
+
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -125,9 +127,13 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const [lineSeries, setLineSeries] = useState([]);
   const [lineSeriesBodenfeuchte, setLineSeriesBodenfeuchte] = useState([]);
   const [lineSeriesTemperature, setLineSeriesTemperature] = useState([]);
-  const [series, setSeries] = useState<any[]>();
-  const [temperatureSeries, setTemperatureSeries] = useState<any[]>();
-  const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState<any[]>();
+  const [series, setSeries] = useState();
+  const [transformedTemperatur, setTransformedTemperatur] = useState<number[]>(
+    [],
+  );
+  const [transformedBodenfeuchte, setTransformedBodenfeuchte] = useState<
+    number[]
+  >([]);
 
   // Fetch openSenseMap data
   const { data, boxes } = useOsemData2('Artenvielfalt', schule, true);
@@ -143,7 +149,10 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
         (a, b) => a + (parseFloat(b['value']) || 0),
         0,
       );
-      return (sumWithInitial / e.temperature?.length).toFixed(2);
+      if (e.temperature.length) {
+        return parseFloat((sumWithInitial / e.temperature.length).toFixed(2));
+      }
+      return null;
     });
 
     const transformedBodenfeuchteData = filteredDevices.map(e => {
@@ -151,71 +160,79 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
         (a, b) => a + (parseFloat(b['value']) || 0),
         0,
       );
-      return (sumWithInitial / e.bodenfeuchte?.length).toFixed(2);
+      if (e.bodenfeuchte.length) {
+        return parseFloat((sumWithInitial / e.bodenfeuchte.length).toFixed(2));
+      }
+      return null;
     });
 
     // If no data is available create default entry
     // so that customTools are rendered
     // https://github.com/apexcharts/apexcharts.js/issues/299
-    const tempSeries = filteredDevices.map(e => ({
-      name: e.box.properties.name,
-      data:
-        e.temperature.length > 0
-          ? e.temperature.map(m => ({
-              y: Number(m.value),
-              x: new Date(m.createdAt),
-            }))
-          : [
-              {
-                y: null,
-                x: new Date(),
-              },
-            ],
-    }));
-    setLineSeriesTemperature(tempSeries);
-    setLineSeries(tempSeries);
+    // const tempSeries = filteredDevices.map(e => ({
+    //   name: e.box.properties.name,
+    //   data:
+    //     e.temperature.length > 0
+    //       ? e.temperature.map(m => ({
+    //           y: Number(m.value),
+    //           x: new Date(m.createdAt),
+    //         }))
+    //       : [
+    //           {
+    //             y: 0,
+    //             x: new Date(),
+    //           },
+    //         ],
+    // }));
+    // setLineSeriesTemperature(tempSeries);
+    // setLineSeries(tempSeries);
 
     // If no data is available create default entry
     // so that customTools are rendered
     // https://github.com/apexcharts/apexcharts.js/issues/299
-    setLineSeriesBodenfeuchte(
-      filteredDevices.map(e => ({
-        name: e.box.properties.name,
-        data:
-          e.bodenfeuchte.length > 0
-            ? e.bodenfeuchte.map(m => ({
-                y: Number(m.value),
-                x: new Date(m.createdAt),
-              }))
-            : [
-                {
-                  y: null,
-                  x: new Date(),
-                },
-              ],
-      })),
-    );
+    // setLineSeriesBodenfeuchte(
+    //   filteredDevices.map(e => ({
+    //     name: e.box.properties.name,
+    //     data:
+    //       e.bodenfeuchte.length > 0
+    //         ? e.bodenfeuchte.map(m => ({
+    //             y: Number(m.value),
+    //             x: new Date(m.createdAt),
+    //           }))
+    //         : [
+    //             {
+    //               y: 0,
+    //               x: new Date(),
+    //             },
+    //           ],
+    //   })),
+    // );
 
-    setTemperatureSeries([
-      {
-        name: 'Lufttemperatur',
-        data: transformedTemperatureData,
-      },
-    ]);
+    setTransformedTemperatur(transformedTemperatureData);
+    setTransformedBodenfeuchte(transformedBodenfeuchteData);
 
-    setBodenfeuchteSeries([
-      {
-        name: 'Lufttemperatur',
-        data: transformedBodenfeuchteData,
+    setBarChartOptions({
+      ...barChartOptions,
+      yAxis: {
+        title: {
+          text: 'Lufttemperatur in °C',
+          style: {
+            fontSize: '16px',
+          },
+        },
+        max: 50,
       },
-    ]);
+      series: [
+        {
+          name: 'Lufttemperatur',
+          type: 'column',
+          data: transformedTemperatureData.map(v => v),
+        },
+      ],
+      colors: [colors.he.lufttemperatur.DEFAULT],
+    });
 
-    setSeries([
-      {
-        name: 'Lufttemperatur',
-        data: transformedTemperatureData,
-      },
-    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, groups]);
 
   const tabs: Tab[] = [
@@ -247,111 +264,117 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     },
   ];
 
-  const [xaxis, setXaxis] = useState({
-    categories: groups,
-    labels: {
-      style: {
-        fontSize: '16px',
+  const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>({
+    chart: {
+      type: 'column',
+    },
+    title: {
+      text: '',
+    },
+    xAxis: {
+      categories: groups,
+      crosshair: true,
+    },
+    legend: {
+      enabled: false,
+    },
+    yAxis: {
+      title: {
+        text: '',
+      },
+    },
+    plotOptions: {
+      column: {
+        pointPadding: 0.2,
+        borderWidth: 0,
       },
     },
   });
-
-  const [yaxis, setYaxis] = useState<ApexYAxis[]>([
-    {
-      seriesName: 'Lufttemperatur',
-      showAlways: true,
-      title: {
-        text: 'Lufttemperatur in °C',
-        style: {
-          fontSize: '16px',
-        },
-      },
-    },
-  ]);
 
   const onChange = (tab: number) => {
     setTab(tab);
     switch (tab) {
       case 0:
-        setLineSeries(lineSeriesTemperature);
-        setSeries(temperatureSeries);
-        setYaxis([
-          {
-            seriesName: 'Lufttemperatur',
-            showAlways: true,
+        setBarChartOptions({
+          ...barChartOptions,
+          yAxis: {
             title: {
               text: 'Lufttemperatur in °C',
               style: {
                 fontSize: '16px',
               },
             },
+            max: 50,
           },
-        ]);
+          series: [
+            {
+              name: 'Lufttemperatur',
+              type: 'column',
+              data: transformedTemperatur.map(v => v),
+            },
+          ],
+          colors: [colors.he.lufttemperatur.DEFAULT],
+        });
         break;
       case 1:
-        setLineSeries(lineSeriesBodenfeuchte);
-        setSeries(bodenfeuchteSeries);
-        setYaxis([
-          {
-            seriesName: 'Bodenfeuchte',
-            showAlways: true,
+        setBarChartOptions({
+          ...barChartOptions,
+          yAxis: {
             title: {
               text: 'Bodenfeuchte in %',
-              style: {
-                fontSize: '16px',
-              },
             },
-            forceNiceScale: false,
             min: 0,
             max: 50,
           },
-        ]);
+          series: [
+            {
+              name: 'Bodenfeuchte',
+              type: 'column',
+              data: transformedBodenfeuchte.map(v => v),
+            },
+          ],
+          colors: [colors.he.bodenfeuchte.DEFAULT],
+        });
         break;
       case 2:
-        setSeries([
-          {
-            name: 'Versiegelung',
-            data: versiegelung,
-          },
-        ]);
-        setYaxis([
-          {
-            seriesName: 'Undurchlässigkeit',
-            showAlways: true,
+        setBarChartOptions({
+          ...barChartOptions,
+          yAxis: {
             title: {
               text: 'Versiegelungsanteil in %',
-              style: {
-                fontSize: '16px',
-              },
             },
-            forceNiceScale: false,
             min: 0,
             max: 100,
           },
-        ]);
+          series: [
+            {
+              name: 'Versiegelung',
+              type: 'column',
+              data: versiegelung.map(v => v),
+            },
+          ],
+          colors: [colors.he.undurchlaessigkeit.DEFAULT],
+        });
         break;
       case 3:
-        setSeries([
-          {
-            name: 'Artenvielfalt',
-            data: artenvielfalt,
-          },
-        ]);
-        setYaxis([
-          {
-            seriesName: 'Artenvielfalt',
-            showAlways: true,
+        setBarChartOptions({
+          ...barChartOptions,
+          yAxis: {
             title: {
               text: 'Artenvielfaltsindex',
-              style: {
-                fontSize: '16px',
-              },
             },
-            forceNiceScale: false,
             min: 0,
             max: 1,
           },
-        ]);
+          series: [
+            {
+              name: 'artenvielfalt',
+              type: 'column',
+              data: artenvielfalt.map(v => v),
+            },
+          ],
+          colors: [colors.he.artenvielfalt.DEFAULT],
+        });
         break;
       default:
         break;
@@ -371,7 +394,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
           </div>
           <Tabs tabs={tabs} onChange={onChange}></Tabs>
           <div className="mb-4 w-full flex-auto pt-10">
-            {lineSeries && !barChart && (
+            {/* {lineSeries && !barChart && (
               <LineChart
                 series={lineSeries}
                 yaxis={yaxis}
@@ -387,25 +410,13 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
                   },
                 ]}
               />
-            )}
-            {series && barChart && (
-              <BarChart
-                series={series}
-                yaxis={yaxis}
-                xaxis={xaxis}
-                colors={[colors.he[tabs[tab].id.toLowerCase()].DEFAULT]}
-                customTools={[
-                  {
-                    title: 'Liniendiagramm',
-                    class: 'custom-icon',
-                    index: 0,
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-</svg>`,
-                    click: switchChart,
-                  },
-                ]}
-              ></BarChart>
+            )} */}
+            {barChart && (
+              <HighchartsReact
+                containerProps={{ style: { height: '100%' } }}
+                highcharts={Highcharts}
+                options={barChartOptions}
+              />
             )}
           </div>
         </div>
