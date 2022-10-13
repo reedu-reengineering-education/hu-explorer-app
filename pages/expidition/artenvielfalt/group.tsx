@@ -9,7 +9,6 @@ import { FeatureCollection, Point } from 'geojson';
 import prisma from '@/lib/prisma';
 import { useOsemData2 } from '@/hooks/useOsemData2';
 import { getGroups } from '@/lib/groups';
-// import LineChart from '@/components/LineChart';
 import {
   ArtenvielfaltIcon,
   BodenfeuchteIcon,
@@ -19,6 +18,11 @@ import {
 
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { Button } from '@/components/Elements/Button';
+import {
+  PresentationChartBarIcon,
+  PresentationChartLineIcon,
+} from '@heroicons/react/solid';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -167,46 +171,33 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     });
 
     // If no data is available create default entry
-    // so that customTools are rendered
-    // https://github.com/apexcharts/apexcharts.js/issues/299
-    // const tempSeries = filteredDevices.map(e => ({
-    //   name: e.box.properties.name,
-    //   data:
-    //     e.temperature.length > 0
-    //       ? e.temperature.map(m => ({
-    //           y: Number(m.value),
-    //           x: new Date(m.createdAt),
-    //         }))
-    //       : [
-    //           {
-    //             y: 0,
-    //             x: new Date(),
-    //           },
-    //         ],
-    // }));
-    // setLineSeriesTemperature(tempSeries);
+    const tempSeries = filteredDevices.map(e => ({
+      name: e.box.properties.name,
+      type: 'line',
+      data:
+        e.temperature.length > 0
+          ? e.temperature.map(m => [
+              new Date(m.createdAt).getTime(),
+              Number(m.value),
+            ])
+          : [],
+    }));
+    setLineSeriesTemperature(tempSeries);
     // setLineSeries(tempSeries);
 
     // If no data is available create default entry
-    // so that customTools are rendered
-    // https://github.com/apexcharts/apexcharts.js/issues/299
-    // setLineSeriesBodenfeuchte(
-    //   filteredDevices.map(e => ({
-    //     name: e.box.properties.name,
-    //     data:
-    //       e.bodenfeuchte.length > 0
-    //         ? e.bodenfeuchte.map(m => ({
-    //             y: Number(m.value),
-    //             x: new Date(m.createdAt),
-    //           }))
-    //         : [
-    //             {
-    //               y: 0,
-    //               x: new Date(),
-    //             },
-    //           ],
-    //   })),
-    // );
+    setLineSeriesBodenfeuchte(
+      filteredDevices.map(e => ({
+        name: e.box.properties.name,
+        data:
+          e.bodenfeuchte.length > 0
+            ? e.bodenfeuchte.map(m => ({
+                y: Number(m.value),
+                x: new Date(m.createdAt),
+              }))
+            : [],
+      })),
+    );
 
     setTransformedTemperatur(transformedTemperatureData);
     setTransformedBodenfeuchte(transformedBodenfeuchteData);
@@ -291,8 +282,71 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     },
   });
 
+  const [lineChartOptions, setLineChartOptions] = useState<Highcharts.Options>({
+    title: {
+      text: '',
+    },
+    chart: {
+      zooming: {
+        type: 'x',
+      },
+    },
+    plotOptions: {
+      series: {
+        marker: {
+          enabled: false,
+          symbol: 'circle',
+        },
+        lineWidth: 4,
+      },
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        millisecond: '%H:%M:%S.%L',
+        second: '%H:%M:%S',
+        minute: '%H:%M',
+        hour: '%H:%M',
+        day: '%e. %b',
+        week: '%e. %b',
+        month: "%b '%y",
+        year: '%Y',
+      },
+    },
+    yAxis: {
+      title: {
+        text: 'Lautstärke in dB',
+      },
+    },
+    legend: {
+      align: 'center',
+      verticalAlign: 'bottom',
+      layout: 'horizontal',
+    },
+    colors: [
+      colors.he.blue.DEFAULT,
+      colors.he.yellow.DEFAULT,
+      colors.he.green.DEFAULT,
+      colors.he.violet.DEFAULT,
+      colors.he.red.DEFAULT,
+    ],
+    credits: {
+      enabled: true,
+    },
+    time: {
+      useUTC: false,
+      timezoneOffset: new Date().getTimezoneOffset(),
+    },
+    tooltip: {
+      dateTimeLabelFormats: {
+        day: '%d.%m.%Y %H:%M:%S',
+      },
+    },
+  });
+
   const onChange = (tab: number) => {
     setTab(tab);
+    setBarChart(true);
     switch (tab) {
       case 0:
         setBarChartOptions({
@@ -382,6 +436,37 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   };
 
   const switchChart = () => {
+    switch (tab) {
+      case 0:
+        setLineChartOptions({
+          ...lineChartOptions,
+          yAxis: {
+            title: {
+              text: 'Lufttemperatur in °C',
+              style: {
+                fontSize: '16px',
+              },
+            },
+          },
+          series: lineSeriesTemperature,
+        });
+        break;
+      case 1:
+        setLineChartOptions({
+          ...lineChartOptions,
+          yAxis: {
+            title: {
+              text: 'Bodenfeuchte in %',
+              style: {
+                fontSize: '16px',
+              },
+            },
+          },
+          series: lineSeriesBodenfeuchte,
+        });
+      default:
+        break;
+    }
     setBarChart(!barChart);
   };
 
@@ -392,25 +477,37 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
           <div className="mb-4 h-[25%] max-h-[25%] w-full flex-auto">
             <Map width="100%" height="100%" data={devices} expedition={true} />
           </div>
-          <Tabs tabs={tabs} onChange={onChange}></Tabs>
-          <div className="mb-4 w-full flex-auto pt-10">
-            {/* {lineSeries && !barChart && (
-              <LineChart
-                series={lineSeries}
-                yaxis={yaxis}
-                customTools={[
-                  {
-                    title: 'Balkendiagramm',
-                    class: 'custom-icon',
-                    index: 0,
-                    icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-</svg>`,
-                    click: switchChart,
-                  },
-                ]}
+          <div className="mb-4">
+            <Tabs tabs={tabs} onChange={onChange}></Tabs>
+          </div>
+          <div className="mb-4 w-full flex-auto">
+            <div className="flex flex-row-reverse">
+              <Button
+                size="sm"
+                variant="inverse"
+                startIcon={<PresentationChartLineIcon className="h-5 w-5" />}
+                disabled={!barChart || tab === 2 || tab === 3}
+                onClick={switchChart}
+              >
+                Liniendiagramm
+              </Button>
+              <Button
+                size="sm"
+                variant="inverse"
+                startIcon={<PresentationChartBarIcon className="h-5 w-5" />}
+                disabled={barChart}
+                onClick={switchChart}
+              >
+                Balkendiagramm
+              </Button>
+            </div>
+            {!barChart && (
+              <HighchartsReact
+                containerProps={{ style: { height: '100%' } }}
+                highcharts={Highcharts}
+                options={lineChartOptions}
               />
-            )} */}
+            )}
             {barChart && (
               <HighchartsReact
                 containerProps={{ style: { height: '100%' } }}
