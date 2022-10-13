@@ -17,12 +17,17 @@ import {
 } from '@/components/Artenvielfalt/Icons';
 
 import Highcharts from 'highcharts';
+import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
 import HighchartsReact from 'highcharts-react-official';
 import { Button } from '@/components/Elements/Button';
 import {
   PresentationChartBarIcon,
   PresentationChartLineIcon,
 } from '@heroicons/react/solid';
+
+if (typeof Highcharts === 'object') {
+  NoDataToDisplay(Highcharts);
+}
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -463,6 +468,11 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             },
           },
           series: lineSeriesBodenfeuchte,
+          noData: {
+            position: {
+              align: 'center',
+            },
+          },
         });
       default:
         break;
