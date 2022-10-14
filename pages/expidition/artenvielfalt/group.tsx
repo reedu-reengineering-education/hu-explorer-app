@@ -24,6 +24,10 @@ import {
   PresentationChartBarIcon,
   PresentationChartLineIcon,
 } from '@heroicons/react/solid';
+import {
+  transformBodenfeuchteData,
+  transformTemperatureData,
+} from '@/lib/utils';
 
 if (typeof Highcharts === 'object') {
   NoDataToDisplay(Highcharts);
@@ -133,10 +137,8 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
 
   const [barChart, setBarChart] = useState<boolean>(true);
 
-  const [lineSeries, setLineSeries] = useState([]);
   const [lineSeriesBodenfeuchte, setLineSeriesBodenfeuchte] = useState([]);
   const [lineSeriesTemperature, setLineSeriesTemperature] = useState([]);
-  const [series, setSeries] = useState();
   const [transformedTemperatur, setTransformedTemperatur] = useState<number[]>(
     [],
   );
@@ -153,27 +155,13 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
       groups.includes(e.box.properties.name.toLocaleLowerCase()),
     );
 
-    const transformedTemperatureData = filteredDevices.map(e => {
-      const sumWithInitial = e.temperature?.reduce(
-        (a, b) => a + (parseFloat(b['value']) || 0),
-        0,
-      );
-      if (e.temperature.length) {
-        return parseFloat((sumWithInitial / e.temperature.length).toFixed(2));
-      }
-      return null;
-    });
+    const transformedTemperatureData =
+      transformTemperatureData(filteredDevices);
+    const transformedBodenfeuchteData =
+      transformBodenfeuchteData(filteredDevices);
 
-    const transformedBodenfeuchteData = filteredDevices.map(e => {
-      const sumWithInitial = e.bodenfeuchte?.reduce(
-        (a, b) => a + (parseFloat(b['value']) || 0),
-        0,
-      );
-      if (e.bodenfeuchte.length) {
-        return parseFloat((sumWithInitial / e.bodenfeuchte.length).toFixed(2));
-      }
-      return null;
-    });
+    setTransformedTemperatur(transformedTemperatureData);
+    setTransformedBodenfeuchte(transformedBodenfeuchteData);
 
     // If no data is available create default entry
     const tempSeries = filteredDevices.map(e => ({
@@ -188,7 +176,6 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
           : [],
     }));
     setLineSeriesTemperature(tempSeries);
-    // setLineSeries(tempSeries);
 
     // If no data is available create default entry
     setLineSeriesBodenfeuchte(
@@ -203,9 +190,6 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             : [],
       })),
     );
-
-    setTransformedTemperatur(transformedTemperatureData);
-    setTransformedBodenfeuchte(transformedBodenfeuchteData);
 
     setBarChartOptions({
       ...barChartOptions,

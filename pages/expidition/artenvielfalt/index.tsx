@@ -142,9 +142,6 @@ const Artenvielfalt = ({
     number[]
   >([]);
 
-  // const chartOptions = generateChartOptions('artenvielfalt','column', groups, [])
-  // console.log(chartOptions);
-
   const [chartOptions, setChartOptions] = useState<Highcharts.Options>({
     chart: {
       type: 'column',
@@ -327,7 +324,9 @@ const Artenvielfalt = ({
           <div className="mb-4 h-[25%] max-h-[25%] w-full flex-auto">
             <Map width="100%" height="100%" data={devices} expedition={true} />
           </div>
-          <Tabs tabs={tabs} onChange={onChange}></Tabs>
+          <div className="mb-4">
+            <Tabs tabs={tabs} onChange={onChange}></Tabs>
+          </div>
           <div className="mb-4 w-full flex-auto">
             <HighchartsReact
               containerProps={{ style: { height: '100%' } }}
