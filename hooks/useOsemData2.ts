@@ -2,6 +2,7 @@ import { fetcher } from '@/lib/fetcher';
 import { Point, Feature } from 'geojson';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
+const { DateTime } = require('luxon');
 
 export const useOsemData2 = (
   expedition: string,
@@ -12,10 +13,14 @@ export const useOsemData2 = (
   const { data: boxes } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
     `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,${expedition},${schule}`,
   );
+
+  // Get today´s date
+  const today = DateTime.now().startOf('day').toUTC().toString();
+
   const { data: measurements } = useSWR(
     boxes?.features.flatMap(b => {
       return b.properties.sensors.map(s => {
-        return `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${s._id}`;
+        return `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${s._id}?from-date=${today}`;
       });
     }),
     fetcher,
