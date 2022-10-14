@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import Map from '@/components/Map';
 import Tabs, { Tab } from '@/components/Tabs';
-import BarChart from '@/components/BarChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import prisma from '@/lib/prisma';
 import { FeatureCollection, Point } from 'geojson';
@@ -15,6 +14,14 @@ import {
   LufttemperaturIcon,
   VersiegelungIcon,
 } from '@/components/Artenvielfalt/Icons';
+
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import {
+  transformBodenfeuchteData,
+  transformTemperatureData,
+} from '@/lib/utils';
+import { generateChartOptions } from '@/lib/charts';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -122,62 +129,98 @@ const Artenvielfalt = ({
 }: Props) => {
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
-  const [series, setSeries] = useState<any[]>();
-  const [temperatureSeries, setTemperatureSeries] = useState({
-    name: 'Lufttemperatur',
-    data: [],
-  });
-  const [bodenfeuchteSeries, setBodenfeuchteSeries] = useState({
-    name: 'Bodenfeuchte',
-    data: [],
-  });
 
   const colors = useTailwindColors();
 
   // Fetch openSenseMap data
   const { data, boxes } = useOsemData2('Artenvielfalt', schule, false);
 
+  const [transformedTemperatur, setTransformedTemperatur] = useState<number[]>(
+    [],
+  );
+  const [transformedBodenfeuchte, setTransformedBodenfeuchte] = useState<
+    number[]
+  >([]);
+
+  // const chartOptions = generateChartOptions('artenvielfalt','column', groups, [])
+  // console.log(chartOptions);
+
+  const [chartOptions, setChartOptions] = useState<Highcharts.Options>({
+    chart: {
+      type: 'column',
+    },
+    title: {
+      text: '',
+    },
+    xAxis: {
+      categories: groups,
+      crosshair: true,
+    },
+    legend: {
+      enabled: false,
+    },
+    yAxis: [
+      {
+        title: {
+          text: '',
+        },
+      },
+      {
+        title: {
+          text: 'Artenvilfaltsindex',
+          style: {
+            color: colors.he.artenvielfalt.DEFAULT,
+          },
+        },
+        opposite: true,
+      },
+    ],
+    plotOptions: {
+      column: {
+        pointPadding: 0.2,
+        borderWidth: 0,
+      },
+    },
+  });
+
   useEffect(() => {
     const filteredDevices = data.filter(e =>
       groups.includes(e.box.properties.name.toLocaleLowerCase()),
     );
 
-    const transformedTemperatureData = filteredDevices.map(e => {
-      const sumWithInitial = e.temperature?.reduce(
-        (a, b) => a + (parseFloat(b['value']) || 0),
-        0,
-      );
-      return (sumWithInitial / e.temperature?.length).toFixed(2);
-    });
+    const transformedTemperatureData =
+      transformTemperatureData(filteredDevices);
+    const transformedBodenfeuchteData =
+      transformBodenfeuchteData(filteredDevices);
 
-    const transformedBodenfeuchteData = filteredDevices.map(e => {
-      const sumWithInitial = e.bodenfeuchte?.reduce(
-        (a, b) => a + (parseFloat(b['value']) || 0),
-        0,
-      );
-      return (sumWithInitial / e.bodenfeuchte?.length).toFixed(2);
-    });
+    setTransformedTemperatur(transformedTemperatureData);
+    setTransformedBodenfeuchte(transformedBodenfeuchteData);
 
-    setTemperatureSeries({
-      name: 'Lufttemperatur',
-      data: transformedTemperatureData,
-    });
-
-    setBodenfeuchteSeries({
-      name: 'Bodenfeuchte',
-      data: transformedBodenfeuchteData,
-    });
-
-    setSeries([
+    // Initially set series
+    const chartOptions = generateChartOptions(
+      'column',
       {
-        name: 'Lufttemperatur',
-        data: transformedTemperatureData,
+        text: 'Lufttemperatur in °C',
+        value: 'lufttemperatur',
       },
-      {
-        name: 'pflanzliche Artenvielfalt',
-        data: artenvielfalt,
-      },
-    ]);
+      groups,
+      [
+        {
+          name: 'Lufttemperatur',
+          type: 'column',
+          data: transformedTemperatureData.map(v => v),
+        },
+        {
+          name: 'Artenvielfalt',
+          type: 'column',
+          yAxis: 1,
+          data: artenvielfalt,
+        },
+      ],
+    );
+    setChartOptions(chartOptions);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, groups, artenvielfalt]);
 
   const tabs: Tab[] = [
@@ -198,173 +241,83 @@ const Artenvielfalt = ({
     },
   ];
 
-  const [xaxis, setXaxis] = useState({
-    categories: groups,
-    labels: {
-      style: {
-        fontSize: '16px',
-      },
-    },
-  });
-
-  const [yaxis, setYaxis] = useState<ApexYAxis[]>([
-    {
-      seriesName: 'Temperatur',
-      showAlways: true,
-      title: {
-        text: 'Temperatur in °C',
-        style: {
-          fontSize: '16px',
-          color: colors.he.lufttemperatur.DEFAULT,
-        },
-      },
-    },
-  ]);
-
   const onChange = (tab: number) => {
+    let chartOptionsTmp;
     setTab(tab);
     switch (tab) {
       case 0:
-        setSeries([
-          temperatureSeries,
+        chartOptionsTmp = generateChartOptions(
+          'column',
           {
-            name: 'pflanzliche Artenvielfalt',
-            data: artenvielfalt,
+            text: 'Bodenfeuchte in %',
+            value: 'lufttemperatur',
           },
-        ]);
-        setYaxis([
-          {
-            seriesName: 'Lufttemperatur',
-            showAlways: true,
-            title: {
-              text: 'Lufttemperatur in °C',
-              style: {
-                fontSize: '16px',
-                color: colors.he.lufttemperatur.DEFAULT,
-              },
+          groups,
+          [
+            {
+              name: 'Bodenfeuchte',
+              type: 'column',
+              data: transformedTemperatur.map(v => v),
             },
-            axisBorder: {
-              show: true,
-              color: colors.he.lufttemperatur.DEFAULT,
+            {
+              name: 'Artenvielfalt',
+              type: 'column',
+              yAxis: 1,
+              data: artenvielfalt,
             },
-          },
-          {
-            seriesName: 'plflanzliche Artenvielfalt',
-            showAlways: true,
-            max: 1.0,
-            title: {
-              text: 'Artenvielfaltsindex',
-              style: {
-                fontSize: '16px',
-                color: colors.he.artenvielfalt.DEFAULT,
-              },
-            },
-            opposite: true,
-            axisBorder: {
-              show: true,
-              color: colors.he.artenvielfalt.DEFAULT,
-            },
-          },
-        ]);
+          ],
+        );
         break;
       case 1:
-        setSeries([
-          bodenfeuchteSeries,
+        chartOptionsTmp = generateChartOptions(
+          'column',
           {
-            name: 'pflanzliche Artenvielfalt',
-            data: artenvielfalt,
+            text: 'Bodenfeuchte in %',
+            value: 'bodenfeuchte',
           },
-        ]);
-        setYaxis([
-          {
-            seriesName: 'Bodenfeuchte',
-            showAlways: true,
-            title: {
-              text: 'Bodenfeuchte in %',
-              style: {
-                fontSize: '16px',
-                color: colors.he.bodenfeuchte.DEFAULT,
-              },
+          groups,
+          [
+            {
+              name: 'Bodenfeuchte',
+              type: 'column',
+              data: transformedBodenfeuchte.map(v => v),
             },
-            forceNiceScale: false,
-            min: 0,
-            max: 50,
-            axisBorder: {
-              show: true,
-              color: '#7d8bc5',
+            {
+              name: 'Artenvielfalt',
+              type: 'column',
+              yAxis: 1,
+              data: artenvielfalt,
             },
-          },
-          {
-            seriesName: 'plflanzliche Artenvielfalt',
-            showAlways: true,
-            max: 1.0,
-            title: {
-              text: 'Artenvielfaltsindex',
-              style: {
-                fontSize: '16px',
-                color: colors.he.artenvielfalt.DEFAULT,
-              },
-            },
-            opposite: true,
-            axisBorder: {
-              show: true,
-              color: colors.he.artenvielfalt.DEFAULT,
-            },
-          },
-        ]);
+          ],
+        );
         break;
       case 2:
-        setSeries([
+        chartOptionsTmp = generateChartOptions(
+          'column',
           {
-            name: 'Versiegelungsanteil',
-            data: versiegelung,
+            text: 'Versiegelungsanteil in %',
+            value: 'undurchlaessigkeit',
           },
-          {
-            name: 'pflanzliche Artenvielfalt',
-            data: artenvielfalt,
-          },
-        ]);
-        setYaxis([
-          {
-            seriesName: 'Versiegelungsanteil',
-            showAlways: true,
-            title: {
-              text: 'Versieglungsanteil in %',
-              style: {
-                fontSize: '16px',
-                color: colors.he.undurchlaessigkeit.DEFAULT,
-              },
+          groups,
+          [
+            {
+              name: 'Versiegelung',
+              type: 'column',
+              data: versiegelung.map(v => v),
             },
-            forceNiceScale: false,
-            min: 0,
-            max: 100,
-            axisBorder: {
-              show: true,
-              color: colors.he.undurchlaessigkeit.DEFAULT,
+            {
+              name: 'Artenvielfalt',
+              type: 'column',
+              yAxis: 1,
+              data: artenvielfalt,
             },
-          },
-          {
-            seriesName: 'plflanzliche Artenvielfalt',
-            showAlways: true,
-            max: 1.0,
-            title: {
-              text: 'Artenvielfaltsindex',
-              style: {
-                fontSize: '16px',
-                color: colors.he.artenvielfalt.DEFAULT,
-              },
-            },
-            opposite: true,
-            axisBorder: {
-              show: true,
-              color: colors.he.artenvielfalt.DEFAULT,
-            },
-          },
-        ]);
+          ],
+        );
         break;
       default:
         break;
     }
+    setChartOptions(chartOptionsTmp);
   };
 
   return (
@@ -376,17 +329,11 @@ const Artenvielfalt = ({
           </div>
           <Tabs tabs={tabs} onChange={onChange}></Tabs>
           <div className="mb-4 w-full flex-auto">
-            {series && (
-              <BarChart
-                series={series}
-                yaxis={yaxis}
-                xaxis={xaxis}
-                colors={[
-                  colors.he[tabs[tab].id.toLowerCase()].DEFAULT,
-                  colors.he.artenvielfalt.DEFAULT,
-                ]}
-              ></BarChart>
-            )}
+            <HighchartsReact
+              containerProps={{ style: { height: '100%' } }}
+              highcharts={Highcharts}
+              options={chartOptions}
+            />
           </div>
         </div>
       </div>
