@@ -24,8 +24,8 @@ if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
 }
 
-const CHART_SERIES_GAP_SIZE =
-  process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE || 180000;
+const CHART_SERIES_GAP_SIZE: number =
+  Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
 
 const Schall = () => {
   const { schule } = useExpeditionParams();
