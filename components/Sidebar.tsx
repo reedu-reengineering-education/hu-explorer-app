@@ -160,7 +160,7 @@ const Sidebar = ({
   // const [yAxis, setYAxis] = useState<ApexYAxis[]>([]);
   // const [yAxisBarChart, setYAxisBarChart] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
-  const [seriesColors, setSeriesColors] = useState([]); // Holding all colors for series
+  // const [seriesColors, setSeriesColors] = useState([]); // Holding all colors for series
   // const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
   // const [barChartSeries, setBarChartSeries] = useState([]); // Holding data for chart (Pie)
   // const [pieChartLabels, setPieChartLabels] = useState([]);
@@ -312,9 +312,10 @@ const Sidebar = ({
   }, [data2]);
 
   const openCharts = (sensorParam: Sensor) => {
+    console.log('Open Charts: ', sensor);
     setSensor(sensorParam);
-    const sensorColor =
-      colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT;
+    // const sensorColor =
+    //   colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT;
 
     if (!isOpen) {
       setIsOpen(!isOpen);
@@ -332,7 +333,7 @@ const Sidebar = ({
             {
               id: `versiegelung-${sensorParam._id}`,
               name: 'Versiegelung',
-              type: 'line',
+              type: 'column',
               data: versiegelung.map(v => [
                 new Date(v.createdAt).getTime(),
                 v.value,
@@ -376,7 +377,36 @@ const Sidebar = ({
         }
       } else {
         // Fetch data for selected sensor of main device
-        setShouldFetch(true);
+        // setShouldFetch(true);
+
+        if (sensorParam.title.toLowerCase() === 'versiegelung') {
+          setChartOptions({
+            ...chartOptions,
+            yAxis: {
+              title: {
+                text: 'Versiegelung in %',
+              },
+            },
+            series: [
+              ...chartOptions.series,
+              {
+                id: `versiegelung-${sensorParam._id}`,
+                name: 'Versiegelung',
+                type: 'column',
+                data: versiegelung.map(v => [
+                  new Date(v.createdAt).getTime(),
+                  v.value,
+                ]),
+              },
+            ],
+            colors: [
+              ...chartOptions.colors,
+              colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT,
+            ],
+          });
+        } else {
+          setShouldFetch(!isOpen);
+        }
       }
     }
   };
