@@ -4,6 +4,7 @@ import { Button } from './Elements/Button';
 export type Tab = {
   id: string;
   title: string;
+  icon?: JSX.Element;
   component?: JSX.Element;
   hypothesis?: string;
 };
@@ -33,7 +34,7 @@ const Tabs = ({ tabs, onChange, showHypothesis }: TabProps) => {
   }, [tab]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col flex-wrap overflow-x-auto">
       <div className="flex rounded-lg bg-gray-100">
         {tabs.map((t, i) => (
           <Button
@@ -41,8 +42,11 @@ const Tabs = ({ tabs, onChange, showHypothesis }: TabProps) => {
             variant={variants[t.id.toLowerCase()]}
             key={`artenvielfalt_tab_${i}`}
             className="w-full text-center"
+            startIcon={t.icon}
           >
-            {t.title}
+            <div className="flex space-x-2">
+              <span className="text-center">{t.title}</span>
+            </div>
           </Button>
         ))}
       </div>
@@ -55,9 +59,6 @@ const Tabs = ({ tabs, onChange, showHypothesis }: TabProps) => {
               </h2>
             )}
           </div>
-          {/* <div className="h-full overflow-auto">
-              <div className="mt-4">{tabs[tab].component}</div>
-            </div> */}
         </div>
       )}
     </div>

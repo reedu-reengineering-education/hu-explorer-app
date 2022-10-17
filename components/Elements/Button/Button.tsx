@@ -9,10 +9,10 @@ const variants = {
     'bg-white text-blue-600 hover:bg-blue-600:text-white focus:ring-white focus:ring-offset-blue-100',
   danger:
     'bg-red-600 text-white hover:bg-red-50:text-red-600 focus:ring-red-500 focus:ring-offset-red-200',
-  lufttemperatur: 'bg-he-blue text-white focus:ring-he-blue',
-  bodenfeuchte: 'bg-he-yellow text-white focus:ring-he-yellow',
-  undurchlaessigkeit: 'bg-he-green text-white focus:ring-he-green',
-  artenvielfalt: 'bg-he-red text-white focus:ring-he-red',
+  lufttemperatur: 'bg-he-yellow text-white focus:ring-he-yellow',
+  bodenfeuchte: 'bg-he-blue text-white focus:ring-he-blue',
+  artenvielfalt: 'bg-he-green text-white focus:ring-he-green',
+  undurchlaessigkeit: 'bg-he-red text-white focus:ring-he-red',
 };
 
 const sizes = {
@@ -57,7 +57,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <Spinner size="sm" className="text-current" variant="light" />
         )}
         {!isLoading && startIcon}
-        <span className="mx-2">{props.children}</span> {!isLoading && endIcon}
+        <span className="mx-2 text-xl">{props.children}</span>{' '}
+        {!isLoading && endIcon}
       </button>
     );
   },

@@ -1,5 +1,3 @@
-import LineChart from '@/components/LineChart';
-import BarChart from '@/components/BarChart';
 import Tile from '@/components/Tile';
 import Map from '@/components/Map';
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
@@ -10,13 +8,24 @@ import { useOsemData } from '@/hooks/useOsemData';
 import { PauseIcon } from '@heroicons/react/outline';
 import { PlayIcon } from '@heroicons/react/solid';
 
-export const schallColors = [
-  { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
-  { bg: 'bg-he-yellow', shadow: 'shadow-he-yellow' },
-  { bg: 'bg-he-green', shadow: 'shadow-he-green' },
-  { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
-  { bg: 'bg-he-red', shadow: 'shadow-he-red' },
-];
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import BrokenAxis from 'highcharts/modules/broken-axis';
+
+export const schallColors = {
+  straße: { bg: 'bg-he-yellow', shadow: 'shadow-he-yellow' },
+  eingang: { bg: 'bg-he-blue-light', shadow: 'shadow-he-blue-light' },
+  hof: { bg: 'bg-he-green', shadow: 'shadow-he-green' },
+  flur: { bg: 'bg-he-red', shadow: 'shadow-he-red' },
+  klingel: { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
+};
+
+if (typeof Highcharts === 'object') {
+  BrokenAxis(Highcharts);
+}
+
+const CHART_SERIES_GAP_SIZE: number =
+  Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
 
 const Schall = () => {
   const { schule } = useExpeditionParams();
@@ -24,23 +33,134 @@ const Schall = () => {
   const [live, setLive] = useState(true);
   const { data, boxes } = useOsemData('Schallpegel', schule, live);
 
-  const [series, setSeries] = useState([]);
-  const [barSeries, setBarSeries] = useState([]);
+  const colors = useTailwindColors();
+  const [chartOptions, setChartOptions] = useState<Highcharts.Options>({
+    title: {
+      text: '',
+    },
+    chart: {
+      zooming: {
+        type: 'x',
+      },
+    },
+    plotOptions: {
+      series: {
+        marker: {
+          enabled: false,
+          symbol: 'circle',
+        },
+        lineWidth: 4,
+      },
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        millisecond: '%H:%M:%S.%L',
+        second: '%H:%M:%S',
+        minute: '%H:%M',
+        hour: '%H:%M',
+        day: '%e. %b',
+        week: '%e. %b',
+        month: "%b '%y",
+        year: '%Y',
+      },
+    },
+    yAxis: {
+      title: {
+        text: 'Lautstärke in dB',
+      },
+    },
+    legend: {
+      align: 'center',
+      verticalAlign: 'bottom',
+      layout: 'horizontal',
+    },
+    colors: [
+      colors.he.blue.DEFAULT,
+      colors.he.yellow.DEFAULT,
+      colors.he.green.DEFAULT,
+      colors.he.violet.DEFAULT,
+      colors.he.red.DEFAULT,
+    ],
+    credits: {
+      enabled: true,
+    },
+    time: {
+      useUTC: false,
+      timezoneOffset: new Date().getTimezoneOffset(),
+    },
+    tooltip: {
+      dateTimeLabelFormats: {
+        day: '%d.%m.%Y %H:%M:%S',
+      },
+    },
+  });
+
+  const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>({
+    title: {
+      text: '',
+    },
+    chart: {
+      type: 'column',
+    },
+    xAxis: {
+      categories: [
+        '0 - 19 dB',
+        '20 - 39 dB',
+        '40 - 59 dB',
+        '60 - 79 dB',
+        '80 - 99 dB',
+        '100 - 119 dB',
+        '120 - 139 dB',
+        'über 139 dB',
+      ],
+      crosshair: true,
+    },
+    yAxis: {
+      title: {
+        text: 'Anzahl der Messungen',
+      },
+    },
+    legend: {
+      align: 'center',
+      verticalAlign: 'bottom',
+      layout: 'horizontal',
+    },
+    colors: [
+      colors.he.blue.DEFAULT,
+      colors.he.yellow.DEFAULT,
+      colors.he.green.DEFAULT,
+      colors.he.violet.DEFAULT,
+      colors.he.red.DEFAULT,
+    ],
+    credits: {
+      enabled: true,
+    },
+    plotOptions: {
+      column: {
+        pointPadding: 0.2,
+        borderWidth: 0,
+      },
+    },
+  });
 
   useEffect(() => {
-    setSeries(
-      data.map(e => ({
+    setChartOptions({
+      series: data.map(e => ({
         name: e.box.properties.name,
-        data: e.measurements.map(m => ({
-          y: Number(m.value),
-          x: new Date(m.createdAt),
-        })),
+        type: 'line',
+        gapUnit: 'value',
+        gapSize: CHART_SERIES_GAP_SIZE,
+        data: e.measurements
+          .map(m => [new Date(m.createdAt).getTime(), Number(m.value)])
+          .reverse(),
       })),
-    );
+    });
 
-    setBarSeries(
-      data.map(e => ({
+    setBarChartOptions({
+      series: data.map(e => ({
         name: e.box.properties.name,
+        type: 'column',
         data: barChartCategories.map(
           c =>
             e.measurements
@@ -48,11 +168,9 @@ const Schall = () => {
               .filter(x => c[0] <= x && x <= c[1], c).length,
         ),
       })),
-    );
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
-
-  const colors = useTailwindColors();
 
   const barChartCategories = [
     [0, 19],
@@ -60,13 +178,10 @@ const Schall = () => {
     [40, 59],
     [60, 79],
     [80, 99],
+    [100, 119],
+    [120, 139],
+    [139, 10000],
   ];
-
-  const yaxis = {
-    title: {
-      text: 'Lautstärke in dB',
-    },
-  };
 
   return (
     <div className="flex h-full flex-col">
@@ -107,52 +222,38 @@ const Schall = () => {
                     ? Math.max(...e.measurements.map(m => Number(m.value)))
                     : undefined
                 }
-                color={schallColors[i]}
+                color={schallColors[e.box.properties.name.toLocaleLowerCase()]}
               ></Tile>
             ))}
           </div>
         </LayoutTile>
         <LayoutTile>
           <div className="h-full min-h-[300px] w-full overflow-hidden rounded-xl shadow">
-            <Map data={boxes} expedition={true} color />
+            <Map
+              width="100%"
+              height="100%"
+              data={boxes}
+              expedition={true}
+              color
+              zoomLevel={10}
+            />
           </div>
         </LayoutTile>
         <LayoutTile>
           <div className="h-full w-full">
-            <BarChart
-              series={barSeries}
-              yaxis={{
-                title: {
-                  text: 'Anzahl der Messungen',
-                },
-              }}
-              xaxis={{
-                categories: barChartCategories.map(
-                  ([l, u]) => `${l} - ${u} dB`,
-                ),
-              }}
-              colors={[
-                colors.he.blue.DEFAULT,
-                colors.he.yellow.DEFAULT,
-                colors.he.green.DEFAULT,
-                colors.he.violet.DEFAULT,
-                colors.he.red.DEFAULT,
-              ]}
-            ></BarChart>
+            <HighchartsReact
+              containerProps={{ style: { height: '100%' } }}
+              highcharts={Highcharts}
+              options={barChartOptions}
+            />
           </div>
         </LayoutTile>
         <LayoutTile>
           <div className="h-full w-full">
-            <LineChart
-              series={series}
-              yaxis={yaxis}
-              colors={[
-                colors.he.blue.DEFAULT,
-                colors.he.yellow.DEFAULT,
-                colors.he.green.DEFAULT,
-                colors.he.violet.DEFAULT,
-                colors.he.red.DEFAULT,
-              ]}
+            <HighchartsReact
+              containerProps={{ style: { height: '100%' } }}
+              highcharts={Highcharts}
+              options={chartOptions}
             />
           </div>
         </LayoutTile>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { useExpeditionParams } from '@/hooks/useExpeditionParams';
 import { GetServerSideProps } from 'next';
@@ -18,7 +18,6 @@ import {
   TextCell,
   NumberCell,
   DefaultCellTypes,
-  Cell,
 } from '@silevis/reactgrid';
 import '@silevis/reactgrid/styles.css';
 import { Button } from '@/components/Elements/Button';
@@ -29,21 +28,19 @@ import {
 } from '@/components/ButtonCellTemplate';
 
 const getColumns = (): Column[] => [
-  { columnId: 'rowId', width: 150 },
   { columnId: 'art', width: 150 },
   { columnId: 'count', width: 150 },
   { columnId: 'actions', width: 150 },
 ];
 
 const getColumnsVersieglung = (): Column[] => [
-  { columnId: 'rowId', width: 150 },
-  { columnId: 'count', width: 180 },
+  { columnId: 'count', width: 250 },
 ];
 
 const headerRow: Row = {
   rowId: 'header',
+  height: 40,
   cells: [
-    { type: 'header', text: '' },
     { type: 'header', text: 'Art' },
     { type: 'header', text: 'Häufigkeit' },
     { type: 'header', text: 'Aktionen' },
@@ -52,18 +49,17 @@ const headerRow: Row = {
 
 const headerRowVersieglung: Row = {
   rowId: 'header',
-  cells: [
-    { type: 'header', text: '' },
-    { type: 'header', text: 'Undurchlässigkeit in %' },
-  ],
+  height: 40,
+  cells: [{ type: 'header', text: 'Versiegelungsanteil in %' }],
 };
 
 const getRows = (arten: ArtRecord[]): Row<DefaultCellTypes | ButtonCell>[] => [
   headerRow,
   ...arten.map<Row<DefaultCellTypes | ButtonCell>>((art, idx) => ({
     rowId: art.id,
+    height: 35,
     cells: [
-      { type: 'text', text: `${idx + 1}`, nonEditable: true },
+      // { type: 'text', text: `${idx + 1}`, nonEditable: true },
       { type: 'text', text: art.art },
       { type: 'number', value: art.count },
       { type: 'button', text: 'Löschen', action: 'DELETE' },
@@ -77,18 +73,9 @@ const getRowsVersieglung = (
   headerRowVersieglung,
   {
     rowId: versieglung.id,
-    cells: [
-      { type: 'text', text: '1', nonEditable: true },
-      { type: 'number', value: versieglung.value },
-    ],
+    height: 35,
+    cells: [{ type: 'number', value: versieglung.value }],
   },
-  // ...versieglung.map<Row<DefaultCellTypes | ButtonCell>>((art, idx) => ({
-  //   rowId: art.id,
-  //   cells: [
-  //     { type: 'text', text: `${idx + 1}`, nonEditable: true },
-  //     { type: 'number', value: art.value },
-  //   ],
-  // })),
 ];
 
 export const getServerSideProps: GetServerSideProps = async ({
@@ -110,52 +97,66 @@ export const getServerSideProps: GetServerSideProps = async ({
   const device = devices.filter(device => device.name === group);
   const today = new Date();
 
+  const errorCode = device.length === 0 ? 404 : false;
+
+  if (errorCode) {
+    return {
+      props: { errorCode, message: 'Gruppe wurde nicht gefunden' },
+    };
+  }
+
   // Find main group entries for data types
-  const artenvielfalt = await prisma.artenvielfaltRecord.upsert({
-    where: {
-      deviceId_group_createdAt: {
+  try {
+    const artenvielfalt = await prisma.artenvielfaltRecord.upsert({
+      where: {
+        deviceId_group_createdAt: {
+          deviceId: device[0]._id,
+          group: group,
+          createdAt: today,
+        },
+      },
+      update: {},
+      create: {
         deviceId: device[0]._id,
         group: group,
-        createdAt: today,
       },
-    },
-    update: {},
-    create: {
-      deviceId: device[0]._id,
-      group: group,
-    },
-  });
+    });
 
-  // Find versiegelungs record
-  // If not existing, create record
-  const versiegelung = await prisma.versiegelungRecord.upsert({
-    where: {
-      deviceId_group_createdAt: {
+    // Find versiegelungs record
+    // If not existing, create record
+    const versiegelung = await prisma.versiegelungRecord.upsert({
+      where: {
+        deviceId_group_createdAt: {
+          deviceId: device[0]._id,
+          group: group,
+          createdAt: today,
+        },
+      },
+      update: {},
+      create: {
         deviceId: device[0]._id,
         group: group,
-        createdAt: today,
+        value: 0,
       },
-    },
-    update: {},
-    create: {
-      deviceId: device[0]._id,
-      group: group,
-      value: 0,
-    },
-  });
+    });
 
-  const arten = await prisma.artRecord.findMany({
-    where: {
-      artenvielfaltId: artenvielfalt.id,
-    },
-    orderBy: {
-      id: 'asc',
-    },
-  });
+    const arten = await prisma.artRecord.findMany({
+      where: {
+        artenvielfaltId: artenvielfalt.id,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
 
-  return {
-    props: { arten, device, artenvielfalt, versiegelung },
-  };
+    return {
+      props: { errorCode, arten, device, artenvielfalt, versiegelung },
+    };
+  } catch (err) {
+    return {
+      props: { errorCode, message: err.message },
+    };
+  }
 };
 
 type Props = {
@@ -168,11 +169,6 @@ type Props = {
 const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   const { schule, gruppe, daten } = useExpeditionParams();
   const router = useRouter();
-
-  // console.log(artenvielfalt);
-  // console.log(arten);
-  // console.log(versiegelung);
-  // console.log(device);
 
   // Call this function whenever you want to
   // refresh props!
@@ -324,28 +320,34 @@ const Data = ({ device, artenvielfalt, arten, versiegelung }: Props) => {
   if (daten === 'versiegelung') {
     return (
       <>
-        <ReactGrid
-          rows={rowsVersiegelung}
-          columns={columnsVersieglung}
-          onCellsChanged={handleChangeVersieglung}
-        />
+        <div className="flex w-full md:container md:mx-auto md:p-4">
+          <div className="flex w-full flex-col items-center text-xl">
+            <ReactGrid
+              rows={rowsVersiegelung}
+              columns={columnsVersieglung}
+              onCellsChanged={handleChangeVersieglung}
+            />
+          </div>
+        </div>
       </>
     );
   } else if (daten === 'artenvielfalt') {
     return (
       <>
-        <div className="flex">
-          <div className="flex flex-col">
+        <div className="flex w-full md:container md:mx-auto md:p-4">
+          <div className="flex w-full flex-col items-center text-xl">
             <ReactGrid
               rows={rows}
               columns={columns}
               onCellsChanged={handleChanges}
               customCellTemplates={{ button: new ButtonCellTemplate() }}
             />
-            <Button onClick={addRow}>Art hinzufügen</Button>
+            <Button variant="artenvielfalt" onClick={addRow}>
+              Art hinzufügen
+            </Button>
           </div>
-          <div className="m-3 flex flex-col-reverse pl-4">
-            <div className="m-2 aspect-square h-32 w-32 rounded-lg bg-he-blue-light text-center text-white shadow-lg shadow-he-blue-light xl:h-48 xl:w-48">
+          <div className="flex w-full justify-center">
+            <div className="m-2 aspect-square h-48 w-48 rounded-lg bg-he-artenvielfalt text-center text-white shadow-lg shadow-he-artenvielfalt xl:h-48 xl:w-48">
               <div className="flex h-full flex-col justify-between p-4">
                 <span className="text-xl font-semibold">
                   Artenvielfalts-Index

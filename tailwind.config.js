@@ -37,22 +37,23 @@ module.exports = {
             DEFAULT: '#f6a03e',
           },
           lufttemperatur: {
+            // DEFAULT: '#5394d0',
             DEFAULT: '#f6a03e',
           },
           bodenfeuchte: {
+            // DEFAULT: '#f6a03e',
             DEFAULT: '#5394d0',
           },
           undurchlaessigkeit: {
-            light: '#5394d0',
-            DEFAULT: '#ec656b',
-          },
-          versiegelung: {
-            light: '#5394d0',
+            // light: '#5394d0',
+            // DEFAULT: '#6bbe98',
             DEFAULT: '#ec656b',
           },
           artenvielfalt: {
+            // light: '#bad580',
             light: '#bad580',
-            DEFAULT: '#ec656b',
+            // DEFAULT: '#ec656b',
+            DEFAULT: '#6bbe98',
           },
           lautstärke: {
             DEFAULT: '#14B8A6',

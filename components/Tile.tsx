@@ -23,13 +23,13 @@ const Tile = ({ title, min, max, color }: TileProps) => {
           <span className="flex items-center justify-evenly">
             <VolumeUpIcon className="h-3 w-3" />
             <div>
-              <span className="text-3xl font-light">{min ?? '-'}</span> dB
+              <span className="text-2xl font-light">{min ?? '-'}</span> dB
             </div>
           </span>
           <span className="flex items-center justify-evenly">
             <VolumeUpIcon className="h-5 w-5" />
             <div>
-              <span className="text-3xl font-light">{max ?? '-'}</span> dB
+              <span className="text-2xl font-light">{max ?? '-'}</span> dB
             </div>
           </span>
         </div>

@@ -6,12 +6,12 @@ import {
   ArtRecord,
   VersiegelungRecord,
 } from '@prisma/client';
-import LineChart from './LineChart';
+// import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
-import PieChart from './PieChart';
+// import PieChart from './PieChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { Sensor } from '@/types/osem';
-import BarChart from './BarChart';
+// import BarChart from './BarChart';
 import MeasurementTile from './MeasurementTile';
 import useSharedCompareSensors from '@/hooks/useCompareSensors';
 import { LayoutMode } from '@/pages';
@@ -95,8 +95,8 @@ const Sidebar = ({
   );
   console.log('Artenvielfalt 2: ', artenvielfalt2);
 
-  const [yAxis, setYAxis] = useState<ApexYAxis[]>([]);
-  const [yAxisBarChart, setYAxisBarChart] = useState<ApexYAxis[]>();
+  // const [yAxis, setYAxis] = useState<ApexYAxis[]>([]);
+  // const [yAxisBarChart, setYAxisBarChart] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
   const [seriesColors, setSeriesColors] = useState([]);
   const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
@@ -202,13 +202,13 @@ const Sidebar = ({
     const sensorColor = colors.he[sensor.title.toLocaleLowerCase()].DEFAULT;
 
     if (!isOpen) {
-      setYAxis([
-        {
-          title: {
-            text: sensor.title + ' ' + sensor.unit,
-          },
-        },
-      ]);
+      // setYAxis([
+      //   {
+      //     title: {
+      //       text: sensor.title + ' ' + sensor.unit,
+      //     },
+      //   },
+      // ]);
       setIsOpen(!isOpen);
       setSeriesColors([...seriesColors, sensorColor]);
       if (sensor.title.toLowerCase() === 'versiegelung') {
@@ -224,14 +224,14 @@ const Sidebar = ({
           },
         ]);
 
-        setYAxis([
-          ...yAxis,
-          {
-            title: {
-              text: 'Versiegelung in %',
-            },
-          },
-        ]);
+        // setYAxis([
+        //   ...yAxis,
+        //   {
+        //     title: {
+        //       text: 'Versiegelung in %',
+        //     },
+        //   },
+        // ]);
       } else {
         setShouldFetch(!isOpen);
       }
@@ -251,7 +251,7 @@ const Sidebar = ({
         if (newSeries.length === 0) {
           setIsOpen(false);
           setSeriesColors([]);
-          setYAxis([]);
+          // setYAxis([]);
         } else {
           const colors = seriesColors.filter(color => color !== sensorColor);
           setSeriesColors(colors);
@@ -261,18 +261,18 @@ const Sidebar = ({
 
         // Check if axis is available
         const axisTitle = sensor.title + ' ' + sensor.unit;
-        const axis = yAxis.find(yAxis => yAxis.title.text === axisTitle);
-        if (!axis) {
-          setYAxis([
-            ...yAxis,
-            {
-              title: {
-                text: axisTitle,
-              },
-              opposite: true,
-            },
-          ]);
-        }
+        // const axis = yAxis.find(yAxis => yAxis.title.text === axisTitle);
+        // if (!axis) {
+        //   setYAxis([
+        //     ...yAxis,
+        //     {
+        //       title: {
+        //         text: axisTitle,
+        //       },
+        //       opposite: true,
+        //     },
+        //   ]);
+        // }
         setSeriesColors([...seriesColors, sensorColor]);
       }
     }
@@ -472,11 +472,11 @@ const Sidebar = ({
             {isOpen && (
               <div className="flex w-full overflow-hidden">
                 <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
-                  <LineChart
+                  {/* <LineChart
                     series={series}
                     yaxis={yAxis}
                     colors={seriesColors}
-                  />
+                  /> */}
                 </div>
               </div>
             )}
@@ -484,18 +484,18 @@ const Sidebar = ({
             {isBarChartOpen && (
               <div className="flex w-full overflow-hidden">
                 <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
-                  <BarChart
+                  {/* <BarChart
                     series={barChartSeries}
                     yaxis={yAxisBarChart}
                     colors={[colors.he.undurchlaessigkeit.DEFAULT]}
-                  />
+                  /> */}
                 </div>
               </div>
             )}
 
             {isPieChartOpen && (
               <div className="m-2 h-[95%] w-full overflow-hidden">
-                <PieChart series={pieChartSeries} labels={pieChartLabels} />
+                {/* <PieChart series={pieChartSeries} labels={pieChartLabels} /> */}
               </div>
             )}
             {box !== undefined &&
@@ -567,11 +567,11 @@ const Sidebar = ({
                 {isOpen && (
                   <div className="flex w-full overflow-hidden">
                     <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
-                      <LineChart
+                      {/* <LineChart
                         series={series}
                         yaxis={yAxis}
                         colors={seriesColors}
-                      />
+                      /> */}
                     </div>
                   </div>
                 )}
@@ -579,18 +579,18 @@ const Sidebar = ({
                 {isBarChartOpen && (
                   <div className="flex w-full overflow-hidden">
                     <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
-                      <BarChart
+                      {/* <BarChart
                         series={barChartSeries}
                         yaxis={yAxisBarChart}
                         colors={[colors.he.undurchlaessigkeit.DEFAULT]}
-                      />
+                      /> */}
                     </div>
                   </div>
                 )}
 
                 {isPieChartOpen && (
                   <div className="m-2 h-[95%] w-full overflow-hidden">
-                    <PieChart series={pieChartSeries} labels={pieChartLabels} />
+                    {/* <PieChart series={pieChartSeries} labels={pieChartLabels} /> */}
                   </div>
                 )}
                 {box !== undefined &&
