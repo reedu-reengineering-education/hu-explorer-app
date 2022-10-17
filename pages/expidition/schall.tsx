@@ -10,6 +10,7 @@ import { PlayIcon } from '@heroicons/react/solid';
 
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import BrokenAxis from 'highcharts/modules/broken-axis';
 
 export const schallColors = {
   straße: { bg: 'bg-he-yellow', shadow: 'shadow-he-yellow' },
@@ -18,6 +19,13 @@ export const schallColors = {
   flur: { bg: 'bg-he-red', shadow: 'shadow-he-red' },
   klingel: { bg: 'bg-he-violet', shadow: 'shadow-he-violet' },
 };
+
+if (typeof Highcharts === 'object') {
+  BrokenAxis(Highcharts);
+}
+
+const CHART_SERIES_GAP_SIZE =
+  process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE || 180000;
 
 const Schall = () => {
   const { schule } = useExpeditionParams();
@@ -141,10 +149,11 @@ const Schall = () => {
       series: data.map(e => ({
         name: e.box.properties.name,
         type: 'line',
-        data: e.measurements.map(m => [
-          new Date(m.createdAt).getTime(),
-          Number(m.value),
-        ]),
+        gapUnit: 'value',
+        gapSize: CHART_SERIES_GAP_SIZE,
+        data: e.measurements
+          .map(m => [new Date(m.createdAt).getTime(), Number(m.value)])
+          .reverse(),
       })),
     });
 
