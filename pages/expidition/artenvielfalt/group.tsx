@@ -18,6 +18,7 @@ import {
 
 import Highcharts from 'highcharts';
 import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
+import BrokenAxis from 'highcharts/modules/broken-axis';
 import HighchartsReact from 'highcharts-react-official';
 import { Button } from '@/components/Elements/Button';
 import {
@@ -31,7 +32,11 @@ import {
 
 if (typeof Highcharts === 'object') {
   NoDataToDisplay(Highcharts);
+  BrokenAxis(Highcharts);
 }
+
+const CHART_SERIES_GAP_SIZE: number =
+  Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -167,12 +172,13 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     const tempSeries = filteredDevices.map(e => ({
       name: e.box.properties.name,
       type: 'line',
+      gapUnit: 'value',
+      gapSize: CHART_SERIES_GAP_SIZE,
       data:
         e.temperature.length > 0
-          ? e.temperature.map(m => [
-              new Date(m.createdAt).getTime(),
-              Number(m.value),
-            ])
+          ? e.temperature
+              .map(m => [new Date(m.createdAt).getTime(), Number(m.value)])
+              .reverse()
           : [],
     }));
     setLineSeriesTemperature(tempSeries);
@@ -181,12 +187,16 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     setLineSeriesBodenfeuchte(
       filteredDevices.map(e => ({
         name: e.box.properties.name,
+        gapUnit: 'value',
+        gapSize: CHART_SERIES_GAP_SIZE,
         data:
           e.bodenfeuchte.length > 0
-            ? e.bodenfeuchte.map(m => ({
-                y: Number(m.value),
-                x: new Date(m.createdAt),
-              }))
+            ? e.bodenfeuchte
+                .map(m => ({
+                  y: Number(m.value),
+                  x: new Date(m.createdAt),
+                }))
+                .reverse()
             : [],
       })),
     );
