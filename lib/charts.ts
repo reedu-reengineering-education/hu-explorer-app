@@ -29,16 +29,16 @@ export const generateChartOptions = (
           text: yAxis.text,
           style: {
             fontSize: '16px',
-            color: colors.he[yAxis.value].DEFAULT,
+            color: colors['he'][yAxis.value].DEFAULT,
           },
         },
         labels: {
           style: {
-            color: colors.he[yAxis.value].DEFAULT,
+            color: colors['he'][yAxis.value].DEFAULT,
           },
         },
         lineWidth: 2,
-        lineColor: colors.he[yAxis.value].DEFAULT,
+        lineColor: colors['he'][yAxis.value].DEFAULT,
         max: 50,
       },
       {
@@ -46,16 +46,16 @@ export const generateChartOptions = (
           text: 'Artenvilfaltsindex',
           style: {
             fontSize: '16px',
-            color: colors.he.artenvielfalt.DEFAULT,
+            color: colors['he'].artenvielfalt.DEFAULT,
           },
         },
         labels: {
           style: {
-            color: colors.he.artenvielfalt.DEFAULT,
+            color: colors['he'].artenvielfalt.DEFAULT,
           },
         },
         lineWidth: 2,
-        lineColor: colors.he.artenvielfalt.DEFAULT,
+        lineColor: colors['he'].artenvielfalt.DEFAULT,
         opposite: true,
         min: 0,
         max: 1,
@@ -68,6 +68,9 @@ export const generateChartOptions = (
       },
     },
     series: series,
-    colors: [colors.he[yAxis.value].DEFAULT, colors.he.artenvielfalt.DEFAULT],
+    colors: [
+      colors['he'][yAxis.value].DEFAULT,
+      colors['he'].artenvielfalt.DEFAULT,
+    ],
   };
 };

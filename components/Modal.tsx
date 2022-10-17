@@ -1,8 +1,8 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { DateTime } from 'luxon';
-import LineChart from './LineChart';
-import BarChart from './BarChart';
+// import LineChart from './LineChart';
+// import BarChart from './BarChart';
 
 export interface ModalProps {
   open: boolean;
@@ -99,7 +99,7 @@ export default function MyModal({ open, onClose }: ModalProps) {
                   Payment successful
                 </Dialog.Title>
                 <div className="mt-2 w-full">
-                  <LineChart series={series} yaxis={yaxis} />
+                  {/* <LineChart series={series} yaxis={yaxis} /> */}
                 </div>
 
                 <div className="mt-4">
