@@ -25,6 +25,59 @@ if (typeof Highcharts === 'object') {
 const CHART_SERIES_GAP_SIZE: number =
   Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
 
+const deafultChartOptions: Highcharts.Options = {
+  title: {
+    text: '',
+  },
+  chart: {
+    zooming: {
+      type: 'x',
+    },
+  },
+  plotOptions: {
+    series: {
+      marker: {
+        enabled: false,
+        symbol: 'circle',
+      },
+      lineWidth: 4,
+    },
+  },
+  yAxis: [],
+  xAxis: {
+    type: 'datetime',
+    dateTimeLabelFormats: {
+      millisecond: '%H:%M:%S.%L',
+      second: '%H:%M:%S',
+      minute: '%H:%M',
+      hour: '%H:%M',
+      day: '%e. %b',
+      week: '%e. %b',
+      month: "%b '%y",
+      year: '%Y',
+    },
+  },
+  legend: {
+    align: 'center',
+    verticalAlign: 'bottom',
+    layout: 'horizontal',
+  },
+  credits: {
+    enabled: true,
+  },
+  time: {
+    useUTC: false,
+    timezoneOffset: new Date().getTimezoneOffset(),
+  },
+  tooltip: {
+    dateTimeLabelFormats: {
+      day: '%d.%m.%Y %H:%M:%S',
+    },
+  },
+  colors: [],
+  series: [],
+};
+
 const Sidebar = ({
   box,
   dateRange,
@@ -114,110 +167,86 @@ const Sidebar = ({
 
   // NEW Basic chart options for Highcharts
   // Maybe we can use it for all chart types
-  const [chartOptions, setChartOptions] = useState<Highcharts.Options>({
-    title: {
-      text: '',
-    },
-    chart: {
-      zooming: {
-        type: 'x',
-      },
-    },
-    plotOptions: {
-      series: {
-        marker: {
-          enabled: false,
-          symbol: 'circle',
-        },
-        lineWidth: 4,
-      },
-    },
-    xAxis: {
-      type: 'datetime',
-      dateTimeLabelFormats: {
-        millisecond: '%H:%M:%S.%L',
-        second: '%H:%M:%S',
-        minute: '%H:%M',
-        hour: '%H:%M',
-        day: '%e. %b',
-        week: '%e. %b',
-        month: "%b '%y",
-        year: '%Y',
-      },
-    },
-    legend: {
-      align: 'center',
-      verticalAlign: 'bottom',
-      layout: 'horizontal',
-    },
-    credits: {
-      enabled: true,
-    },
-    time: {
-      useUTC: false,
-      timezoneOffset: new Date().getTimezoneOffset(),
-    },
-    tooltip: {
-      dateTimeLabelFormats: {
-        day: '%d.%m.%Y %H:%M:%S',
-      },
-    },
-  });
+  const [chartOptions, setChartOptions] =
+    useState<Highcharts.Options>(deafultChartOptions);
 
+  /**
+   * Clean up everything if box / device is changed
+   */
   useEffect(() => {
     return () => {
       // Cleanup everything before a new device is selected!!!
       setIsOpen(false);
-      setIsBarChartOpen(false);
-      setIsPieChartOpen(false);
-      setSeries([]);
-      // setBarChartSeries([]);
-      // setPieChartSeries([]);
+      setChartOptions(deafultChartOptions);
       setShouldFetch(false);
       setShouldFetch2(false);
       setshouldFetchArtenvielfalt(false);
       setshouldFetchVersiegelung(false);
       setSensor(null);
       setSensor2(null);
+
+      // Old stuff before highcharts
+      // setIsBarChartOpen(false);
+      // setIsPieChartOpen(false);
+      // setSeries([]);
+      // setBarChartSeries([]);
+      // setPieChartSeries([]);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [box]);
 
-  // Effect to set series data for main selecte device
+  // Effect to set series data for main selected device
   useEffect(() => {
     if (data) {
+      // Check if yAxis already exists
+      const axisTitle = sensor.title + ' ' + sensor.unit;
+      const axis = (chartOptions.yAxis as Highcharts.YAxisOptions[]).find(
+        yAxis => yAxis.title.text === axisTitle,
+      );
+      let yAxis = [...(chartOptions.yAxis as Highcharts.YAxisOptions[])];
+      if (!axis) {
+        yAxis.push({
+          title: {
+            text: sensor.title + ' ' + sensor.unit,
+          },
+          opposite:
+            (chartOptions.yAxis as Highcharts.YAxisOptions[]).length > 0
+              ? true
+              : false,
+        });
+      }
+
       setChartOptions({
         ...chartOptions,
+        yAxis: yAxis,
         series: [
-          // ...series.filter(serie => !serie.id.includes(sensor._id)), // check if we need this
+          ...chartOptions.series.filter(
+            serie => !serie.id.includes(sensor._id),
+          ),
           {
             id: `${box.properties._id}-${sensor._id}`,
             name: `${box.properties.name}-${sensor.title}`,
             type: 'line',
             gapUnit: 'value',
             gapSize: CHART_SERIES_GAP_SIZE,
+            yAxis: yAxis.length > 0 ? yAxis.length - 1 : 0,
             data: data
               .map(m => [new Date(m.createdAt).getTime(), Number(m.value)])
               .reverse(),
           },
         ],
+        colors: [
+          ...chartOptions.colors,
+          colors['he'][sensor.title.toLowerCase()].DEFAULT,
+        ],
       });
-
-      // setSeries([
-      //   ...series.filter(serie => !serie.id.includes(sensor._id)),
-      //   {
-      //     id: `${box.properties._id}-${sensor._id}`,
-      //     name: `${box.properties.name}-${sensor.title}`,
-      //     type: 'line',
-      //     data: data.map(m => ({
-      //       y: Number(m.value),
-      //       x: new Date(m.createdAt),
-      //     })),
-      //   },
-      // ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  useEffect(() => {
+    console.log('Chart Options updated:', chartOptions);
+  }, [chartOptions]);
 
   useEffect(() => {
     if (versiegelung2) {
@@ -255,106 +284,99 @@ const Sidebar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [artenvielfalt2]);
 
+  // Effect to set series data for devices to compare
   useEffect(() => {
     if (data2) {
-      setSeries([
-        ...series,
-        {
-          id: `${compareDevice.properties._id}-${sensor2._id}`,
-          name: `${compareDevice.properties.name}-${sensor2.title}`,
-          data: data2.map(m => ({
-            y: Number(m.value),
-            x: new Date(m.createdAt),
-          })),
-        },
-      ]);
-      setSeriesColors([
-        ...seriesColors,
-        colors['he'][sensor2.title.toLocaleLowerCase()].DEFAULT,
-      ]);
+      setChartOptions({
+        ...chartOptions,
+        series: [
+          ...chartOptions.series,
+          {
+            id: `${compareDevice.properties._id}-${sensor2._id}`,
+            name: `${compareDevice.properties.name}-${sensor2.title}`,
+            type: 'line',
+            gapUnit: 'value',
+            gapSize: CHART_SERIES_GAP_SIZE,
+            data: data2
+              .map(m => [new Date(m.createdAt).getTime(), Number(m.value)])
+              .reverse(),
+          },
+        ],
+        colors: [
+          ...chartOptions.colors,
+          colors['he'][sensor2.title.toLowerCase()].DEFAULT,
+        ],
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data2]);
 
-  const openCharts = (sensor: Sensor) => {
-    setSensor(sensor);
-    const sensorColor = colors['he'][sensor.title.toLocaleLowerCase()].DEFAULT;
+  const openCharts = (sensorParam: Sensor) => {
+    setSensor(sensorParam);
+    const sensorColor =
+      colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT;
 
     if (!isOpen) {
       setIsOpen(!isOpen);
-      setSeriesColors([...seriesColors, sensorColor]);
-      setChartOptions({
-        ...chartOptions,
-        yAxis: {
-          title: {
-            text: sensor.title + ' ' + sensor.unit,
-          },
-        },
-        colors: seriesColors,
-      });
-      if (sensor.title.toLowerCase() === 'versiegelung') {
-        setSeries([
-          {
-            id: `versiegelung-${sensor._id}`,
-            name: 'Versiegelung',
-            type: 'line',
-            data: versiegelung.map(v => ({
-              y: v.value,
-              x: new Date(v.createdAt),
-            })),
-          },
-        ]);
 
-        // setYAxis([
-        //   ...yAxis,
-        //   {
-        //     title: {
-        //       text: 'Versiegelung in %',
-        //     },
-        //   },
-        // ]);
+      if (sensorParam.title.toLowerCase() === 'versiegelung') {
+        setChartOptions({
+          ...chartOptions,
+          yAxis: {
+            title: {
+              text: 'Versiegelung in %',
+            },
+          },
+          series: [
+            ...chartOptions.series,
+            {
+              id: `versiegelung-${sensorParam._id}`,
+              name: 'Versiegelung',
+              type: 'line',
+              data: versiegelung.map(v => [
+                new Date(v.createdAt).getTime(),
+                v.value,
+              ]),
+            },
+          ],
+          colors: [
+            ...chartOptions.colors,
+            colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT,
+          ],
+        });
       } else {
         setShouldFetch(!isOpen);
       }
     } else {
       // Handle open chart
-      const serie = series.find(serie => serie.id.includes(sensor._id));
+      const serie = chartOptions.series.find(serie =>
+        serie.id.includes(sensorParam._id),
+      );
 
       if (serie) {
         // Stop fetching data
         setShouldFetch(false);
-        const newSeries = series.filter(
-          serie => !serie.id.includes(sensor._id),
-        );
-        setSeries(newSeries);
 
-        // If now series data existing, close chart and clean up
+        const newSeries = chartOptions.series.filter(
+          serie => !serie.id.includes(sensorParam._id),
+        );
+
+        // TODO: Keep chartOptions up to date
+        setChartOptions({
+          ...chartOptions,
+          series: newSeries,
+          // colors: [], TODO: filter and remove color
+          // yAxis: [] TODO: filter and remove yAxis
+        });
+
+        // If no series data existing, close chart and clean up
         if (newSeries.length === 0) {
           setIsOpen(false);
-          setSeriesColors([]);
-          // setYAxis([]);
-        } else {
-          const colors = seriesColors.filter(color => color !== sensorColor);
-          setSeriesColors(colors);
+          setChartOptions(deafultChartOptions);
         }
       } else {
+        // Fetch data for selected sensor of main device
         setShouldFetch(true);
-
-        // Check if axis is available
-        const axisTitle = sensor.title + ' ' + sensor.unit;
-        // const axis = yAxis.find(yAxis => yAxis.title.text === axisTitle);
-        // if (!axis) {
-        //   setYAxis([
-        //     ...yAxis,
-        //     {
-        //       title: {
-        //         text: axisTitle,
-        //       },
-        //       opposite: true,
-        //     },
-        //   ]);
-        // }
-        setSeriesColors([...seriesColors, sensorColor]);
       }
     }
   };
@@ -422,18 +444,21 @@ const Sidebar = ({
       setCompareDevice(device);
       setSensor2(sensor);
     } else {
-      const seriesIndex = series.findIndex(
+      const seriesIndex = chartOptions.series.findIndex(
         serie => serie.id === `${device.properties._id}-${sensor._id}`,
       );
-      setSeries(
-        series.filter(
+
+      setChartOptions({
+        ...chartOptions,
+        series: chartOptions.series.filter(
           serie => serie.id !== `${device.properties._id}-${sensor._id}`,
         ),
-      );
-      setSeriesColors(
-        seriesColors.filter((colors, idx) => idx !== seriesIndex),
-      );
+        colors: chartOptions.colors.filter(
+          (colors, idx) => idx !== seriesIndex,
+        ),
+      });
     }
+
     switch (sensor.title) {
       case 'Artenvielfalt':
         setshouldFetchArtenvielfalt(enabled);
@@ -558,11 +583,6 @@ const Sidebar = ({
                     highcharts={Highcharts}
                     options={chartOptions}
                   />
-                  {/* <LineChart
-                    series={series}
-                    yaxis={yAxis}
-                    colors={seriesColors}
-                  /> */}
                 </div>
               </div>
             )}
