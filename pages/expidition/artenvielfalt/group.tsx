@@ -219,7 +219,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
           data: transformedTemperatureData.map(v => v),
         },
       ],
-      colors: [colors.he.lufttemperatur.DEFAULT],
+      colors: [colors['he'].lufttemperatur.DEFAULT],
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -323,11 +323,11 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
       layout: 'horizontal',
     },
     colors: [
-      colors.he.blue.DEFAULT,
-      colors.he.yellow.DEFAULT,
-      colors.he.green.DEFAULT,
-      colors.he.violet.DEFAULT,
-      colors.he.red.DEFAULT,
+      colors['he'].blue.DEFAULT,
+      colors['he'].yellow.DEFAULT,
+      colors['he'].green.DEFAULT,
+      colors['he'].violet.DEFAULT,
+      colors['he'].red.DEFAULT,
     ],
     credits: {
       enabled: true,
@@ -366,7 +366,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
               data: transformedTemperatur.map(v => v),
             },
           ],
-          colors: [colors.he.lufttemperatur.DEFAULT],
+          colors: [colors['he'].lufttemperatur.DEFAULT],
         });
         break;
       case 1:
@@ -386,7 +386,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
               data: transformedBodenfeuchte.map(v => v),
             },
           ],
-          colors: [colors.he.bodenfeuchte.DEFAULT],
+          colors: [colors['he'].bodenfeuchte.DEFAULT],
         });
         break;
       case 2:
@@ -406,7 +406,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
               data: versiegelung.map(v => v),
             },
           ],
-          colors: [colors.he.undurchlaessigkeit.DEFAULT],
+          colors: [colors['he'].undurchlaessigkeit.DEFAULT],
         });
         break;
       case 3:
@@ -426,7 +426,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
               data: artenvielfalt.map(v => v),
             },
           ],
-          colors: [colors.he.artenvielfalt.DEFAULT],
+          colors: [colors['he'].artenvielfalt.DEFAULT],
         });
         break;
       default:
@@ -479,7 +479,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
       <div className="flex h-full w-full flex-row overflow-hidden">
         <div className="flex w-full flex-col">
           <div className="mb-4 h-[25%] max-h-[25%] w-full flex-auto">
-            <Map width="100%" height="100%" data={devices} expedition={true} />
+            <Map data={devices} expedition={true} />
           </div>
           <div className="mb-4">
             <Tabs tabs={tabs} onChange={onChange}></Tabs>

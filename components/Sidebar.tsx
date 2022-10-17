@@ -6,15 +6,24 @@ import {
   ArtRecord,
   VersiegelungRecord,
 } from '@prisma/client';
-// import LineChart from './LineChart';
 import { fetcher } from '@/lib/fetcher';
 // import PieChart from './PieChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { Sensor } from '@/types/osem';
-// import BarChart from './BarChart';
 import MeasurementTile from './MeasurementTile';
 import useSharedCompareSensors from '@/hooks/useCompareSensors';
 import { LayoutMode } from '@/pages';
+
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+import BrokenAxis from 'highcharts/modules/broken-axis';
+
+if (typeof Highcharts === 'object') {
+  BrokenAxis(Highcharts);
+}
+
+const CHART_SERIES_GAP_SIZE: number =
+  Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
 
 const Sidebar = ({
   box,
@@ -98,10 +107,62 @@ const Sidebar = ({
   // const [yAxis, setYAxis] = useState<ApexYAxis[]>([]);
   // const [yAxisBarChart, setYAxisBarChart] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
-  const [seriesColors, setSeriesColors] = useState([]);
-  const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
-  const [barChartSeries, setBarChartSeries] = useState([]); // Holding data for chart (Pie)
-  const [pieChartLabels, setPieChartLabels] = useState([]);
+  const [seriesColors, setSeriesColors] = useState([]); // Holding all colors for series
+  // const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
+  // const [barChartSeries, setBarChartSeries] = useState([]); // Holding data for chart (Pie)
+  // const [pieChartLabels, setPieChartLabels] = useState([]);
+
+  // NEW Basic chart options for Highcharts
+  // Maybe we can use it for all chart types
+  const [chartOptions, setChartOptions] = useState<Highcharts.Options>({
+    title: {
+      text: '',
+    },
+    chart: {
+      zooming: {
+        type: 'x',
+      },
+    },
+    plotOptions: {
+      series: {
+        marker: {
+          enabled: false,
+          symbol: 'circle',
+        },
+        lineWidth: 4,
+      },
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        millisecond: '%H:%M:%S.%L',
+        second: '%H:%M:%S',
+        minute: '%H:%M',
+        hour: '%H:%M',
+        day: '%e. %b',
+        week: '%e. %b',
+        month: "%b '%y",
+        year: '%Y',
+      },
+    },
+    legend: {
+      align: 'center',
+      verticalAlign: 'bottom',
+      layout: 'horizontal',
+    },
+    credits: {
+      enabled: true,
+    },
+    time: {
+      useUTC: false,
+      timezoneOffset: new Date().getTimezoneOffset(),
+    },
+    tooltip: {
+      dateTimeLabelFormats: {
+        day: '%d.%m.%Y %H:%M:%S',
+      },
+    },
+  });
 
   useEffect(() => {
     return () => {
@@ -110,8 +171,8 @@ const Sidebar = ({
       setIsBarChartOpen(false);
       setIsPieChartOpen(false);
       setSeries([]);
-      setBarChartSeries([]);
-      setPieChartSeries([]);
+      // setBarChartSeries([]);
+      // setPieChartSeries([]);
       setShouldFetch(false);
       setShouldFetch2(false);
       setshouldFetchArtenvielfalt(false);
@@ -122,20 +183,38 @@ const Sidebar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [box]);
 
+  // Effect to set series data for main selecte device
   useEffect(() => {
     if (data) {
-      setSeries([
-        ...series.filter(serie => !serie.id.includes(sensor._id)),
-        {
-          id: `${box.properties._id}-${sensor._id}`,
-          name: `${box.properties.name}-${sensor.title}`,
-          type: 'line',
-          data: data.map(m => ({
-            y: Number(m.value),
-            x: new Date(m.createdAt),
-          })),
-        },
-      ]);
+      setChartOptions({
+        ...chartOptions,
+        series: [
+          // ...series.filter(serie => !serie.id.includes(sensor._id)), // check if we need this
+          {
+            id: `${box.properties._id}-${sensor._id}`,
+            name: `${box.properties.name}-${sensor.title}`,
+            type: 'line',
+            gapUnit: 'value',
+            gapSize: CHART_SERIES_GAP_SIZE,
+            data: data
+              .map(m => [new Date(m.createdAt).getTime(), Number(m.value)])
+              .reverse(),
+          },
+        ],
+      });
+
+      // setSeries([
+      //   ...series.filter(serie => !serie.id.includes(sensor._id)),
+      //   {
+      //     id: `${box.properties._id}-${sensor._id}`,
+      //     name: `${box.properties.name}-${sensor.title}`,
+      //     type: 'line',
+      //     data: data.map(m => ({
+      //       y: Number(m.value),
+      //       x: new Date(m.createdAt),
+      //     })),
+      //   },
+      // ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
@@ -191,7 +270,7 @@ const Sidebar = ({
       ]);
       setSeriesColors([
         ...seriesColors,
-        colors.he[sensor2.title.toLocaleLowerCase()].DEFAULT,
+        colors['he'][sensor2.title.toLocaleLowerCase()].DEFAULT,
       ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -199,18 +278,20 @@ const Sidebar = ({
 
   const openCharts = (sensor: Sensor) => {
     setSensor(sensor);
-    const sensorColor = colors.he[sensor.title.toLocaleLowerCase()].DEFAULT;
+    const sensorColor = colors['he'][sensor.title.toLocaleLowerCase()].DEFAULT;
 
     if (!isOpen) {
-      // setYAxis([
-      //   {
-      //     title: {
-      //       text: sensor.title + ' ' + sensor.unit,
-      //     },
-      //   },
-      // ]);
       setIsOpen(!isOpen);
       setSeriesColors([...seriesColors, sensorColor]);
+      setChartOptions({
+        ...chartOptions,
+        yAxis: {
+          title: {
+            text: sensor.title + ' ' + sensor.unit,
+          },
+        },
+        colors: seriesColors,
+      });
       if (sensor.title.toLowerCase() === 'versiegelung') {
         setSeries([
           {
@@ -288,8 +369,8 @@ const Sidebar = ({
       labels.push(art.art);
     }
 
-    setPieChartLabels(labels);
-    setPieChartSeries(series);
+    // setPieChartLabels(labels);
+    // setPieChartSeries(series);
 
     setIsPieChartOpen(!isPieChartOpen);
   };
@@ -415,7 +496,7 @@ const Sidebar = ({
   return (
     <div className="flex h-full w-full overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
       {layout === LayoutMode.MAP ? (
-        <div className="flex h-full divide-x-2 overflow-hidden overflow-y-scroll">
+        <div className="flex h-full w-full divide-x-2 overflow-hidden overflow-y-scroll">
           {box && (
             <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
               <div className="mb-2">
@@ -472,6 +553,11 @@ const Sidebar = ({
             {isOpen && (
               <div className="flex w-full overflow-hidden">
                 <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
+                  <HighchartsReact
+                    containerProps={{ style: { height: '100%' } }}
+                    highcharts={Highcharts}
+                    options={chartOptions}
+                  />
                   {/* <LineChart
                     series={series}
                     yaxis={yAxis}

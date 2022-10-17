@@ -22,7 +22,7 @@ const LabelMarker = ({ name, lat, lng, color, onClick }: LabelMarkerProps) => {
       >
         <span
           className={`block h-3 w-3 ${
-            color ?? 'bg-blue-500'
+            color ?? 'bg-he-violet'
           } mr-1 rounded-full`}
         ></span>
         {name}
