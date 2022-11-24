@@ -30,7 +30,6 @@ export interface MapProps {
   expedition?: boolean;
   zoomLevel?: number;
   filter?: any[];
-  rendering?: string;
 }
 
 const Map = ({
@@ -39,7 +38,6 @@ const Map = ({
   expedition = false,
   color,
   zoomLevel = 13,
-  rendering = 'messstation',
 }: MapProps) => {
   const mapRef = useRef<MapRef>(null);
   const [mapLoaded, setMapLoaded] = useState(false);

@@ -57,7 +57,6 @@ export default function Home() {
       return;
     }
 
-    console.log('Index data useSWR: ', data);
     let schoolFeatures = new Map<
       string,
       GeoJSON.FeatureCollection<Point, any>
@@ -81,7 +80,6 @@ export default function Home() {
         }
       }
     });
-    console.log(schoolFeatures);
 
     let transformedSchoolData: GeoJSON.FeatureCollection<Point> = {
       type: 'FeatureCollection',
@@ -144,7 +142,6 @@ export default function Home() {
           onBoxSelect={box => onBoxSelect(box)}
         />
       </div>
-      {/* <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-2"> */}
       {layoutMode === LayoutMode.MAP ? (
         <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-2">
           <div className="pointer-events-auto col-span-3 row-span-4 row-start-1 overflow-x-auto md:col-span-2 lg:col-span-2 xl:col-span-2">

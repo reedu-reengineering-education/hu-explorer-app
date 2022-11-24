@@ -107,7 +107,8 @@ const Sidebar = ({
   const { data: versiegelung, error: versiegelungError } = useSWR<
     VersiegelungRecord[]
   >(`/api/versiegelung/${box?.properties._id}`);
-  console.log(versiegelung);
+  console.log('Main selected device - Versiegelung: ', versiegelung);
+  console.log('Main selected device - Artenvielfalt: ', artenvielfalt);
 
   const [sensor, setSensor] = useState<Sensor>();
   const [shouldFetch, setShouldFetch] = useState(false);
@@ -345,6 +346,31 @@ const Sidebar = ({
             colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT,
           ],
         });
+      } else if (sensorParam.title.toLocaleLowerCase().startsWith('simpson')) {
+        setChartOptions({
+          ...chartOptions,
+          yAxis: {
+            title: {
+              text: 'Artenvielfalt',
+            },
+          },
+          series: [
+            ...chartOptions.series,
+            {
+              id: `artenvielfalt-${sensorParam._id}`,
+              name: 'artenvielfalt',
+              type: 'column',
+              data: artenvielfalt.map(v => [
+                new Date(v.createdAt).getTime(),
+                v.simpsonIndex,
+              ]),
+            },
+          ],
+          colors: [
+            ...chartOptions.colors,
+            colors['he']['artenvielfalt'].DEFAULT,
+          ],
+        });
       } else {
         setShouldFetch(!isOpen);
       }
@@ -402,6 +428,33 @@ const Sidebar = ({
             colors: [
               ...chartOptions.colors,
               colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT,
+            ],
+          });
+        } else if (
+          sensorParam.title.toLocaleLowerCase().startsWith('simpson')
+        ) {
+          setChartOptions({
+            ...chartOptions,
+            yAxis: {
+              title: {
+                text: 'Artenvielfalt',
+              },
+            },
+            series: [
+              ...chartOptions.series,
+              {
+                id: `artenvielfalt-${sensorParam._id}`,
+                name: 'artenvielfalt',
+                type: 'column',
+                data: artenvielfalt.map(v => [
+                  new Date(v.createdAt).getTime(),
+                  v.simpsonIndex,
+                ]),
+              },
+            ],
+            colors: [
+              ...chartOptions.colors,
+              colors['he']['artenvielfalt'].DEFAULT,
             ],
           });
         } else {
@@ -521,7 +574,8 @@ const Sidebar = ({
         : {}),
     };
     return (
-      <MeasurementTile sensor={sensor} openChart={() => openPieChart(sensor)} />
+      // <MeasurementTile sensor={sensor} openChart={() => openPieChart(sensor)} />
+      <MeasurementTile sensor={sensor} openChart={() => openCharts(sensor)} />
     );
   };
 
