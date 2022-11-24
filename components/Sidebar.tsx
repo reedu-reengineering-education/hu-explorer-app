@@ -7,10 +7,9 @@ import {
   VersiegelungRecord,
 } from '@prisma/client';
 import { fetcher } from '@/lib/fetcher';
-// import PieChart from './PieChart';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { Sensor } from '@/types/osem';
-import MeasurementTile from './MeasurementTile';
+import MeasurementTile, { ChartType } from './MeasurementTile';
 import useSharedCompareSensors from '@/hooks/useCompareSensors';
 import { LayoutMode } from '@/pages';
 
@@ -25,7 +24,7 @@ if (typeof Highcharts === 'object') {
 const CHART_SERIES_GAP_SIZE: number =
   Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
 
-const deafultChartOptions: Highcharts.Options = {
+const defaultChartOptions: Highcharts.Options = {
   title: {
     text: '',
   },
@@ -75,6 +74,37 @@ const deafultChartOptions: Highcharts.Options = {
     },
   },
   colors: [],
+  series: [],
+};
+
+const defaultPieChartOptions: Highcharts.Options = {
+  chart: {
+    plotBackgroundColor: null,
+    plotBorderWidth: null,
+    plotShadow: false,
+    type: 'pie',
+  },
+  title: {
+    text: '',
+  },
+  tooltip: {
+    pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>',
+  },
+  accessibility: {
+    point: {
+      valueSuffix: '%',
+    },
+  },
+  plotOptions: {
+    pie: {
+      allowPointSelect: true,
+      cursor: 'pointer',
+      dataLabels: {
+        enabled: true,
+        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+      },
+    },
+  },
   series: [],
 };
 
@@ -161,15 +191,14 @@ const Sidebar = ({
   // const [yAxis, setYAxis] = useState<ApexYAxis[]>([]);
   // const [yAxisBarChart, setYAxisBarChart] = useState<ApexYAxis[]>();
   const [series, setSeries] = useState([]); // Holding data for chart (Line and Bar)
-  // const [seriesColors, setSeriesColors] = useState([]); // Holding all colors for series
-  // const [pieChartSeries, setPieChartSeries] = useState([]); // Holding data for chart (Pie)
-  // const [barChartSeries, setBarChartSeries] = useState([]); // Holding data for chart (Pie)
-  // const [pieChartLabels, setPieChartLabels] = useState([]);
 
   // NEW Basic chart options for Highcharts
   // Maybe we can use it for all chart types
   const [chartOptions, setChartOptions] =
-    useState<Highcharts.Options>(deafultChartOptions);
+    useState<Highcharts.Options>(defaultChartOptions);
+  const [pieChartOptions, setPieChartOptions] = useState<Highcharts.Options>(
+    defaultPieChartOptions,
+  );
 
   /**
    * Clean up everything if box / device is changed
@@ -178,20 +207,15 @@ const Sidebar = ({
     return () => {
       // Cleanup everything before a new device is selected!!!
       setIsOpen(false);
-      setChartOptions(deafultChartOptions);
+      setIsPieChartOpen(false);
+      setChartOptions(defaultChartOptions);
+      setPieChartOptions(defaultPieChartOptions);
       setShouldFetch(false);
       setShouldFetch2(false);
       setshouldFetchArtenvielfalt(false);
       setshouldFetchVersiegelung(false);
       setSensor(null);
       setSensor2(null);
-
-      // Old stuff before highcharts
-      // setIsBarChartOpen(false);
-      // setIsPieChartOpen(false);
-      // setSeries([]);
-      // setBarChartSeries([]);
-      // setPieChartSeries([]);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [box]);
@@ -312,11 +336,19 @@ const Sidebar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data2]);
 
-  const openCharts = (sensorParam: Sensor) => {
-    console.log('Open Charts: ', sensor);
+  const openCharts = (chartType: ChartType, sensorParam: Sensor) => {
+    console.log(`Open ${chartType} Chart: `, sensorParam);
     setSensor(sensorParam);
-    // const sensorColor =
-    //   colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT;
+
+    switch (chartType) {
+      case ChartType.column:
+        break;
+      case ChartType.pie:
+        openPieChart(sensorParam);
+        return;
+      default:
+        break;
+    }
 
     if (!isOpen) {
       setIsOpen(!isOpen);
@@ -336,7 +368,7 @@ const Sidebar = ({
               name: 'Versiegelung',
               type: 'column',
               data: versiegelung.map(v => [
-                new Date(v.createdAt).getTime(),
+                new Date(v.updatedAt).getTime(),
                 v.value,
               ]),
             },
@@ -361,7 +393,7 @@ const Sidebar = ({
               name: 'artenvielfalt',
               type: 'column',
               data: artenvielfalt.map(v => [
-                new Date(v.createdAt).getTime(),
+                new Date(v.updatedAt).getTime(),
                 v.simpsonIndex,
               ]),
             },
@@ -399,7 +431,7 @@ const Sidebar = ({
         // If no series data existing, close chart and clean up
         if (newSeries.length === 0) {
           setIsOpen(false);
-          setChartOptions(deafultChartOptions);
+          setChartOptions(defaultChartOptions);
         }
       } else {
         // Fetch data for selected sensor of main device
@@ -420,7 +452,7 @@ const Sidebar = ({
                 name: 'Versiegelung',
                 type: 'column',
                 data: versiegelung.map(v => [
-                  new Date(v.createdAt).getTime(),
+                  new Date(v.updatedAt).getTime(),
                   v.value,
                 ]),
               },
@@ -447,7 +479,7 @@ const Sidebar = ({
                 name: 'artenvielfalt',
                 type: 'column',
                 data: artenvielfalt.map(v => [
-                  new Date(v.createdAt).getTime(),
+                  new Date(v.updatedAt).getTime(),
                   v.simpsonIndex,
                 ]),
               },
@@ -465,58 +497,33 @@ const Sidebar = ({
   };
 
   const openPieChart = (sensor: Sensor) => {
-    console.log(sensor);
-    const series: number[] = [];
-    const labels: string[] = [];
+    const seriesData = [];
 
     for (const art of artenvielfalt[0]['arten'] as Array<ArtRecord>) {
-      series.push(art.count);
-      labels.push(art.art);
+      seriesData.push({
+        name: art.art,
+        y: art.count,
+      });
     }
 
-    // setPieChartLabels(labels);
-    // setPieChartSeries(series);
+    setPieChartOptions({
+      ...pieChartOptions,
+      title: {
+        text: 'Artenvielfalt',
+      },
+      series: [
+        ...pieChartOptions.series,
+        {
+          name: 'Artenvielfalt',
+          type: 'pie',
+          colorByPoint: true,
+          data: seriesData,
+        },
+      ],
+    });
 
     setIsPieChartOpen(!isPieChartOpen);
   };
-
-  // const openBarChart = (sensor: Sensor) => {
-  //   console.log(sensor);
-
-  //   setSeries([
-  //     ...series,
-  //     {
-  //       id: `versiegelung-${sensor._id}`,
-  //       name: 'Versiegelung',
-  //       type: 'column',
-  //       data: versiegelung.map(v => ({
-  //         y: Number(v.value),
-  //         x: new Date(v.createdAt).toLocaleDateString()
-  //       }))
-  //     }
-  //   ])
-
-  //   setSeriesColors([
-  //     ...seriesColors,
-  //     colors.he[sensor.title.toLocaleLowerCase()].DEFAULT,
-  //   ]);
-
-  //   setYAxis([
-  //     ...yAxis,
-  //     {
-  //       title: {
-  //         text: 'Versiegelung in %',
-  //       }
-  //     },
-  //   ])
-
-  //   if (!isOpen) {
-  //     setIsOpen(!isOpen);
-  //   }
-  //   // setIsOpen(!isOpen)
-
-  //   // setIsBarChartOpen(!isBarChartOpen);
-  // };
 
   const updateSeries = (
     enabled: boolean,
@@ -574,8 +581,11 @@ const Sidebar = ({
         : {}),
     };
     return (
-      // <MeasurementTile sensor={sensor} openChart={() => openPieChart(sensor)} />
-      <MeasurementTile sensor={sensor} openChart={() => openCharts(sensor)} />
+      <MeasurementTile
+        sensor={sensor}
+        openChart={openCharts}
+        charts={[ChartType.column, ChartType.pie]}
+      />
     );
   };
 
@@ -598,7 +608,11 @@ const Sidebar = ({
         : {}),
     };
     return (
-      <MeasurementTile sensor={sensor} openChart={() => openCharts(sensor)} />
+      <MeasurementTile
+        sensor={sensor}
+        openChart={openCharts}
+        charts={[ChartType.column]}
+      />
     );
   };
 
@@ -636,6 +650,7 @@ const Sidebar = ({
                       key={sensor._id}
                       sensor={sensor}
                       openChart={openCharts}
+                      charts={[ChartType.line]}
                     />
                   );
                 })}
@@ -685,7 +700,11 @@ const Sidebar = ({
 
             {isPieChartOpen && (
               <div className="m-2 h-[95%] w-full overflow-hidden">
-                {/* <PieChart series={pieChartSeries} labels={pieChartLabels} /> */}
+                <HighchartsReact
+                  containerProps={{ style: { height: '100%' } }}
+                  highcharts={Highcharts}
+                  options={pieChartOptions}
+                />
               </div>
             )}
             {box !== undefined &&
@@ -733,6 +752,7 @@ const Sidebar = ({
                       key={sensor._id}
                       sensor={sensor}
                       openChart={openCharts}
+                      charts={[ChartType.line]}
                     />
                   );
                 })}
@@ -780,7 +800,11 @@ const Sidebar = ({
 
                 {isPieChartOpen && (
                   <div className="m-2 h-[95%] w-full overflow-hidden">
-                    {/* <PieChart series={pieChartSeries} labels={pieChartLabels} /> */}
+                    <HighchartsReact
+                      containerProps={{ style: { height: '100%' } }}
+                      highcharts={Highcharts}
+                      options={pieChartOptions}
+                    />
                   </div>
                 )}
                 {box !== undefined &&

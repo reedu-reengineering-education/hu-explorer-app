@@ -1,9 +1,22 @@
 import { format } from 'date-fns';
 import { Sensor } from '@/types/osem';
+import {
+  ChartPieIcon,
+  ChartSquareBarIcon,
+  PresentationChartLineIcon,
+  XCircleIcon,
+} from '@heroicons/react/outline';
+
+export enum ChartType {
+  line = 'line',
+  pie = 'pie',
+  column = 'column',
+}
 
 export interface TileProps {
   sensor: Sensor;
-  openChart: (sensor: Sensor) => void;
+  charts: ChartType[];
+  openChart: (chartType: ChartType, sensor: Sensor) => void;
 }
 
 const tileColors = {
@@ -20,15 +33,15 @@ const tileColors = {
   Lautstärke: 'bg-teal-500',
 };
 
-const MeasurementTile = ({ sensor, openChart }: TileProps) => {
+const MeasurementTile = ({ sensor, charts, openChart }: TileProps) => {
   const { _id, title, unit } = sensor;
 
   const value = Number(sensor.lastMeasurement?.value);
   const color = tileColors[title] ?? 'bg-violet-500';
 
-  const toggleChart = () => {
+  const toggleChart = (chartType: ChartType) => {
     if (typeof value === 'number' && !isNaN(value)) {
-      openChart(sensor);
+      openChart(chartType, sensor);
     }
   };
 
@@ -36,7 +49,6 @@ const MeasurementTile = ({ sensor, openChart }: TileProps) => {
     <div
       key={_id}
       className={`h-30 w-30 m-1 flex aspect-square flex-col items-center justify-center rounded-xl p-2 shadow ${color}`}
-      onClick={toggleChart}
     >
       <h1 className="mb-2 max-w-full overflow-hidden overflow-ellipsis text-xs font-bold text-white">
         {title}
@@ -52,6 +64,26 @@ const MeasurementTile = ({ sensor, openChart }: TileProps) => {
               'dd.MM.yyyy HH:mm',
             )}
           </kbd>
+        )}
+      </div>
+      <div className="mt-2 flex w-full justify-evenly border-t-2 pt-2">
+        {charts.includes(ChartType.line) && (
+          <PresentationChartLineIcon
+            className="h-5 w-5 cursor-pointer text-white"
+            onClick={() => toggleChart(ChartType.line)}
+          />
+        )}
+        {charts.includes(ChartType.pie) && (
+          <ChartPieIcon
+            className="h-5 w-5 cursor-pointer text-white"
+            onClick={() => toggleChart(ChartType.pie)}
+          />
+        )}
+        {charts.includes(ChartType.column) && (
+          <ChartSquareBarIcon
+            className="h-5 w-5 cursor-pointer text-white"
+            onClick={() => toggleChart(ChartType.column)}
+          />
         )}
       </div>
     </div>
