@@ -703,11 +703,11 @@ const Sidebar = ({
                 {isOpen && (
                   <div className="flex w-full overflow-hidden">
                     <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
-                      {/* <LineChart
-                        series={series}
-                        yaxis={yAxis}
-                        colors={seriesColors}
-                      /> */}
+                      <HighchartsReact
+                        containerProps={{ style: { height: '100%' } }}
+                        highcharts={Highcharts}
+                        options={chartOptions}
+                      />
                     </div>
                   </div>
                 )}
