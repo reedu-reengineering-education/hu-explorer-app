@@ -1,10 +1,11 @@
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { Feature, Point } from 'geojson';
+import center from '@turf/center';
 
 // Own components
 import Filter from '@/components/Filter';
-import Map from '@/components/Map';
+import { default as MapboxMap } from '@/components/Map';
 import Sidebar from '@/components/Sidebar';
 import Stats from '@/components/Stats';
 import CompareList from '@/components/CompareList';
@@ -13,7 +14,6 @@ import CompareList from '@/components/CompareList';
 import useSharedCompareMode from '@/hooks/useCompareMode';
 import { Button } from '@/components/Elements/Button';
 import { TemplateIcon } from '@heroicons/react/outline';
-import { Switch } from '@headlessui/react';
 
 export enum LayoutMode {
   MAP,
@@ -24,6 +24,7 @@ export default function Home() {
   const [selectedBox, setSelectedBox] = useState<Feature<Point>>();
   const [compareBoxes, setCompareBoxes] = useState<Feature<Point>[]>([]);
   const [project, setProject] = useState<string | undefined>(undefined);
+  const [rendering, setRendering] = useState<string>('messstation');
   // const [dateFrom, setDateFrom] = useState<Date>();
   // const [dateTo, setDateTo] = useState<Date>();
 
@@ -39,6 +40,65 @@ export default function Home() {
       project ? ',' + project : ''
     }`,
   );
+  const [transformedData, setTransformedData] = useState<
+    GeoJSON.FeatureCollection<Point>
+  >({
+    type: 'FeatureCollection',
+    features: [],
+  });
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    if (rendering === 'messstation') {
+      setTransformedData(data);
+      return;
+    }
+
+    console.log('Index data useSWR: ', data);
+    let schoolFeatures = new Map<
+      string,
+      GeoJSON.FeatureCollection<Point, any>
+    >();
+
+    data.features.forEach(feature => {
+      if (feature.properties.grouptag.length >= 3) {
+        const grouptags = feature.properties.grouptag as string[];
+        const schoolExpedition = `${grouptags[1]}-${
+          grouptags[grouptags.length - 1]
+        }`;
+        console.log(schoolFeatures);
+        if (schoolFeatures.has(schoolExpedition)) {
+          schoolFeatures.get(schoolExpedition).features.push(feature);
+        } else {
+          const featureCollection: GeoJSON.FeatureCollection<Point, any> = {
+            type: 'FeatureCollection',
+            features: [feature],
+          };
+          schoolFeatures.set(schoolExpedition, featureCollection);
+        }
+      }
+    });
+    console.log(schoolFeatures);
+
+    let transformedSchoolData: GeoJSON.FeatureCollection<Point> = {
+      type: 'FeatureCollection',
+      features: [],
+    };
+
+    schoolFeatures.forEach(schoolFeature => {
+      const centeredFeature = center(schoolFeature);
+      centeredFeature.properties = schoolFeature.features[0].properties;
+      delete centeredFeature.properties.name;
+      transformedSchoolData.features.push(centeredFeature);
+    });
+    console.log(transformedSchoolData);
+    setTransformedData(transformedSchoolData);
+
+    return () => {};
+  }, [data, rendering]);
 
   const onBoxSelect = (box: Feature<Point>) => {
     // Check if Compare mode is active
@@ -79,7 +139,10 @@ export default function Home() {
   return (
     <main className="relative h-full w-full">
       <div className="h-full w-full">
-        <Map data={data} onBoxSelect={box => onBoxSelect(box)} />
+        <MapboxMap
+          data={transformedData}
+          onBoxSelect={box => onBoxSelect(box)}
+        />
       </div>
       {/* <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-2"> */}
       {layoutMode === LayoutMode.MAP ? (
@@ -101,6 +164,7 @@ export default function Home() {
                 setExpedition={setProject}
                 dateRange={dateRange}
                 setDateRange={setDateRange}
+                setRendering={setRendering}
               ></Filter>
               {selectedBox ? (
                 <CompareList
@@ -137,6 +201,7 @@ export default function Home() {
                 setExpedition={setProject}
                 dateRange={dateRange}
                 setDateRange={setDateRange}
+                setRendering={setRendering}
               ></Filter>
               {selectedBox ? (
                 <CompareList

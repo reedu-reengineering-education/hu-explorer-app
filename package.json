@@ -19,6 +19,7 @@
     "@turf/bbox": "^6.5.0",
     "@turf/bbox-polygon": "^6.5.0",
     "@turf/boolean-point-in-polygon": "^6.5.0",
+    "@turf/center": "^6.5.0",
     "add": "^2.0.6",
     "axios": "^0.24.0",
     "date-fns": "^2.28.0",
