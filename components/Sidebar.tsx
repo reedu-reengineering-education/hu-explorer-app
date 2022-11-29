@@ -367,17 +367,22 @@ const Sidebar = ({
       case ChartType.pie:
         openPieChart(sensorParam);
         return;
+      case ChartType.line:
+        openLineChart(sensorParam);
+        return;
       default:
         break;
     }
+  };
 
+  const openLineChart = (sensor: Sensor) => {
     if (!isOpen) {
       setIsOpen(!isOpen);
       setShouldFetch(!isOpen);
     } else {
       // Handle open chart
       const serie = chartOptions.series.find(serie =>
-        serie.id.includes(sensorParam._id),
+        serie.id.includes(sensor._id),
       );
       console.log(`Found serie in chartOptions: `, serie);
 
@@ -386,7 +391,7 @@ const Sidebar = ({
         setShouldFetch(false);
 
         const newSeries = chartOptions.series.filter(
-          serie => !serie.id.includes(sensorParam._id),
+          serie => !serie.id.includes(sensor._id),
         );
 
         // TODO: Keep chartOptions up to date
@@ -467,7 +472,7 @@ const Sidebar = ({
         },
       },
       series: [
-        ...chartOptions.series,
+        ...barChartOptions.series,
         {
           id: `${serie}-${sensor._id}`,
           name: serie,
@@ -475,7 +480,7 @@ const Sidebar = ({
           data: seriesData,
         },
       ],
-      colors: [...chartOptions.colors, colors['he'][serie].DEFAULT],
+      colors: [...barChartOptions.colors, colors['he'][serie].DEFAULT],
     });
 
     setIsBarChartOpen(!isBarChartOpen);
@@ -727,7 +732,7 @@ const Sidebar = ({
                   </>
                 )}
               </div>
-              <div className="mt-2 flex h-full w-full">
+              <div className="mt-2 flex h-full w-full flex-col">
                 {!box && (
                   <div className="flex h-full w-full items-center justify-center">
                     <h1 className="text-md content-center text-center font-bold">
@@ -738,11 +743,13 @@ const Sidebar = ({
                 )}
 
                 {isOpen && (
-                  <div className="flex w-full overflow-hidden border-2 border-green-500">
-                    <div className="m-2 h-[95%] min-h-0 overflow-clip">
+                  <div className="flex h-full w-full overflow-hidden">
+                    <div className="m-2 h-[95%] min-h-max w-full overflow-hidden">
                       <HighchartsReact
+                        ref={lineChart}
                         containerProps={{ style: { height: '100%' } }}
                         highcharts={Highcharts}
+                        allowChartUpdates={true}
                         options={chartOptions}
                       />
                     </div>
@@ -750,24 +757,30 @@ const Sidebar = ({
                 )}
 
                 {isBarChartOpen && (
-                  <div className="flex w-full overflow-hidden">
+                  <div className="flex h-full w-full overflow-hidden">
                     <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
-                      {/* <BarChart
-                        series={barChartSeries}
-                        yaxis={yAxisBarChart}
-                        colors={[colors.he.undurchlaessigkeit.DEFAULT]}
-                      /> */}
+                      <HighchartsReact
+                        ref={barChart}
+                        containerProps={{ style: { height: '100%' } }}
+                        highcharts={Highcharts}
+                        allowChartUpdates={true}
+                        options={barChartOptions}
+                      />
                     </div>
                   </div>
                 )}
 
                 {isPieChartOpen && (
-                  <div className="m-2 h-[95%] w-full overflow-hidden">
-                    <HighchartsReact
-                      containerProps={{ style: { height: '100%' } }}
-                      highcharts={Highcharts}
-                      options={pieChartOptions}
-                    />
+                  <div className="flex h-full w-full overflow-hidden">
+                    <div className="m-2 h-[95%] w-full overflow-hidden">
+                      <HighchartsReact
+                        ref={pieChart}
+                        containerProps={{ style: { height: '100%' } }}
+                        highcharts={Highcharts}
+                        allowChartUpdates={true}
+                        options={pieChartOptions}
+                      />
+                    </div>
                   </div>
                 )}
                 {box !== undefined &&
