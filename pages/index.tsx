@@ -68,7 +68,6 @@ export default function Home() {
         const schoolExpedition = `${grouptags[1]}-${
           grouptags[grouptags.length - 1]
         }`;
-        console.log(schoolFeatures);
         if (schoolFeatures.has(schoolExpedition)) {
           schoolFeatures.get(schoolExpedition).features.push(feature);
         } else {
@@ -92,7 +91,6 @@ export default function Home() {
       delete centeredFeature.properties.name;
       transformedSchoolData.features.push(centeredFeature);
     });
-    console.log(transformedSchoolData);
     setTransformedData(transformedSchoolData);
 
     return () => {};

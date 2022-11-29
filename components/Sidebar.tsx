@@ -357,7 +357,7 @@ const Sidebar = ({
   }, [data2]);
 
   const openCharts = (chartType: ChartType, sensorParam: Sensor) => {
-    console.log(`Open ${chartType} Chart: `, sensorParam);
+    console.info(`Open ${chartType} Chart: `, sensorParam);
     setSensor(sensorParam);
 
     switch (chartType) {
