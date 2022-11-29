@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Feature, Point } from 'geojson';
 import useSWR from 'swr';
 import {
@@ -128,6 +128,10 @@ const Sidebar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compareSensors]);
 
+  const lineChart = useRef(null);
+  const pieChart = useRef(null);
+  const barChart = useRef(null);
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
   const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
@@ -199,6 +203,22 @@ const Sidebar = ({
   const [pieChartOptions, setPieChartOptions] = useState<Highcharts.Options>(
     defaultPieChartOptions,
   );
+  const [barChartOptions, setBarChartOptions] =
+    useState<Highcharts.Options>(defaultChartOptions);
+
+  const [reflowCharts, setReflowCharts] = useState(false);
+
+  useEffect(() => {
+    if (reflowCharts) {
+      lineChart.current?.chart.reflow();
+      pieChart.current?.chart.reflow();
+      barChart.current?.chart.reflow();
+    }
+
+    return () => {
+      setReflowCharts(false);
+    };
+  }, [reflowCharts]);
 
   /**
    * Clean up everything if box / device is changed
@@ -342,7 +362,8 @@ const Sidebar = ({
 
     switch (chartType) {
       case ChartType.column:
-        break;
+        openBarChart(sensorParam);
+        return;
       case ChartType.pie:
         openPieChart(sensorParam);
         return;
@@ -352,65 +373,13 @@ const Sidebar = ({
 
     if (!isOpen) {
       setIsOpen(!isOpen);
-
-      if (sensorParam.title.toLowerCase() === 'versiegelung') {
-        setChartOptions({
-          ...chartOptions,
-          yAxis: {
-            title: {
-              text: 'Versiegelung in %',
-            },
-          },
-          series: [
-            ...chartOptions.series,
-            {
-              id: `versiegelung-${sensorParam._id}`,
-              name: 'Versiegelung',
-              type: 'column',
-              data: versiegelung.map(v => [
-                new Date(v.updatedAt).getTime(),
-                v.value,
-              ]),
-            },
-          ],
-          colors: [
-            ...chartOptions.colors,
-            colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT,
-          ],
-        });
-      } else if (sensorParam.title.toLocaleLowerCase().startsWith('simpson')) {
-        setChartOptions({
-          ...chartOptions,
-          yAxis: {
-            title: {
-              text: 'Artenvielfalt',
-            },
-          },
-          series: [
-            ...chartOptions.series,
-            {
-              id: `artenvielfalt-${sensorParam._id}`,
-              name: 'artenvielfalt',
-              type: 'column',
-              data: artenvielfalt.map(v => [
-                new Date(v.updatedAt).getTime(),
-                v.simpsonIndex,
-              ]),
-            },
-          ],
-          colors: [
-            ...chartOptions.colors,
-            colors['he']['artenvielfalt'].DEFAULT,
-          ],
-        });
-      } else {
-        setShouldFetch(!isOpen);
-      }
+      setShouldFetch(!isOpen);
     } else {
       // Handle open chart
       const serie = chartOptions.series.find(serie =>
         serie.id.includes(sensorParam._id),
       );
+      console.log(`Found serie in chartOptions: `, serie);
 
       if (serie) {
         // Stop fetching data
@@ -435,65 +404,11 @@ const Sidebar = ({
         }
       } else {
         // Fetch data for selected sensor of main device
-        // setShouldFetch(true);
-
-        if (sensorParam.title.toLowerCase() === 'versiegelung') {
-          setChartOptions({
-            ...chartOptions,
-            yAxis: {
-              title: {
-                text: 'Versiegelung in %',
-              },
-            },
-            series: [
-              ...chartOptions.series,
-              {
-                id: `versiegelung-${sensorParam._id}`,
-                name: 'Versiegelung',
-                type: 'column',
-                data: versiegelung.map(v => [
-                  new Date(v.updatedAt).getTime(),
-                  v.value,
-                ]),
-              },
-            ],
-            colors: [
-              ...chartOptions.colors,
-              colors['he'][sensorParam.title.toLocaleLowerCase()].DEFAULT,
-            ],
-          });
-        } else if (
-          sensorParam.title.toLocaleLowerCase().startsWith('simpson')
-        ) {
-          setChartOptions({
-            ...chartOptions,
-            yAxis: {
-              title: {
-                text: 'Artenvielfalt',
-              },
-            },
-            series: [
-              ...chartOptions.series,
-              {
-                id: `artenvielfalt-${sensorParam._id}`,
-                name: 'artenvielfalt',
-                type: 'column',
-                data: artenvielfalt.map(v => [
-                  new Date(v.updatedAt).getTime(),
-                  v.simpsonIndex,
-                ]),
-              },
-            ],
-            colors: [
-              ...chartOptions.colors,
-              colors['he']['artenvielfalt'].DEFAULT,
-            ],
-          });
-        } else {
-          setShouldFetch(!isOpen);
-        }
+        setShouldFetch(true);
       }
     }
+
+    setReflowCharts(true);
   };
 
   const openPieChart = (sensor: Sensor) => {
@@ -523,6 +438,48 @@ const Sidebar = ({
     });
 
     setIsPieChartOpen(!isPieChartOpen);
+    setReflowCharts(!reflowCharts);
+  };
+
+  const openBarChart = (sensor: Sensor) => {
+    const serie = sensor.title.toLowerCase().startsWith('simpson')
+      ? 'artenvielfalt'
+      : 'versiegelung';
+    let seriesData = [];
+
+    if (serie === 'versiegelung') {
+      seriesData = versiegelung.map(v => [
+        new Date(v.updatedAt).getTime(),
+        v.value,
+      ]);
+    } else if (serie === 'artenvielfalt') {
+      seriesData = artenvielfalt.map(a => [
+        new Date(a.updatedAt).getTime(),
+        a.simpsonIndex,
+      ]);
+    }
+
+    setBarChartOptions({
+      ...barChartOptions,
+      yAxis: {
+        title: {
+          text: `${serie} in %`,
+        },
+      },
+      series: [
+        ...chartOptions.series,
+        {
+          id: `${serie}-${sensor._id}`,
+          name: serie,
+          type: 'column',
+          data: seriesData,
+        },
+      ],
+      colors: [...chartOptions.colors, colors['he'][serie].DEFAULT],
+    });
+
+    setIsBarChartOpen(!isBarChartOpen);
+    setReflowCharts(!reflowCharts);
   };
 
   const updateSeries = (
@@ -676,10 +633,12 @@ const Sidebar = ({
 
             {isOpen && (
               <div className="flex w-full overflow-hidden">
-                <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
+                <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
                   <HighchartsReact
+                    ref={lineChart}
                     containerProps={{ style: { height: '100%' } }}
                     highcharts={Highcharts}
+                    allowChartUpdate={true}
                     options={chartOptions}
                   />
                 </div>
@@ -689,11 +648,13 @@ const Sidebar = ({
             {isBarChartOpen && (
               <div className="flex w-full overflow-hidden">
                 <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
-                  {/* <BarChart
-                    series={barChartSeries}
-                    yaxis={yAxisBarChart}
-                    colors={[colors.he.undurchlaessigkeit.DEFAULT]}
-                  /> */}
+                  <HighchartsReact
+                    ref={barChart}
+                    containerProps={{ style: { height: '100%' } }}
+                    highcharts={Highcharts}
+                    allowChartUpdate={true}
+                    options={barChartOptions}
+                  />
                 </div>
               </div>
             )}
@@ -701,8 +662,10 @@ const Sidebar = ({
             {isPieChartOpen && (
               <div className="m-2 h-[95%] w-full overflow-hidden">
                 <HighchartsReact
+                  ref={pieChart}
                   containerProps={{ style: { height: '100%' } }}
                   highcharts={Highcharts}
+                  allowChartUpdate={true}
                   options={pieChartOptions}
                 />
               </div>
@@ -775,8 +738,8 @@ const Sidebar = ({
                 )}
 
                 {isOpen && (
-                  <div className="flex w-full overflow-hidden">
-                    <div className="m-2 h-[95%] min-h-0 w-full overflow-clip">
+                  <div className="flex w-full overflow-hidden border-2 border-green-500">
+                    <div className="m-2 h-[95%] min-h-0 overflow-clip">
                       <HighchartsReact
                         containerProps={{ style: { height: '100%' } }}
                         highcharts={Highcharts}
