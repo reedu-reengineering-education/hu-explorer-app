@@ -14,6 +14,9 @@ import CompareList from '@/components/CompareList';
 import useSharedCompareMode from '@/hooks/useCompareMode';
 import { Button } from '@/components/Elements/Button';
 import { TemplateIcon } from '@heroicons/react/outline';
+import Schulstandort from '@/components/Sidebar/Schulstandort';
+import { Device } from '@/types/osem';
+import Messstation from '@/components/Sidebar/Messstation';
 
 export enum LayoutMode {
   MAP,
@@ -21,7 +24,7 @@ export enum LayoutMode {
 }
 
 export default function Home() {
-  const [selectedBox, setSelectedBox] = useState<Feature<Point>>();
+  const [selectedBox, setSelectedBox] = useState<Feature<Point, Device>>();
   const [compareBoxes, setCompareBoxes] = useState<Feature<Point>[]>([]);
   const [project, setProject] = useState<string | undefined>(undefined);
   const [rendering, setRendering] = useState<string>('messstation');
@@ -96,7 +99,7 @@ export default function Home() {
     return () => {};
   }, [data, rendering]);
 
-  const onBoxSelect = (box: Feature<Point>) => {
+  const onBoxSelect = (box: Feature<Point, Device>) => {
     // Check if Compare mode is active
     if (compare) {
       const isSelectedDevice =
@@ -172,11 +175,27 @@ export default function Home() {
 
           {/* Sidebar / Bottombar */}
           <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
-            <Sidebar
-              layout={LayoutMode.MAP}
-              box={selectedBox}
-              dateRange={dateRange}
-            />
+            {rendering === 'messstation' && selectedBox ? (
+              <Messstation
+                layout={LayoutMode.MAP}
+                box={selectedBox}
+                rendering={rendering}
+                dateRange={dateRange}
+              />
+            ) : (
+              <Schulstandort
+                layout={LayoutMode.MAP}
+                expedition={selectedBox?.properties?.tags[1]}
+                tag={
+                  selectedBox?.properties?.tags[
+                    selectedBox.properties.tags.length - 1
+                  ]
+                }
+                box={selectedBox}
+                rendering={rendering}
+                dateRange={dateRange}
+              />
+            )}
           </div>
         </div>
       ) : (
@@ -209,11 +228,27 @@ export default function Home() {
 
           {/* Sidebar / Bottombar */}
           <div className="pointer-events-auto col-start-3 col-end-7 row-span-6 row-start-1 overflow-hidden rounded-xl border-2">
-            <Sidebar
-              layout={LayoutMode.DATA}
-              box={selectedBox}
-              dateRange={dateRange}
-            />
+            {rendering === 'messstation' && selectedBox ? (
+              <Messstation
+                layout={LayoutMode.DATA}
+                rendering={rendering}
+                box={selectedBox}
+                dateRange={dateRange}
+              />
+            ) : (
+              <Schulstandort
+                layout={LayoutMode.DATA}
+                expedition={selectedBox?.properties?.tags[1]}
+                tag={
+                  selectedBox?.properties?.tags[
+                    selectedBox.properties.tags.length - 1
+                  ]
+                }
+                box={selectedBox}
+                rendering={rendering}
+                dateRange={dateRange}
+              />
+            )}
           </div>
         </div>
       )}

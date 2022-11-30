@@ -63,6 +63,21 @@ module.exports = {
           lautstärke: {
             DEFAULT: '#14B8A6',
           },
+          straße: {
+            DEFAULT: '#f6a03e',
+          },
+          eingang: {
+            DEFAULT: '#5394d0',
+          },
+          hof: {
+            DEFAULT: '#6bbe98',
+          },
+          flur: {
+            DEFAULT: '#ec656b',
+          },
+          klingel: {
+            DEFAULT: '#9b78b4',
+          },
         },
       },
     },

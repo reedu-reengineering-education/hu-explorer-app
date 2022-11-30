@@ -27,6 +27,7 @@ export interface Device {
   updatedAt?: Date;
   model?: string;
   grouptag: string[];
+  tags?: string[];
   sensors: Sensor[];
   useAuth?: boolean;
   location: Location;

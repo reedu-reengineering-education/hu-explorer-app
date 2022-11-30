@@ -9,14 +9,14 @@ import {
 import { fetcher } from '@/lib/fetcher';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { Sensor } from '@/types/osem';
-import MeasurementTile, { ChartType } from './MeasurementTile';
+import MeasurementTile, { ChartType } from '../MeasurementTile';
 import useSharedCompareSensors from '@/hooks/useCompareSensors';
 import { LayoutMode } from '@/pages';
 
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import BrokenAxis from 'highcharts/modules/broken-axis';
-import { useOsemData } from '@/hooks/useOsemData';
+import { defaultChartOptions, defaultPieChartOptions } from '@/lib/charts';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -25,91 +25,7 @@ if (typeof Highcharts === 'object') {
 const CHART_SERIES_GAP_SIZE: number =
   Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
 
-const defaultChartOptions: Highcharts.Options = {
-  title: {
-    text: '',
-  },
-  chart: {
-    zooming: {
-      type: 'x',
-    },
-  },
-  plotOptions: {
-    series: {
-      marker: {
-        enabled: false,
-        symbol: 'circle',
-      },
-      lineWidth: 4,
-    },
-  },
-  yAxis: [],
-  xAxis: {
-    type: 'datetime',
-    dateTimeLabelFormats: {
-      millisecond: '%H:%M:%S.%L',
-      second: '%H:%M:%S',
-      minute: '%H:%M',
-      hour: '%H:%M',
-      day: '%e. %b',
-      week: '%e. %b',
-      month: "%b '%y",
-      year: '%Y',
-    },
-  },
-  legend: {
-    align: 'center',
-    verticalAlign: 'bottom',
-    layout: 'horizontal',
-  },
-  credits: {
-    enabled: true,
-  },
-  time: {
-    useUTC: false,
-    timezoneOffset: new Date().getTimezoneOffset(),
-  },
-  tooltip: {
-    dateTimeLabelFormats: {
-      day: '%d.%m.%Y %H:%M:%S',
-    },
-  },
-  colors: [],
-  series: [],
-};
-
-const defaultPieChartOptions: Highcharts.Options = {
-  chart: {
-    plotBackgroundColor: null,
-    plotBorderWidth: null,
-    plotShadow: false,
-    type: 'pie',
-  },
-  title: {
-    text: '',
-  },
-  tooltip: {
-    pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>',
-  },
-  accessibility: {
-    point: {
-      valueSuffix: '%',
-    },
-  },
-  plotOptions: {
-    pie: {
-      allowPointSelect: true,
-      cursor: 'pointer',
-      dataLabels: {
-        enabled: true,
-        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-      },
-    },
-  },
-  series: [],
-};
-
-const Sidebar = ({
+const Messstation = ({
   box,
   rendering,
   dateRange,
@@ -806,4 +722,4 @@ const Sidebar = ({
   );
 };
 
-export default Sidebar;
+export default Messstation;
