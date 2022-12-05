@@ -5,8 +5,10 @@ import {
   FilterIcon,
   CheckIcon,
   SelectorIcon,
+  XIcon,
 } from '@heroicons/react/outline';
 import DatePicker from 'react-datepicker';
+import { Button } from './Elements/Button';
 
 const expedition = [
   { name: 'Alle', value: undefined },
@@ -46,6 +48,10 @@ const Filter = ({
     setRendering(e.value);
   };
 
+  const resetDateRange = () => {
+    setDateRange([null, null]);
+  };
+
   // Datum
   const [startDate, endDate] = dateRange;
 
@@ -56,16 +62,23 @@ const Filter = ({
       HTMLInputElement
     >
   >((props, ref) => (
-    <button
-      className="group inline-flex items-center rounded-md bg-orange-700 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
-      onClick={props.onClick}
-      ref={ref}
-    >
-      {props.value}
-      <ChevronUpIcon
-        className={`${open ? 'rotate-180 transform' : ''} h-5 w-5 `}
-      />
-    </button>
+    <div className="m-1 flex w-full items-center justify-center gap-4  rounded-md bg-orange-700 px-3 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
+      <span>{props.value ? props.value : 'Bitte Datum wählen'}</span>
+      <button
+        // className="group inline-flex items-center rounded-md bg-orange-700 px-3 m-1 py-2 text-base font-medium text-white hover:text-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+        onClick={props.onClick}
+        ref={ref}
+      >
+        <ChevronUpIcon
+          className={`${open ? 'rotate-180 transform' : ''} h-5 w-5 `}
+        />
+      </button>
+      {startDate || endDate ? (
+        <button onClick={resetDateRange}>
+          <XIcon className="h-5 w-5 cursor-pointer"></XIcon>
+        </button>
+      ) : null}
+    </div>
   ));
 
   ReactDatePickerInput.displayName = 'ReactDatePickerInput';
@@ -202,7 +215,7 @@ const Filter = ({
                     </div>
                   </Listbox>
                 </div>
-                <div className="flex w-full py-2">
+                <div className="flex w-full gap-4 py-2">
                   <DatePicker
                     dateFormat="dd/MM/yyyy"
                     nextMonthButtonLabel=">"
@@ -215,7 +228,9 @@ const Filter = ({
                       setDateRange(update);
                     }}
                     customInput={<ReactDatePickerInput />}
+                    isClearable
                   />
+                  {/* <Button variant='danger' size='sm' onClick={resetDateRange} startIcon={<XIcon className="h-5 w-5" />}>reset</Button> */}
                 </div>
               </Disclosure.Panel>
             </>

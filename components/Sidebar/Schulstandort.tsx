@@ -71,13 +71,19 @@ const Schulstandort = ({
   const pieChart = useRef(null);
   const barChart = useRef(null);
 
-  const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
+  const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(true);
 
   const [sensor, setSensor] = useState<Sensor>();
 
   const [compareDevice, setCompareDevice] = useState<Feature<Point>>();
 
-  const { data, boxes } = useOsemData(expedition, tag, false);
+  const { data, boxes } = useOsemData(
+    expedition,
+    tag,
+    false,
+    dateRange[0],
+    dateRange[1],
+  );
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
     defaultBarChartOptions,
@@ -123,9 +129,20 @@ const Schulstandort = ({
       })),
     });
 
-    setIsBarChartOpen(!isBarChartOpen);
+    // setIsBarChartOpen(!isBarChartOpen);
     setReflowCharts(!reflowCharts);
   }, [data]);
+
+  // useEffect(() => {
+  //   if (dateRange[0] === null || dateRange[1] === null) {
+  //     console.log("Date range resettet")
+  //     return
+  //   }
+
+  //   console.info("DateRange was selected and set!")
+
+  //   return () => {}
+  // }, [dateRange])
 
   /**
    * Clean up everything if box / device is changed
@@ -133,7 +150,7 @@ const Schulstandort = ({
   useEffect(() => {
     return () => {
       // Cleanup everything before a new device is selected!!!
-      setIsBarChartOpen(false);
+      // setIsBarChartOpen(false);
       setBarChartOptions(defaultBarChartOptions);
       setSensor(null);
     };
@@ -189,9 +206,11 @@ const Schulstandort = ({
                                 )
                               : undefined
                           }
-                          color={{
-                            bg: `bg-he-${e.box.properties.name.toLowerCase()}`,
-                          }}
+                          color={
+                            schallColors[
+                              e.box.properties.name.toLocaleLowerCase()
+                            ]
+                          }
                         ></Tile>
                       );
                     })}

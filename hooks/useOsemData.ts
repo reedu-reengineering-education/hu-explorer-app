@@ -17,7 +17,8 @@ export const useOsemData = (
 
   // Get today´s date
   const today = DateTime.now().startOf('day').toUTC().toString();
-  const from = fromDate ? `from-date=${fromDate.toISOString()}` : '';
+  const fromDateParam = fromDate ? `from-date=${fromDate.toISOString()}` : '';
+  const toDateParam = toDate ? `to-date=${toDate.toISOString()}` : '';
 
   const { data: measurements } = useSWR(
     boxes?.features.map(b => {
@@ -27,7 +28,16 @@ export const useOsemData = (
       } else {
         to = today;
       }
-      return `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${b.properties.sensors[0]._id}?to-date=${to}`;
+
+      let url = `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${b.properties.sensors[0]._id}`;
+
+      if (fromDateParam !== '' && toDateParam !== '') {
+        url = `${url}?${fromDateParam}&${toDateParam}`;
+      } else {
+        url = `${url}?to-date=${to}`;
+      }
+
+      return url;
     }),
     { refreshInterval: live ? 60000 : 0 },
   );
