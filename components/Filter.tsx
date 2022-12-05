@@ -8,7 +8,6 @@ import {
   XIcon,
 } from '@heroicons/react/outline';
 import DatePicker from 'react-datepicker';
-import { Button } from './Elements/Button';
 
 const expedition = [
   { name: 'Alle', value: undefined },

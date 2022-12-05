@@ -220,15 +220,6 @@ const Schulstandort = ({
             </div>
           )}
           <div className="ml-2 flex w-[70%] min-w-[70%]">
-            {!box && (
-              <div className="flex h-full w-full items-center justify-center">
-                <h1 className="text-md content-center text-center font-bold">
-                  Wählt per Klick auf die Karte einen Schulstandort aus und ihr
-                  seht Messwerte von Umweltfaktoren an dieser Schule.
-                </h1>
-              </div>
-            )}
-
             {isBarChartOpen && (
               <div className="flex w-full overflow-hidden">
                 <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">

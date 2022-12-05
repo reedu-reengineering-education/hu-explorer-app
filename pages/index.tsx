@@ -6,7 +6,6 @@ import center from '@turf/center';
 // Own components
 import Filter from '@/components/Filter';
 import { default as MapboxMap } from '@/components/Map';
-import Sidebar from '@/components/Sidebar';
 import Stats from '@/components/Stats';
 import CompareList from '@/components/CompareList';
 
@@ -17,6 +16,8 @@ import { TemplateIcon } from '@heroicons/react/outline';
 import Schulstandort from '@/components/Sidebar/Schulstandort';
 import { Device } from '@/types/osem';
 import Messstation from '@/components/Sidebar/Messstation';
+import { Disclosure } from '@headlessui/react';
+import Description from '@/components/Description';
 
 export enum LayoutMode {
   MAP,
@@ -25,11 +26,10 @@ export enum LayoutMode {
 
 export default function Home() {
   const [selectedBox, setSelectedBox] = useState<Feature<Point, Device>>();
+
   const [compareBoxes, setCompareBoxes] = useState<Feature<Point>[]>([]);
   const [project, setProject] = useState<string | undefined>(undefined);
   const [rendering, setRendering] = useState<string>('messstation');
-  // const [dateFrom, setDateFrom] = useState<Date>();
-  // const [dateTo, setDateTo] = useState<Date>();
 
   const [layoutMode, setLayoutMode] = useState<LayoutMode>(LayoutMode.MAP);
   const [dateRange, setDateRange] = useState<Date[]>([null, null]);
@@ -147,17 +147,18 @@ export default function Home() {
         <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-2">
           <div className="pointer-events-auto col-span-3 row-span-4 row-start-1 overflow-x-auto md:col-span-2 lg:col-span-2 xl:col-span-2">
             <div className="flex h-fit flex-col overflow-x-auto rounded-lg bg-white p-2 shadow">
-              <Stats></Stats>
-              {selectedBox && (
+              <Stats />
+              <Description />
+              {/* {selectedBox && (
                 <Button
                   size="sm"
                   variant="inverse"
                   startIcon={<TemplateIcon className="h-5 w-5" />}
                   onClick={switchLayout}
                 >
-                  Switch to data mode
+                  Vollbild
                 </Button>
-              )}
+              )} */}
               <Filter
                 setExpedition={setProject}
                 dateRange={dateRange}
@@ -174,42 +175,45 @@ export default function Home() {
           </div>
 
           {/* Sidebar / Bottombar */}
-          <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
-            {rendering === 'messstation' && selectedBox ? (
-              <Messstation
-                layout={LayoutMode.MAP}
-                box={selectedBox}
-                rendering={rendering}
-                dateRange={dateRange}
-              />
-            ) : (
-              <Schulstandort
-                layout={LayoutMode.MAP}
-                expedition={selectedBox?.properties?.tags[1]}
-                tag={
-                  selectedBox?.properties?.tags[
-                    selectedBox.properties.tags.length - 1
-                  ]
-                }
-                box={selectedBox}
-                rendering={rendering}
-                dateRange={dateRange}
-              />
-            )}
-          </div>
+          {selectedBox ? (
+            <div className="pointer-events-auto col-start-1 col-end-7 row-span-2 row-start-5 overflow-hidden rounded-xl border-2">
+              {rendering === 'messstation' ? (
+                <Messstation
+                  layout={LayoutMode.MAP}
+                  box={selectedBox}
+                  rendering={rendering}
+                  dateRange={dateRange}
+                />
+              ) : (
+                <Schulstandort
+                  layout={LayoutMode.MAP}
+                  expedition={selectedBox?.properties?.tags[1]}
+                  tag={
+                    selectedBox?.properties?.tags[
+                      selectedBox.properties.tags.length - 1
+                    ]
+                  }
+                  box={selectedBox}
+                  rendering={rendering}
+                  dateRange={dateRange}
+                />
+              )}
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="pointer-events-none absolute top-0 left-0 grid h-full w-full grid-cols-6 grid-rows-6 gap-6 p-2">
           <div className="pointer-events-auto col-span-3 row-span-6 row-start-1 overflow-x-auto md:col-span-2 lg:col-span-2 xl:col-span-2">
             <div className="flex h-full flex-col overflow-x-auto rounded-lg bg-white p-2 shadow">
-              <Stats></Stats>
+              <Stats />
+              <Description />
               <Button
                 size="sm"
                 variant="inverse"
                 startIcon={<TemplateIcon className="h-5 w-5" />}
                 onClick={switchLayout}
               >
-                Switch to map mode
+                Kartenansicht
               </Button>
               <Filter
                 setExpedition={setProject}
@@ -227,29 +231,31 @@ export default function Home() {
           </div>
 
           {/* Sidebar / Bottombar */}
-          <div className="pointer-events-auto col-start-3 col-end-7 row-span-6 row-start-1 overflow-hidden rounded-xl border-2">
-            {rendering === 'messstation' && selectedBox ? (
-              <Messstation
-                layout={LayoutMode.DATA}
-                rendering={rendering}
-                box={selectedBox}
-                dateRange={dateRange}
-              />
-            ) : (
-              <Schulstandort
-                layout={LayoutMode.DATA}
-                expedition={selectedBox?.properties?.tags[1]}
-                tag={
-                  selectedBox?.properties?.tags[
-                    selectedBox.properties.tags.length - 1
-                  ]
-                }
-                box={selectedBox}
-                rendering={rendering}
-                dateRange={dateRange}
-              />
-            )}
-          </div>
+          {selectedBox ? (
+            <div className="pointer-events-auto col-start-3 col-end-7 row-span-6 row-start-1 overflow-hidden rounded-xl border-2">
+              {rendering === 'messstation' ? (
+                <Messstation
+                  layout={LayoutMode.DATA}
+                  rendering={rendering}
+                  box={selectedBox}
+                  dateRange={dateRange}
+                />
+              ) : (
+                <Schulstandort
+                  layout={LayoutMode.DATA}
+                  expedition={selectedBox?.properties?.tags[1]}
+                  tag={
+                    selectedBox?.properties?.tags[
+                      selectedBox.properties.tags.length - 1
+                    ]
+                  }
+                  box={selectedBox}
+                  rendering={rendering}
+                  dateRange={dateRange}
+                />
+              )}
+            </div>
+          ) : null}
         </div>
       )}
     </main>
