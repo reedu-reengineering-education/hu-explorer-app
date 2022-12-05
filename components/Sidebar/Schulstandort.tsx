@@ -9,10 +9,9 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import BrokenAxis from 'highcharts/modules/broken-axis';
 import { useOsemData } from '@/hooks/useOsemData';
-import LayoutTile from '../LayoutTile';
 import Tile from '../Tile';
 import { schallColors } from '@/pages/expidition/schall';
-import { defaultBarChartOptions, defaultChartOptions } from '@/lib/charts';
+import { defaultBarChartOptions } from '@/lib/charts';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);

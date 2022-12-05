@@ -498,9 +498,9 @@ const Messstation = ({
   };
 
   return (
-    <div className="flex h-full w-full overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
+    <div className="flex h-full w-full overflow-hidden rounded-lg bg-white p-2 shadow">
       {layout === LayoutMode.MAP ? (
-        <div className="flex h-full w-full divide-x-2 overflow-hidden overflow-y-scroll">
+        <div className="flex h-full w-full divide-x-2 overflow-hidden">
           {box && (
             <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
               <div className="mb-2">
