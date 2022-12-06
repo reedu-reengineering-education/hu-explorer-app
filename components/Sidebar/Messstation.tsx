@@ -599,7 +599,7 @@ const Messstation = ({
           </div>
         </div>
       ) : (
-        <div className="flex h-full w-full overflow-hidden overflow-y-scroll">
+        <div className="flex h-full w-full overflow-hidden">
           {box && (
             <div className="flex w-full flex-col">
               <div className="mb-2">

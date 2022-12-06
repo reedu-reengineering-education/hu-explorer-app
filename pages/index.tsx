@@ -121,6 +121,11 @@ export default function Home() {
     }
   };
 
+  const closeSidebar = () => {
+    setSelectedBox(null);
+    setLayoutMode(LayoutMode.MAP);
+  };
+
   const switchLayout = () => {
     switch (layoutMode) {
       case LayoutMode.MAP:
@@ -148,16 +153,6 @@ export default function Home() {
             <div className="flex h-fit flex-col overflow-x-auto rounded-lg bg-white p-2 shadow">
               <Stats />
               <Description />
-              {/* {selectedBox && (
-                <Button
-                  size="sm"
-                  variant="inverse"
-                  startIcon={<TemplateIcon className="h-5 w-5" />}
-                  onClick={switchLayout}
-                >
-                  Vollbild
-                </Button>
-              )} */}
               <Filter
                 setExpedition={setProject}
                 dateRange={dateRange}
@@ -179,7 +174,28 @@ export default function Home() {
               <div className="absolute right-0 z-30 flex pt-1 pr-2 sm:pr-4">
                 <button
                   type="button"
-                  onClick={() => setSelectedBox(null)}
+                  onClick={switchLayout}
+                  className="rounded-md text-gray-300 hover:text-purple-500 focus:outline-none focus:ring-2 focus:ring-white"
+                >
+                  <span className="sr-only">Close panel</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={closeSidebar}
                   className="rounded-md text-gray-300 hover:text-purple-500 focus:outline-none focus:ring-2 focus:ring-white"
                 >
                   <span className="sr-only">Close panel</span>
@@ -230,14 +246,6 @@ export default function Home() {
             <div className="flex h-full flex-col overflow-x-auto rounded-lg bg-white p-2 shadow">
               <Stats />
               <Description />
-              <Button
-                size="sm"
-                variant="inverse"
-                startIcon={<TemplateIcon className="h-5 w-5" />}
-                onClick={switchLayout}
-              >
-                Kartenansicht
-              </Button>
               <Filter
                 setExpedition={setProject}
                 dateRange={dateRange}
@@ -256,6 +264,51 @@ export default function Home() {
           {/* Sidebar / Bottombar */}
           {selectedBox ? (
             <div className="pointer-events-auto col-start-3 col-end-7 row-span-6 row-start-1 overflow-hidden rounded-xl border-2">
+              <div className="absolute right-0 z-30 flex pt-1 pr-2 sm:pr-4">
+                <button
+                  type="button"
+                  onClick={switchLayout}
+                  className="rounded-md text-gray-300 hover:text-purple-500 focus:outline-none focus:ring-2 focus:ring-white"
+                >
+                  <span className="sr-only">Close panel</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={closeSidebar}
+                  className="rounded-md text-gray-300 hover:text-purple-500 focus:outline-none focus:ring-2 focus:ring-white"
+                >
+                  <span className="sr-only">Close panel</span>
+                  <svg
+                    className="h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
               {rendering === 'messstation' ? (
                 <Messstation
                   layout={LayoutMode.DATA}
