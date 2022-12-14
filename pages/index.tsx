@@ -2,6 +2,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { Feature, Point } from 'geojson';
 import center from '@turf/center';
+import { format, isAfter, isBefore } from 'date-fns';
 
 // Own components
 import Filter from '@/components/Filter';
@@ -11,8 +12,6 @@ import CompareList from '@/components/CompareList';
 
 // Own hooks
 import useSharedCompareMode from '@/hooks/useCompareMode';
-import { Button } from '@/components/Elements/Button';
-import { TemplateIcon } from '@heroicons/react/outline';
 import Schulstandort from '@/components/Sidebar/Schulstandort';
 import { Device } from '@/types/osem';
 import Messstation from '@/components/Sidebar/Messstation';
@@ -28,7 +27,7 @@ export default function Home() {
 
   const [compareBoxes, setCompareBoxes] = useState<Feature<Point>[]>([]);
   const [project, setProject] = useState<string | undefined>(undefined);
-  const [rendering, setRendering] = useState<string>('messstation');
+  const [rendering, setRendering] = useState<string>('schulstandort');
 
   const [layoutMode, setLayoutMode] = useState<LayoutMode>(LayoutMode.MAP);
   const [dateRange, setDateRange] = useState<Date[]>([null, null]);
@@ -96,7 +95,7 @@ export default function Home() {
     setTransformedData(transformedSchoolData);
 
     return () => {};
-  }, [data, rendering]);
+  }, [data, dateRange, rendering]);
 
   const onBoxSelect = (box: Feature<Point, Device>) => {
     // Check if Compare mode is active

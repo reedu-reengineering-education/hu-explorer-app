@@ -35,7 +35,7 @@ const Filter = ({
 }: FilterProps) => {
   // Lerneinheit
   const [selected, setSelected] = useState(expedition[0]);
-  const [rendered, setRendered] = useState(presentation[0]);
+  const [rendered, setRendered] = useState(presentation[1]);
 
   const onChange = e => {
     setSelected(e);
