@@ -34,6 +34,7 @@ export interface Device {
   sensorTemplates?: string;
   access_token?: string;
   transfer?: Transfer;
+  lastMeasurementAt?: Date;
 }
 
 export interface CompareDevice {

@@ -1,3 +1,4 @@
+import { Device } from '@/types/osem';
 import { Point, Feature } from 'geojson';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -11,7 +12,7 @@ export const useOsemData = (
   toDate?: Date,
 ) => {
   // fetch devices tagged with HU Explorer
-  const { data: boxes } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
+  const { data: boxes } = useSWR<GeoJSON.FeatureCollection<Point, Device>, any>(
     `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,${expedition},${schule}`,
   );
 
@@ -43,7 +44,7 @@ export const useOsemData = (
   );
 
   const [data, setData] = useState<
-    { box: Feature<Point, any>; measurements: any[] }[]
+    { box: Feature<Point, Device>; measurements: any[] }[]
   >([]);
 
   useEffect(() => {

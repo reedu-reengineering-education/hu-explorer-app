@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Feature, Point } from 'geojson';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
-import { Sensor } from '@/types/osem';
+import { Device, Sensor } from '@/types/osem';
 import useSharedCompareSensors from '@/hooks/useCompareSensors';
 import { LayoutMode } from '@/pages';
 
@@ -11,7 +11,8 @@ import BrokenAxis from 'highcharts/modules/broken-axis';
 import { useOsemData } from '@/hooks/useOsemData';
 import Tile from '../Tile';
 import { schallColors } from '@/pages/expidition/schall';
-import { defaultBarChartOptions } from '@/lib/charts';
+import { defaultBarChartOptions, defaultChartOptions } from '@/lib/charts';
+import { ChartType } from '../MeasurementTile';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -71,6 +72,7 @@ const Schulstandort = ({
   const barChart = useRef(null);
 
   const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(true);
+  const [isLineChartOpen, setIsLineChartOpen] = useState<boolean>(false);
 
   const [sensor, setSensor] = useState<Sensor>();
 
@@ -83,10 +85,13 @@ const Schulstandort = ({
     dateRange[0],
     dateRange[1],
   );
+  console.log('useOsemData: ', data, boxes);
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
     defaultBarChartOptions,
   );
+  const [lineChartOptions, setLineChartOptions] =
+    useState<Highcharts.Options>(defaultChartOptions);
 
   const [reflowCharts, setReflowCharts] = useState(false);
 
@@ -128,8 +133,7 @@ const Schulstandort = ({
       })),
     });
 
-    // setIsBarChartOpen(!isBarChartOpen);
-    setReflowCharts(!reflowCharts);
+    setReflowCharts(r => !r);
   }, [data]);
 
   // useEffect(() => {
@@ -151,10 +155,116 @@ const Schulstandort = ({
       // Cleanup everything before a new device is selected!!!
       // setIsBarChartOpen(false);
       setBarChartOptions(defaultBarChartOptions);
+      setLineChartOptions(defaultChartOptions);
       setSensor(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [box]);
+
+  const openCharts = (chartType: ChartType, device: Feature<Point, Device>) => {
+    console.info(`Open ${chartType} Chart: `, device);
+    const osemData = data.filter(
+      feature => feature.box.properties._id === device.properties._id,
+    );
+
+    switch (chartType) {
+      case ChartType.column:
+        // openBarChart(sensorParam);
+        return;
+      case ChartType.pie:
+        // openPieChart(sensorParam);
+        return;
+      case ChartType.line:
+        openLineChart(osemData[0]);
+        return;
+      default:
+        break;
+    }
+  };
+
+  const openLineChart = (data: {
+    box: Feature<Point, Device>;
+    measurements: any[];
+  }) => {
+    if (!isLineChartOpen) {
+      setIsLineChartOpen(!isLineChartOpen);
+
+      setLineChartOptions({
+        ...lineChartOptions,
+        yAxis: {
+          title: {
+            text: 'Lautstärke in dB',
+          },
+        },
+        series: [
+          {
+            id: `${data.box.properties._id}`,
+            name: `${data.box.properties.name}`,
+            type: 'line',
+            gapUnit: 'value',
+            gapSize: CHART_SERIES_GAP_SIZE,
+            data: data.measurements
+              .map(m => [new Date(m.createdAt).getTime(), Number(m.value)])
+              .reverse(),
+          },
+        ],
+        colors: [
+          ...lineChartOptions.colors,
+          colors['he'][data.box.properties.name.toLowerCase()].DEFAULT,
+        ],
+      });
+    } else {
+      // Handle open chart
+      const serie = lineChartOptions.series.find(serie =>
+        serie.id.includes(data.box.properties._id),
+      );
+
+      if (serie) {
+        // Remove serie from lineChartOptions
+        const newSeries = lineChartOptions.series.filter(
+          serie => !serie.id.includes(data.box.properties._id),
+        );
+
+        // Keep chartOptions up to date
+        setLineChartOptions({
+          ...lineChartOptions,
+          series: newSeries,
+          // colors: [], TODO: filter and remove color
+          // yAxis: [] TODO: filter and remove yAxis
+        });
+
+        // If no series data existing, close chart and clean up
+        if (newSeries.length === 0) {
+          setIsLineChartOpen(false);
+          setLineChartOptions(defaultChartOptions);
+        }
+      } else {
+        // Add additional serie to line chart
+        setLineChartOptions({
+          ...lineChartOptions,
+          series: [
+            ...lineChartOptions.series,
+            {
+              id: `${data.box.properties._id}`,
+              name: `${data.box.properties.name}`,
+              type: 'line',
+              gapUnit: 'value',
+              gapSize: CHART_SERIES_GAP_SIZE,
+              data: data.measurements
+                .map(m => [new Date(m.createdAt).getTime(), Number(m.value)])
+                .reverse(),
+            },
+          ],
+          colors: [
+            ...lineChartOptions.colors,
+            colors['he'][data.box.properties.name.toLowerCase()].DEFAULT,
+          ],
+        });
+      }
+    }
+
+    setReflowCharts(true);
+  };
 
   return (
     <div className="flex h-full w-full overflow-hidden rounded-lg bg-white p-2 shadow">
@@ -210,7 +320,10 @@ const Schulstandort = ({
                               e.box.properties.name.toLocaleLowerCase()
                             ]
                           }
-                        ></Tile>
+                          device={e.box}
+                          charts={[ChartType.line]}
+                          openChart={openCharts}
+                        />
                       );
                     })}
                   </div>
@@ -233,6 +346,20 @@ const Schulstandort = ({
               </div>
             )}
 
+            {isLineChartOpen && (
+              <div className="flex w-full overflow-hidden">
+                <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
+                  <HighchartsReact
+                    ref={lineChart}
+                    containerProps={{ style: { height: '100%' } }}
+                    highcharts={Highcharts}
+                    allowChartUpdate={true}
+                    options={lineChartOptions}
+                  />
+                </div>
+              </div>
+            )}
+
             {box !== undefined && !isBarChartOpen && (
               <div className="flex h-full w-full items-center justify-center text-center">
                 <h1>
@@ -244,7 +371,7 @@ const Schulstandort = ({
           </div>
         </div>
       ) : (
-        <div className="flex h-full w-full overflow-hidden overflow-y-scroll">
+        <div className="flex h-full w-full overflow-hidden">
           {box && (
             <div className="flex w-full flex-col">
               <div className="mb-2">
@@ -291,20 +418,14 @@ const Schulstandort = ({
                       color={
                         schallColors[e.box.properties.name.toLocaleLowerCase()]
                       }
+                      device={e.box}
+                      charts={[ChartType.line]}
+                      openChart={openCharts}
                     ></Tile>
                   ))}
                 </div>
               </div>
               <div className="mt-2 flex h-full w-full flex-col">
-                {!box && (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <h1 className="text-md content-center text-center font-bold">
-                      Wählt per Klick auf die Karte einen Schulstandort aus und
-                      ihr seht Messwerte von Umweltfaktoren an dieser Schule.
-                    </h1>
-                  </div>
-                )}
-
                 {isBarChartOpen && (
                   <div className="flex h-full w-full overflow-hidden">
                     <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
@@ -314,6 +435,20 @@ const Schulstandort = ({
                         highcharts={Highcharts}
                         allowChartUpdates={true}
                         options={barChartOptions}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {isLineChartOpen && (
+                  <div className="flex w-full overflow-hidden">
+                    <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
+                      <HighchartsReact
+                        ref={lineChart}
+                        containerProps={{ style: { height: '100%' } }}
+                        highcharts={Highcharts}
+                        allowChartUpdate={true}
+                        options={lineChartOptions}
                       />
                     </div>
                   </div>
