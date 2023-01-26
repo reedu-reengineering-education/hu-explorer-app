@@ -1,4 +1,4 @@
-import { Device } from '@/types/osem';
+import { Device, Sensor } from '@/types/osem';
 import { Point, Feature } from 'geojson';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -44,17 +44,40 @@ export const useOsemData = (
   );
 
   const [data, setData] = useState<
-    { box: Feature<Point, Device>; measurements: any[] }[]
+    { box: Feature<Point, Device>; sensor?: Sensor; measurements: any[] }[]
   >([]);
 
   useEffect(() => {
     if (measurements?.length > 0) {
-      setData(
-        boxes?.features.map((box, i) => ({
-          box,
-          measurements: measurements[i],
-        })),
-      );
+      if (expedition === 'Schallpegel') {
+        setData(
+          boxes?.features.map((box, i) => ({
+            box,
+            measurements: measurements[i],
+          })),
+        );
+      } else if (expedition === 'Artenvielfalt') {
+        setData([
+          {
+            box: null,
+            sensor: {
+              title: 'Lufttemperatur',
+              unit: '°C',
+              sensorType: 'HDC1080',
+            },
+            measurements: [],
+          },
+          {
+            box: null,
+            sensor: {
+              title: 'Bodenfeuchte',
+              unit: '%',
+              sensorType: 'SMT50',
+            },
+            measurements: [],
+          },
+        ]);
+      }
     }
   }, [boxes, measurements]);
 

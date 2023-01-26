@@ -12,7 +12,8 @@ import { useOsemData } from '@/hooks/useOsemData';
 import Tile from '../Tile';
 import { schallColors } from '@/pages/expidition/schall';
 import { defaultBarChartOptions, defaultChartOptions } from '@/lib/charts';
-import { ChartType } from '../MeasurementTile';
+import MeasurementTile, { ChartType } from '../MeasurementTile';
+import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -85,7 +86,7 @@ const Schulstandort = ({
     dateRange[0],
     dateRange[1],
   );
-  console.log('useOsemData: ', data, boxes);
+  console.log('useOsemData: ', data, boxes, colors);
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
     defaultBarChartOptions,
@@ -109,6 +110,10 @@ const Schulstandort = ({
 
   useEffect(() => {
     if (data.length === 0) {
+      return;
+    }
+
+    if (expedition === 'Artenvielfalt') {
       return;
     }
 
@@ -266,6 +271,60 @@ const Schulstandort = ({
     setReflowCharts(true);
   };
 
+  const getArtenvielfaltTile = (artenvielfalt?: ArtenvielfaltRecord[]) => {
+    const sensor: Sensor = {
+      _id:
+        artenvielfalt !== undefined && artenvielfalt[0] !== undefined
+          ? artenvielfalt[0].id
+          : '',
+      title: 'Simpson-Index',
+      unit: '',
+      sensorType: '',
+      ...(artenvielfalt !== undefined && artenvielfalt[0] !== undefined
+        ? {
+            lastMeasurement: {
+              value: artenvielfalt[0].simpsonIndex.toFixed(2),
+              createdAt: artenvielfalt[0].updatedAt,
+            },
+          }
+        : {}),
+    };
+    return (
+      <MeasurementTile
+        sensor={sensor}
+        openChart={() => console.log('Coming soon')}
+        charts={[ChartType.column, ChartType.pie]}
+      />
+    );
+  };
+
+  const getVersiegelungTile = (versiegelung?: VersiegelungRecord[]) => {
+    const sensor: Sensor = {
+      _id:
+        versiegelung !== undefined && versiegelung[0] !== undefined
+          ? versiegelung[0].id
+          : '',
+      title: 'Versiegelung',
+      unit: '%',
+      sensorType: '',
+      ...(versiegelung !== undefined && versiegelung[0] !== undefined
+        ? {
+            lastMeasurement: {
+              value: versiegelung[versiegelung.length - 1].value.toFixed(2),
+              createdAt: versiegelung[versiegelung.length - 1].updatedAt,
+            },
+          }
+        : {}),
+    };
+    return (
+      <MeasurementTile
+        sensor={sensor}
+        openChart={() => console.log('Coming soon')}
+        charts={[ChartType.column]}
+      />
+    );
+  };
+
   return (
     <div className="flex h-full w-full overflow-hidden rounded-lg bg-white p-2 shadow">
       {layout === LayoutMode.MAP ? (
@@ -297,35 +356,54 @@ const Schulstandort = ({
                 <div>
                   <div className="flex h-full flex-row flex-wrap items-center justify-evenly">
                     {data?.map((e, i) => {
-                      return (
-                        <Tile
-                          key={i}
-                          title={e.box.properties.name}
-                          min={
-                            e.measurements.length > 0
-                              ? Math.min(
-                                  ...e.measurements.map(m => Number(m.value)),
-                                )
-                              : undefined
-                          }
-                          max={
-                            e.measurements.length > 0
-                              ? Math.max(
-                                  ...e.measurements.map(m => Number(m.value)),
-                                )
-                              : undefined
-                          }
-                          color={
-                            schallColors[
-                              e.box.properties.name.toLocaleLowerCase()
-                            ]
-                          }
-                          device={e.box}
-                          charts={[ChartType.line]}
-                          openChart={openCharts}
-                        />
-                      );
+                      if (expedition === 'Schallpegel' && e.box) {
+                        return (
+                          <Tile
+                            key={i}
+                            title={e.box.properties.name}
+                            min={
+                              e.measurements.length > 0
+                                ? Math.min(
+                                    ...e.measurements.map(m => Number(m.value)),
+                                  )
+                                : undefined
+                            }
+                            max={
+                              e.measurements.length > 0
+                                ? Math.max(
+                                    ...e.measurements.map(m => Number(m.value)),
+                                  )
+                                : undefined
+                            }
+                            color={
+                              schallColors[
+                                e.box.properties.name.toLocaleLowerCase()
+                              ]
+                            }
+                            device={e.box}
+                            charts={[ChartType.line]}
+                            openChart={openCharts}
+                          />
+                        );
+                      } else if (expedition === 'Artenvielfalt' && e.sensor) {
+                        return (
+                          <MeasurementTile
+                            key={i}
+                            sensor={e.sensor ?? e.sensor}
+                            openChart={() =>
+                              console.log('New feature. Coming soon.')
+                            }
+                            charts={[ChartType.column, ChartType.pie]}
+                          />
+                        );
+                      }
                     })}
+                    {expedition === 'Artenvielfalt' ? (
+                      <>
+                        {getArtenvielfaltTile()}
+                        {getVersiegelungTile()}
+                      </>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -397,32 +475,55 @@ const Schulstandort = ({
               </div>
               <div className="flex justify-evenly">
                 <div className="flex h-full flex-wrap items-center justify-evenly">
-                  {data?.map((e, i) => (
-                    <Tile
-                      key={i}
-                      title={e.box.properties.name}
-                      min={
-                        e.measurements.length > 0
-                          ? Math.min(
-                              ...e.measurements.map(m => Number(m.value)),
-                            )
-                          : undefined
-                      }
-                      max={
-                        e.measurements.length > 0
-                          ? Math.max(
-                              ...e.measurements.map(m => Number(m.value)),
-                            )
-                          : undefined
-                      }
-                      color={
-                        schallColors[e.box.properties.name.toLocaleLowerCase()]
-                      }
-                      device={e.box}
-                      charts={[ChartType.line]}
-                      openChart={openCharts}
-                    ></Tile>
-                  ))}
+                  {data?.map((e, i) => {
+                    if (expedition === 'Schallpegel') {
+                      return (
+                        <Tile
+                          key={i}
+                          title={e.box.properties.name}
+                          min={
+                            e.measurements.length > 0
+                              ? Math.min(
+                                  ...e.measurements.map(m => Number(m.value)),
+                                )
+                              : undefined
+                          }
+                          max={
+                            e.measurements.length > 0
+                              ? Math.max(
+                                  ...e.measurements.map(m => Number(m.value)),
+                                )
+                              : undefined
+                          }
+                          color={
+                            schallColors[
+                              e.box.properties.name.toLocaleLowerCase()
+                            ]
+                          }
+                          device={e.box}
+                          charts={[ChartType.line]}
+                          openChart={openCharts}
+                        />
+                      );
+                    } else if (expedition === 'Artenvielfalt') {
+                      return (
+                        <MeasurementTile
+                          key={i}
+                          sensor={e.sensor ?? e.sensor}
+                          openChart={() =>
+                            console.log('New feature. Coming soon.')
+                          }
+                          charts={[ChartType.column, ChartType.pie]}
+                        />
+                      );
+                    }
+                  })}
+                  {expedition === 'Artenvielfalt' ? (
+                    <>
+                      {getArtenvielfaltTile()}
+                      {getVersiegelungTile()}
+                    </>
+                  ) : null}
                 </div>
               </div>
               <div className="mt-2 flex h-full w-full flex-col">
