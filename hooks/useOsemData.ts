@@ -1,3 +1,4 @@
+import { fetcher } from '@/lib/fetcher';
 import { Device, Sensor } from '@/types/osem';
 import { Point, Feature } from 'geojson';
 import { useEffect, useState } from 'react';
@@ -13,7 +14,7 @@ export const useOsemData = (
 ) => {
   // fetch devices tagged with HU Explorer
   const { data: boxes } = useSWR<GeoJSON.FeatureCollection<Point, Device>, any>(
-    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,${expedition},${schule}`,
+    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,${expedition},${schule}&full=true`,
   );
 
   // Get today´s date
@@ -24,7 +25,7 @@ export const useOsemData = (
   console.info('useOsemData - dateRange: ', fromDateParam, toDateParam);
 
   const { data: measurements } = useSWR(
-    boxes?.features.map(b => {
+    boxes?.features.flatMap(b => {
       let to;
       if (b.properties.lastMeasurementAt) {
         to = b.properties.lastMeasurementAt;
@@ -32,16 +33,19 @@ export const useOsemData = (
         to = today;
       }
 
-      let url = `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${b.properties.sensors[0]._id}`;
+      return b.properties.sensors.map(s => {
+        let url = `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${s._id}`;
 
-      if (fromDateParam !== '' && toDateParam !== '') {
-        url = `${url}?${fromDateParam}&${toDateParam}`;
-      } else {
-        url = `${url}?to-date=${to}`;
-      }
+        if (fromDateParam !== '' && toDateParam !== '') {
+          url = `${url}?${fromDateParam}&${toDateParam}`;
+        } else {
+          url = `${url}?to-date=${to}`;
+        }
 
-      return url;
+        return url;
+      });
     }),
+    fetcher,
     { refreshInterval: live ? 60000 : 0 },
   );
 
@@ -59,6 +63,14 @@ export const useOsemData = (
           })),
         );
       } else if (expedition === 'Artenvielfalt') {
+        const temperature = [];
+        const bodenfeuchte = [];
+
+        boxes.features.map((box, i) => {
+          temperature.push(measurements[i === 0 ? 0 : i * 2]);
+          bodenfeuchte.push(measurements[i === 0 ? 1 : i * 2 + 1]);
+        });
+
         setData([
           {
             box: null,
@@ -67,7 +79,7 @@ export const useOsemData = (
               unit: '°C',
               sensorType: 'HDC1080',
             },
-            measurements: [],
+            measurements: temperature.flatMap(value => value),
           },
           {
             box: null,
@@ -76,12 +88,12 @@ export const useOsemData = (
               unit: '%',
               sensorType: 'SMT50',
             },
-            measurements: [],
+            measurements: bodenfeuchte.flatMap(value => value),
           },
         ]);
       }
     }
-  }, [boxes, measurements]);
+  }, [boxes, measurements, expedition]);
 
   return { data, boxes };
 };

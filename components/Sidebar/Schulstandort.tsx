@@ -89,6 +89,7 @@ const Schulstandort = ({
   );
   console.log('useOsemData: ', data, boxes, colors);
 
+  // TODO: only fetch for Artenvielfalt expedition
   // Fetcher for Artenvielfalt
   const { data: versiegelung, error: versiegelungError } = useSWR<
     VersiegelungRecord[]
@@ -397,6 +398,12 @@ const Schulstandort = ({
                           <MeasurementTile
                             key={i}
                             sensor={e.sensor ?? e.sensor}
+                            value={
+                              e.measurements.reduce(
+                                (acc, cur) => acc + Number(cur.value),
+                                0,
+                              ) / e.measurements.length
+                            }
                             openChart={() =>
                               console.log('New feature. Coming soon.')
                             }
@@ -517,6 +524,12 @@ const Schulstandort = ({
                         <MeasurementTile
                           key={i}
                           sensor={e.sensor ?? e.sensor}
+                          value={
+                            e.measurements.reduce(
+                              (acc, cur) => acc + Number(cur.value),
+                              0,
+                            ) / e.measurements.length
+                          }
                           openChart={() =>
                             console.log('New feature. Coming soon.')
                           }
@@ -527,8 +540,8 @@ const Schulstandort = ({
                   })}
                   {expedition === 'Artenvielfalt' ? (
                     <>
-                      {getArtenvielfaltTile()}
-                      {getVersiegelungTile()}
+                      {getArtenvielfaltTile(artenvielfalt)}
+                      {getVersiegelungTile(versiegelung)}
                     </>
                   ) : null}
                 </div>

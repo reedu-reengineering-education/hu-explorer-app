@@ -4,7 +4,6 @@ import {
   ChartPieIcon,
   ChartSquareBarIcon,
   PresentationChartLineIcon,
-  XCircleIcon,
 } from '@heroicons/react/outline';
 
 export enum ChartType {
@@ -16,6 +15,7 @@ export enum ChartType {
 export interface TileProps {
   sensor: Sensor;
   charts: ChartType[];
+  value?: number;
   openChart: (chartType: ChartType, sensor: Sensor) => void;
 }
 
@@ -33,10 +33,10 @@ const tileColors = {
   Lautstärke: 'bg-teal-500',
 };
 
-const MeasurementTile = ({ sensor, charts, openChart }: TileProps) => {
+const MeasurementTile = ({ sensor, charts, openChart, value }: TileProps) => {
   const { _id, title, unit } = sensor;
 
-  const value = Number(sensor.lastMeasurement?.value);
+  const displayedValue = value ? value : Number(sensor.lastMeasurement?.value);
   const color = tileColors[title] ?? 'bg-violet-500';
 
   const toggleChart = (chartType: ChartType) => {
@@ -54,15 +54,19 @@ const MeasurementTile = ({ sensor, charts, openChart }: TileProps) => {
         {title}
       </h1>
       <h1 className="text-lg font-semibold text-white">
-        {isNaN(value) ? '--' : value.toFixed(1)} {unit}
+        {isNaN(displayedValue) ? '--' : displayedValue.toFixed(1)} {unit}
       </h1>
       <div className="mt-2 border-t-2">
-        {sensor.lastMeasurement && (
+        {sensor.lastMeasurement ? (
           <kbd className="text-xs text-white">
             {format(
               new Date(sensor.lastMeasurement?.createdAt),
               'dd.MM.yyyy HH:mm',
             )}
+          </kbd>
+        ) : (
+          <kbd className="text-xs text-white">
+            {format(new Date(), 'dd.MM.yyyy HH:mm')}
           </kbd>
         )}
       </div>
