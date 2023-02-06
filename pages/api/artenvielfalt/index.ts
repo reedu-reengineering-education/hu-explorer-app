@@ -24,8 +24,32 @@ export default async function handler(
       });
     }
   } else if (req.method === 'GET') {
-    const results = await prisma.artenvielfaltRecord.findMany();
-    res.status(201).json(results);
+    const { project } = req.query;
+
+    // fetch boxes from osem api
+    const response = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_OSEM_API
+      }/boxes?format=json&full=true&grouptag=HU Explorers${
+        project ? ',' + project : ''
+      }`,
+    );
+    const devices = await response.json();
+    const deviceIds = devices.flatMap(device => device._id);
+
+    // Get records and calculate average
+    const aggregations = await prisma.artenvielfaltRecord.aggregate({
+      _avg: {
+        simpsonIndex: true,
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+      },
+    });
+
+    res.status(201).json(aggregations);
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);
 

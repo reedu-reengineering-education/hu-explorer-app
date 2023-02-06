@@ -21,6 +21,8 @@ export const useOsemData = (
   const fromDateParam = fromDate ? `from-date=${fromDate.toISOString()}` : '';
   const toDateParam = toDate ? `to-date=${toDate.toISOString()}` : '';
 
+  console.info('useOsemData - dateRange: ', fromDateParam, toDateParam);
+
   const { data: measurements } = useSWR(
     boxes?.features.map(b => {
       let to;

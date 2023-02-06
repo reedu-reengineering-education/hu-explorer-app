@@ -14,6 +14,7 @@ import { schallColors } from '@/pages/expidition/schall';
 import { defaultBarChartOptions, defaultChartOptions } from '@/lib/charts';
 import MeasurementTile, { ChartType } from '../MeasurementTile';
 import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
+import useSWR from 'swr';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -87,6 +88,14 @@ const Schulstandort = ({
     dateRange[1],
   );
   console.log('useOsemData: ', data, boxes, colors);
+
+  // Fetcher for Artenvielfalt
+  const { data: versiegelung, error: versiegelungError } = useSWR<
+    VersiegelungRecord[]
+  >(`/api/versiegelung?project=${tag}`);
+  const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
+    ArtenvielfaltRecord[]
+  >(`/api/artenvielfalt?project=${tag}`);
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
     defaultBarChartOptions,
@@ -273,18 +282,16 @@ const Schulstandort = ({
 
   const getArtenvielfaltTile = (artenvielfalt?: ArtenvielfaltRecord[]) => {
     const sensor: Sensor = {
-      _id:
-        artenvielfalt !== undefined && artenvielfalt[0] !== undefined
-          ? artenvielfalt[0].id
-          : '',
       title: 'Simpson-Index',
       unit: '',
       sensorType: '',
-      ...(artenvielfalt !== undefined && artenvielfalt[0] !== undefined
+      ...(artenvielfalt !== undefined &&
+      artenvielfalt['_avg'] !== undefined &&
+      artenvielfalt['_avg'].simpsonIndex !== null
         ? {
             lastMeasurement: {
-              value: artenvielfalt[0].simpsonIndex.toFixed(2),
-              createdAt: artenvielfalt[0].updatedAt,
+              value: artenvielfalt['_avg'].simpsonIndex.toFixed(2),
+              createdAt: new Date(),
             },
           }
         : {}),
@@ -300,18 +307,16 @@ const Schulstandort = ({
 
   const getVersiegelungTile = (versiegelung?: VersiegelungRecord[]) => {
     const sensor: Sensor = {
-      _id:
-        versiegelung !== undefined && versiegelung[0] !== undefined
-          ? versiegelung[0].id
-          : '',
       title: 'Versiegelung',
       unit: '%',
       sensorType: '',
-      ...(versiegelung !== undefined && versiegelung[0] !== undefined
+      ...(versiegelung !== undefined &&
+      versiegelung['_avg'] !== undefined &&
+      versiegelung['_avg'].value !== null
         ? {
             lastMeasurement: {
-              value: versiegelung[versiegelung.length - 1].value.toFixed(2),
-              createdAt: versiegelung[versiegelung.length - 1].updatedAt,
+              value: versiegelung['_avg'].value.toFixed(2),
+              createdAt: new Date(),
             },
           }
         : {}),
@@ -400,8 +405,8 @@ const Schulstandort = ({
                     })}
                     {expedition === 'Artenvielfalt' ? (
                       <>
-                        {getArtenvielfaltTile()}
-                        {getVersiegelungTile()}
+                        {getArtenvielfaltTile(artenvielfalt)}
+                        {getVersiegelungTile(versiegelung)}
                       </>
                     ) : null}
                   </div>
