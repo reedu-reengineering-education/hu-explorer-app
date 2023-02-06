@@ -73,7 +73,7 @@ const Schulstandort = ({
   const pieChart = useRef(null);
   const barChart = useRef(null);
 
-  const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(true);
+  const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
   const [isLineChartOpen, setIsLineChartOpen] = useState<boolean>(false);
 
   const [sensor, setSensor] = useState<Sensor>();
@@ -146,6 +146,7 @@ const Schulstandort = ({
         ),
       })),
     });
+    setIsBarChartOpen(true);
 
     setReflowCharts(r => !r);
   }, [data]);
@@ -167,7 +168,8 @@ const Schulstandort = ({
   useEffect(() => {
     return () => {
       // Cleanup everything before a new device is selected!!!
-      // setIsBarChartOpen(false);
+      setIsLineChartOpen(false);
+      setIsBarChartOpen(false);
       setBarChartOptions(defaultBarChartOptions);
       setLineChartOptions(defaultChartOptions);
       setSensor(null);
