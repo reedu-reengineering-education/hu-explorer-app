@@ -6,11 +6,15 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   if (req.method === 'GET') {
-    const { deviceId } = req.query;
+    const { deviceId, from, to } = req.query;
     try {
       const results = await prisma.artenvielfaltRecord.findMany({
         where: {
           deviceId: deviceId as string,
+          createdAt: {
+            gte: from as string,
+            lte: to as string,
+          },
         },
         include: {
           arten: true,

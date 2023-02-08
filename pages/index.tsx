@@ -31,6 +31,7 @@ export default function Home() {
 
   const [layoutMode, setLayoutMode] = useState<LayoutMode>(LayoutMode.MAP);
   const [dateRange, setDateRange] = useState<Date[]>([null, null]);
+  console.log('Index: ', dateRange);
 
   const { compare } = useSharedCompareMode();
 

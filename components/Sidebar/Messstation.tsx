@@ -41,6 +41,10 @@ const Messstation = ({
   const colors = useTailwindColors();
   const { compareSensors } = useSharedCompareSensors();
 
+  // Selected date range by the user
+  const fromDate = dateRange[0] ? `from=${dateRange[0].toISOString()}` : '';
+  const toDate = dateRange[1] ? `to=${dateRange[1].toISOString()}` : '';
+
   useEffect(() => {
     if (compareSensors.length > 0) {
       const { active, sensor, device } = compareSensors[0];
@@ -56,17 +60,20 @@ const Messstation = ({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
   const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
+
+  // Fetcher for Artenvielfalt and Versiegelung
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
     ArtenvielfaltRecord[]
-  >(`/api/artenvielfalt/${box?.properties._id}`);
+  >(`/api/artenvielfalt/${box?.properties._id}?${fromDate}&${toDate}`);
   const { data: versiegelung, error: versiegelungError } = useSWR<
     VersiegelungRecord[]
-  >(`/api/versiegelung/${box?.properties._id}`);
-  console.log('Main selected device - Versiegelung: ', versiegelung);
-  console.log('Main selected device - Artenvielfalt: ', artenvielfalt);
+  >(`/api/versiegelung/${box?.properties._id}?${fromDate}&${toDate}`);
+  // console.log('Main selected device - Versiegelung: ', versiegelung);
+  // console.log('Main selected device - Artenvielfalt: ', artenvielfalt);
 
   const [sensor, setSensor] = useState<Sensor>();
   const [shouldFetch, setShouldFetch] = useState(false);
+
   const { data } = useSWR(
     shouldFetch
       ? `https://api.opensensemap.org/boxes/${box.properties._id}/data/${
