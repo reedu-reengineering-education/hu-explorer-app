@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Sensor } from '@/types/osem';
+import { Measurement, Sensor } from '@/types/osem';
 import {
   ChartPieIcon,
   ChartSquareBarIcon,
@@ -14,6 +14,7 @@ export enum ChartType {
 
 export interface TileProps {
   sensor: Sensor;
+  measurement?: Measurement;
   charts: ChartType[];
   value?: number;
   openChart: (chartType: ChartType, sensor: Sensor) => void;
@@ -33,10 +34,19 @@ const tileColors = {
   Lautstärke: 'bg-teal-500',
 };
 
-const MeasurementTile = ({ sensor, charts, openChart, value }: TileProps) => {
+const MeasurementTile = ({
+  sensor,
+  measurement = null,
+  charts,
+  openChart,
+  value,
+}: TileProps) => {
   const { _id, title, unit } = sensor;
 
+  console.log('MeasurementTile - measurement: ', measurement);
+
   const displayedValue = value ? value : Number(sensor.lastMeasurement?.value);
+  const timestamp = measurement ? new Date(measurement.createdAt) : new Date();
   const color = tileColors[title] ?? 'bg-violet-500';
 
   const toggleChart = (chartType: ChartType) => {
@@ -57,7 +67,7 @@ const MeasurementTile = ({ sensor, charts, openChart, value }: TileProps) => {
         {isNaN(displayedValue) ? '--' : displayedValue.toFixed(1)} {unit}
       </h1>
       <div className="mt-2 border-t-2">
-        {sensor.lastMeasurement ? (
+        {sensor.lastMeasurement && !measurement ? (
           <kbd className="text-xs text-white">
             {format(
               new Date(sensor.lastMeasurement?.createdAt),
@@ -66,7 +76,7 @@ const MeasurementTile = ({ sensor, charts, openChart, value }: TileProps) => {
           </kbd>
         ) : (
           <kbd className="text-xs text-white">
-            {format(new Date(), 'dd.MM.yyyy HH:mm')}
+            {format(timestamp, 'dd.MM.yyyy HH:mm')}
           </kbd>
         )}
       </div>

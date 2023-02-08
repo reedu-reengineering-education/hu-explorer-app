@@ -2,7 +2,6 @@ import { ReactElement, useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { Feature, Point } from 'geojson';
 import center from '@turf/center';
-import { format, isAfter, isBefore } from 'date-fns';
 
 // Own components
 import Filter from '@/components/Filter';
@@ -31,7 +30,6 @@ export default function Home() {
 
   const [layoutMode, setLayoutMode] = useState<LayoutMode>(LayoutMode.MAP);
   const [dateRange, setDateRange] = useState<Date[]>([null, null]);
-  console.log('Index: ', dateRange);
 
   const { compare } = useSharedCompareMode();
 

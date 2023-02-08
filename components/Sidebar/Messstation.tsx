@@ -17,6 +17,7 @@ import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import BrokenAxis from 'highcharts/modules/broken-axis';
 import { defaultChartOptions, defaultPieChartOptions } from '@/lib/charts';
+import { useOsemDevice } from '@/hooks/useOsemDevice';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -61,6 +62,14 @@ const Messstation = ({
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
   const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
 
+  // Fetcher for selected device
+  const { device, data: sensors } = useOsemDevice(
+    box.properties._id,
+    dateRange[0],
+    dateRange[1],
+  );
+  console.log('useOsemDevice: ', device, sensors);
+
   // Fetcher for Artenvielfalt and Versiegelung
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
     ArtenvielfaltRecord[]
@@ -68,8 +77,6 @@ const Messstation = ({
   const { data: versiegelung, error: versiegelungError } = useSWR<
     VersiegelungRecord[]
   >(`/api/versiegelung/${box?.properties._id}?${fromDate}&${toDate}`);
-  // console.log('Main selected device - Versiegelung: ', versiegelung);
-  // console.log('Main selected device - Artenvielfalt: ', artenvielfalt);
 
   const [sensor, setSensor] = useState<Sensor>();
   const [shouldFetch, setShouldFetch] = useState(false);
@@ -510,14 +517,14 @@ const Messstation = ({
     <div className="flex h-full w-full overflow-hidden rounded-lg bg-white p-2 shadow">
       {layout === LayoutMode.MAP ? (
         <div className="flex h-full w-full divide-x-2 overflow-hidden">
-          {box && (
+          {device && (
             <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
               <div className="mb-2">
                 <h1 className="mb-2 content-center text-center text-lg font-bold">
-                  {box.properties.name}
+                  {device.name}
                 </h1>
                 <div className="flex justify-center">
-                  {box.properties.tags.map((tag, idx) => {
+                  {device.grouptag.map((tag, idx) => {
                     // First index is HU Explorers tag
                     if (idx === 0) {
                       return;
@@ -534,18 +541,28 @@ const Messstation = ({
                 </div>
               </div>
               <div className="flex h-full flex-wrap justify-center overflow-auto align-middle">
-                {box.properties.sensors.map(sensor => {
+                {sensors?.map((sensor, i) => {
                   return (
                     <MeasurementTile
-                      key={sensor._id}
-                      sensor={sensor}
+                      key={sensor.sensor._id}
+                      sensor={sensor.sensor}
+                      measurement={
+                        sensor.measurements.length > 0
+                          ? sensor.measurements[0]
+                          : null
+                      }
+                      value={
+                        sensor.measurements.length > 0
+                          ? Number(sensor.measurements[0].value)
+                          : null
+                      }
                       openChart={openCharts}
                       charts={[ChartType.line]}
                     />
                   );
                 })}
 
-                {box.properties.tags.includes('Artenvielfalt') && (
+                {device.grouptag.includes('Artenvielfalt') && (
                   <>
                     {getArtenvielfaltTile(artenvielfalt)}
                     {getVersiegelungTile(versiegelung)}
@@ -609,14 +626,14 @@ const Messstation = ({
         </div>
       ) : (
         <div className="flex h-full w-full overflow-hidden">
-          {box && (
+          {device && (
             <div className="flex w-full flex-col">
               <div className="mb-2">
                 <h1 className="mb-2 content-center text-center text-lg font-bold">
-                  {box.properties.name}
+                  {device.name}
                 </h1>
                 <div className="flex justify-center">
-                  {box.properties.tags.map((tag, idx) => {
+                  {device.grouptag.map((tag, idx) => {
                     // First index is HU Explorers tag
                     if (idx === 0) {
                       return;
@@ -633,11 +650,21 @@ const Messstation = ({
                 </div>
               </div>
               <div className="flex justify-evenly">
-                {box.properties.sensors.map(sensor => {
+                {sensors.map(sensor => {
                   return (
                     <MeasurementTile
-                      key={sensor._id}
-                      sensor={sensor}
+                      key={sensor.sensor._id}
+                      sensor={sensor.sensor}
+                      measurement={
+                        sensor.measurements.length > 0
+                          ? sensor.measurements[0]
+                          : null
+                      }
+                      value={
+                        sensor.measurements.length > 0
+                          ? Number(sensor.measurements[0].value)
+                          : null
+                      }
                       openChart={openCharts}
                       charts={[ChartType.line]}
                     />
