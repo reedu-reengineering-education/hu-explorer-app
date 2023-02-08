@@ -36,6 +36,8 @@ const Messstation = ({
   dateRange: Date[];
   layout: LayoutMode;
 }) => {
+  console.info('Opening Messstation view: ', box, rendering, dateRange, layout);
+
   const colors = useTailwindColors();
   const { compareSensors } = useSharedCompareSensors();
 

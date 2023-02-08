@@ -40,7 +40,7 @@ const MeasurementTile = ({ sensor, charts, openChart, value }: TileProps) => {
   const color = tileColors[title] ?? 'bg-violet-500';
 
   const toggleChart = (chartType: ChartType) => {
-    if (typeof value === 'number' && !isNaN(value)) {
+    if (typeof displayedValue === 'number' && !isNaN(displayedValue)) {
       openChart(chartType, sensor);
     }
   };
