@@ -43,10 +43,10 @@ const MeasurementTile = ({
 }: TileProps) => {
   const { _id, title, unit } = sensor;
 
-  console.log('MeasurementTile - measurement: ', measurement);
+  console.log('MeasurementTile: ', sensor, value);
 
   const displayedValue = value ? value : Number(sensor.lastMeasurement?.value);
-  const timestamp = measurement ? new Date(measurement.createdAt) : new Date();
+  // const timestamp = measurement ? new Date(measurement.createdAt) : new Date();
   const color = tileColors[title] ?? 'bg-violet-500';
 
   const toggleChart = (chartType: ChartType) => {
@@ -67,18 +67,14 @@ const MeasurementTile = ({
         {isNaN(displayedValue) ? '--' : displayedValue.toFixed(1)} {unit}
       </h1>
       <div className="mt-2 border-t-2">
-        {sensor.lastMeasurement && !measurement ? (
+        {sensor.lastMeasurement ? (
           <kbd className="text-xs text-white">
             {format(
               new Date(sensor.lastMeasurement?.createdAt),
               'dd.MM.yyyy HH:mm',
             )}
           </kbd>
-        ) : (
-          <kbd className="text-xs text-white">
-            {format(timestamp, 'dd.MM.yyyy HH:mm')}
-          </kbd>
-        )}
+        ) : null}
       </div>
       <div className="mt-2 flex w-full justify-evenly border-t-2 pt-2">
         {charts.includes(ChartType.line) && (

@@ -546,11 +546,11 @@ const Messstation = ({
                     <MeasurementTile
                       key={sensor.sensor._id}
                       sensor={sensor.sensor}
-                      measurement={
-                        sensor.measurements.length > 0
-                          ? sensor.measurements[0]
-                          : null
-                      }
+                      // measurement={
+                      //   sensor.measurements.length > 0
+                      //     ? sensor.measurements[0]
+                      //     : null
+                      // }
                       value={
                         sensor.measurements.length > 0
                           ? Number(sensor.measurements[0].value)
@@ -655,11 +655,11 @@ const Messstation = ({
                     <MeasurementTile
                       key={sensor.sensor._id}
                       sensor={sensor.sensor}
-                      measurement={
-                        sensor.measurements.length > 0
-                          ? sensor.measurements[0]
-                          : null
-                      }
+                      // measurement={
+                      //   sensor.measurements.length > 0
+                      //     ? sensor.measurements[0]
+                      //     : null
+                      // }
                       value={
                         sensor.measurements.length > 0
                           ? Number(sensor.measurements[0].value)

@@ -1,5 +1,5 @@
 import { fetcher } from '@/lib/fetcher';
-import { Device, Sensor } from '@/types/osem';
+import { Device, Measurement, Sensor } from '@/types/osem';
 import { Point, Feature } from 'geojson';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -55,6 +55,7 @@ export const useOsemData = (
 
   useEffect(() => {
     if (measurements?.length > 0) {
+      console.log('Use OseM Data: ', measurements);
       if (expedition === 'Schallpegel') {
         setData(
           boxes?.features.map((box, i) => ({
@@ -63,13 +64,32 @@ export const useOsemData = (
           })),
         );
       } else if (expedition === 'Artenvielfalt') {
-        const temperature = [];
-        const bodenfeuchte = [];
+        const temperatureTmp: Measurement[] = [];
+        const bodenfeuchteTmp: Measurement[] = [];
 
         boxes.features.map((box, i) => {
-          temperature.push(measurements[i === 0 ? 0 : i * 2]);
-          bodenfeuchte.push(measurements[i === 0 ? 1 : i * 2 + 1]);
+          temperatureTmp.push(measurements[i === 0 ? 0 : i * 2]);
+          bodenfeuchteTmp.push(measurements[i === 0 ? 1 : i * 2 + 1]);
         });
+
+        const temperature = temperatureTmp
+          .flatMap(value => value)
+          .sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+
+            return dateB - dateA;
+          });
+        const bodenfeuchte = bodenfeuchteTmp
+          .flatMap(value => value)
+          .sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+
+            return dateB - dateA;
+          });
+
+        console.log('Sorted: ', temperature, bodenfeuchte);
 
         setData([
           {
@@ -78,8 +98,9 @@ export const useOsemData = (
               title: 'Lufttemperatur',
               unit: '°C',
               sensorType: 'HDC1080',
+              lastMeasurement: temperature[0],
             },
-            measurements: temperature.flatMap(value => value),
+            measurements: temperature,
           },
           {
             box: null,
@@ -87,8 +108,9 @@ export const useOsemData = (
               title: 'Bodenfeuchte',
               unit: '%',
               sensorType: 'SMT50',
+              lastMeasurement: bodenfeuchte[0],
             },
-            measurements: bodenfeuchte.flatMap(value => value),
+            measurements: bodenfeuchte,
           },
         ]);
       }

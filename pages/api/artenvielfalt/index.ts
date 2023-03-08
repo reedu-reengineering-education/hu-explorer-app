@@ -49,7 +49,18 @@ export default async function handler(
       },
     });
 
-    res.status(201).json(aggregations);
+    const measurements = await prisma.versiegelungRecord.findFirst({
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+      },
+    });
+
+    res.status(201).json({ aggregations, measurements });
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);
 

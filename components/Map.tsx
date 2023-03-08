@@ -72,7 +72,7 @@ const Map = ({
 
   const onMapClick = (e: MapLayerMouseEvent) => {
     const feature = e.features[0];
-    const clusterId = feature.layer.id;
+    const clusterId = feature?.layer.id;
 
     if (clusterId === 'osem-data') {
       const mapboxSource = mapRef.current.getSource(

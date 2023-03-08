@@ -66,8 +66,18 @@ export default async function handler(
         },
       },
     });
+    const measurements = await prisma.versiegelungRecord.findFirst({
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+      },
+    });
 
-    res.status(201).json(aggregations);
+    res.status(201).json({ aggregations, measurements });
   } else {
     res.status(405).json({});
   }

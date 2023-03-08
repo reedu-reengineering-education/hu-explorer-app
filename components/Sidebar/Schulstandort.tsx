@@ -91,12 +91,15 @@ const Schulstandort = ({
 
   // TODO: only fetch for Artenvielfalt expedition
   // Fetcher for Artenvielfalt
-  const { data: versiegelung, error: versiegelungError } = useSWR<
-    VersiegelungRecord[]
-  >(`/api/versiegelung?project=${tag}`);
-  const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
-    ArtenvielfaltRecord[]
-  >(`/api/artenvielfalt?project=${tag}`);
+  const { data: versiegelung, error: versiegelungError } = useSWR<{
+    aggregations: VersiegelungRecord[];
+    measurements: VersiegelungRecord;
+  }>(`/api/versiegelung?project=${tag}`);
+  console.log('API Versieglung: ', versiegelung);
+  const { data: artenvielfalt, error: artenvielfaltError } = useSWR<{
+    aggregations: ArtenvielfaltRecord[];
+    measurements: ArtenvielfaltRecord;
+  }>(`/api/artenvielfalt?project=${tag}`);
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
     defaultBarChartOptions,
@@ -283,18 +286,24 @@ const Schulstandort = ({
     setReflowCharts(true);
   };
 
-  const getArtenvielfaltTile = (artenvielfalt?: ArtenvielfaltRecord[]) => {
+  const getArtenvielfaltTile = ({
+    aggregations,
+    measurements,
+  }: {
+    aggregations: ArtenvielfaltRecord[];
+    measurements: ArtenvielfaltRecord;
+  }) => {
     const sensor: Sensor = {
       title: 'Simpson-Index',
       unit: '',
       sensorType: '',
-      ...(artenvielfalt !== undefined &&
-      artenvielfalt['_avg'] !== undefined &&
-      artenvielfalt['_avg'].simpsonIndex !== null
+      ...(aggregations !== undefined &&
+      aggregations['_avg'] !== undefined &&
+      aggregations['_avg'].simpsonIndex !== null
         ? {
             lastMeasurement: {
-              value: artenvielfalt['_avg'].simpsonIndex.toFixed(2),
-              createdAt: new Date(),
+              value: aggregations['_avg'].simpsonIndex.toFixed(2),
+              createdAt: measurements.updatedAt,
             },
           }
         : {}),
@@ -308,18 +317,24 @@ const Schulstandort = ({
     );
   };
 
-  const getVersiegelungTile = (versiegelung?: VersiegelungRecord[]) => {
+  const getVersiegelungTile = ({
+    aggregations,
+    measurements,
+  }: {
+    aggregations: VersiegelungRecord[];
+    measurements: VersiegelungRecord;
+  }) => {
     const sensor: Sensor = {
       title: 'Versiegelung',
       unit: '%',
       sensorType: '',
-      ...(versiegelung !== undefined &&
-      versiegelung['_avg'] !== undefined &&
-      versiegelung['_avg'].value !== null
+      ...(aggregations !== undefined &&
+      aggregations['_avg'] !== undefined &&
+      aggregations['_avg'].value !== null
         ? {
             lastMeasurement: {
-              value: versiegelung['_avg'].value.toFixed(2),
-              createdAt: new Date(),
+              value: aggregations['_avg'].value.toFixed(2),
+              createdAt: measurements.updatedAt,
             },
           }
         : {}),
@@ -414,8 +429,8 @@ const Schulstandort = ({
                     })}
                     {expedition === 'Artenvielfalt' ? (
                       <>
-                        {getArtenvielfaltTile(artenvielfalt)}
-                        {getVersiegelungTile(versiegelung)}
+                        {artenvielfalt && getArtenvielfaltTile(artenvielfalt)}
+                        {versiegelung && getVersiegelungTile(versiegelung)}
                       </>
                     ) : null}
                   </div>
@@ -540,8 +555,8 @@ const Schulstandort = ({
                   })}
                   {expedition === 'Artenvielfalt' ? (
                     <>
-                      {getArtenvielfaltTile(artenvielfalt)}
-                      {getVersiegelungTile(versiegelung)}
+                      {artenvielfalt && getArtenvielfaltTile(artenvielfalt)}
+                      {versiegelung && getVersiegelungTile(versiegelung)}
                     </>
                   ) : null}
                 </div>
