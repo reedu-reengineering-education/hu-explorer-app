@@ -380,6 +380,7 @@ const Schulstandort = ({
                   <div className="flex h-full flex-row flex-wrap items-center justify-evenly">
                     {data?.map((e, i) => {
                       if (expedition === 'Schallpegel' && e.box) {
+                        console.log('Data Map e: ', e);
                         return (
                           <Tile
                             key={i}
@@ -404,6 +405,7 @@ const Schulstandort = ({
                               ]
                             }
                             device={e.box}
+                            measurements={e.measurements}
                             charts={[ChartType.line]}
                             openChart={openCharts}
                           />
@@ -530,6 +532,7 @@ const Schulstandort = ({
                             ]
                           }
                           device={e.box}
+                          measurements={e.measurements}
                           charts={[ChartType.line]}
                           openChart={openCharts}
                         />
