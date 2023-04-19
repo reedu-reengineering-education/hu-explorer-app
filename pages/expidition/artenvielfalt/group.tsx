@@ -29,6 +29,7 @@ import {
   transformBodenfeuchteData,
   transformTemperatureData,
 } from '@/lib/utils';
+import Toggle from '@/components/Toggle';
 
 if (typeof Highcharts === 'object') {
   NoDataToDisplay(Highcharts);
@@ -434,6 +435,46 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     }
   };
 
+  const updateChartOptions = (value: boolean) => {
+    if (value) {
+      setBarChartOptions({
+        ...barChartOptions,
+        yAxis: {
+          title: {
+            text: 'Artenvielfaltsindex in %',
+          },
+          min: 0,
+          max: 100,
+        },
+        series: [
+          {
+            name: 'artenvielfalt',
+            type: 'column',
+            data: artenvielfalt.map(v => v * 100),
+          },
+        ],
+      });
+    } else {
+      setBarChartOptions({
+        ...barChartOptions,
+        yAxis: {
+          title: {
+            text: 'Artenvielfaltsindex',
+          },
+          min: 0,
+          max: 1,
+        },
+        series: [
+          {
+            name: 'artenvielfalt',
+            type: 'column',
+            data: artenvielfalt.map(v => v),
+          },
+        ],
+      });
+    }
+  };
+
   const switchChart = () => {
     switch (tab) {
       case 0:
@@ -485,25 +526,35 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             <Tabs tabs={tabs} onChange={onChange}></Tabs>
           </div>
           <div className="mb-4 w-full flex-auto">
-            <div className="flex flex-row-reverse">
-              <Button
-                size="sm"
-                variant="inverse"
-                startIcon={<PresentationChartLineIcon className="h-5 w-5" />}
-                disabled={!barChart || tab === 2 || tab === 3}
-                onClick={switchChart}
-              >
-                Liniendiagramm
-              </Button>
-              <Button
-                size="sm"
-                variant="inverse"
-                startIcon={<PresentationChartBarIcon className="h-5 w-5" />}
-                disabled={barChart}
-                onClick={switchChart}
-              >
-                Balkendiagramm
-              </Button>
+            <div className="flex">
+              <div className="flex w-full items-center">
+                {tab === 3 ? (
+                  <Toggle
+                    label="Artenvielfalt in %"
+                    onChange={updateChartOptions}
+                  />
+                ) : null}
+              </div>
+              <div className="flex flex-row-reverse">
+                <Button
+                  size="sm"
+                  variant="inverse"
+                  startIcon={<PresentationChartLineIcon className="h-5 w-5" />}
+                  disabled={!barChart || tab === 2 || tab === 3}
+                  onClick={switchChart}
+                >
+                  Liniendiagramm
+                </Button>
+                <Button
+                  size="sm"
+                  variant="inverse"
+                  startIcon={<PresentationChartBarIcon className="h-5 w-5" />}
+                  disabled={barChart}
+                  onClick={switchChart}
+                >
+                  Balkendiagramm
+                </Button>
+              </div>
             </div>
             {!barChart && (
               <HighchartsReact
