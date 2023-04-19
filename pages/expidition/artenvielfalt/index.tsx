@@ -164,7 +164,7 @@ const Artenvielfalt = ({
       },
       {
         title: {
-          text: 'Artenvilfaltsindex',
+          text: 'Artenvielfaltsindex',
           style: {
             color: colors.he.artenvielfalt.DEFAULT,
           },
