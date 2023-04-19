@@ -246,7 +246,7 @@ const Artenvielfalt = ({
         chartOptionsTmp = generateChartOptions(
           'column',
           {
-            text: 'Bodenfeuchte in %',
+            text: 'Lufttemperatur in °C',
             value: 'lufttemperatur',
           },
           groups,
