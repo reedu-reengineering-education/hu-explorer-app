@@ -164,7 +164,7 @@ const Artenvielfalt = ({
       },
       {
         title: {
-          text: 'Artenvilfaltsindex',
+          text: 'Artenvielfaltsindex',
           style: {
             color: colors.he.artenvielfalt.DEFAULT,
           },
@@ -246,7 +246,7 @@ const Artenvielfalt = ({
         chartOptionsTmp = generateChartOptions(
           'column',
           {
-            text: 'Bodenfeuchte in %',
+            text: 'Lufttemperatur in °C',
             value: 'lufttemperatur',
           },
           groups,

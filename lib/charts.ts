@@ -43,7 +43,7 @@ export const generateChartOptions = (
       },
       {
         title: {
-          text: 'Artenvilfaltsindex',
+          text: 'Artenvielfaltsindex',
           style: {
             fontSize: '16px',
             color: colors.he.artenvielfalt.DEFAULT,
