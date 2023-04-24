@@ -8,6 +8,7 @@ export const generateChartOptions = (
   yAxis,
   categories,
   series,
+  percent = false,
 ): Highcharts.Options => {
   return {
     chart: {
@@ -43,7 +44,7 @@ export const generateChartOptions = (
       },
       {
         title: {
-          text: 'Artenvielfaltsindex',
+          text: percent ? 'Artenvielfaltsindex in %' : 'Artenvielfaltsindex',
           style: {
             fontSize: '16px',
             color: colors.he.artenvielfalt.DEFAULT,
@@ -58,7 +59,7 @@ export const generateChartOptions = (
         lineColor: colors.he.artenvielfalt.DEFAULT,
         opposite: true,
         min: 0,
-        max: 1,
+        max: percent ? 100 : 1,
       },
     ],
     plotOptions: {

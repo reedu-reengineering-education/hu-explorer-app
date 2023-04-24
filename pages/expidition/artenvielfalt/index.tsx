@@ -22,6 +22,7 @@ import {
   transformTemperatureData,
 } from '@/lib/utils';
 import { generateChartOptions } from '@/lib/charts';
+import Toggle from '@/components/Toggle';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -238,9 +239,15 @@ const Artenvielfalt = ({
     },
   ];
 
-  const onChange = (tab: number) => {
+  const onChange = (tab: number, percent?: boolean) => {
     let chartOptionsTmp;
     setTab(tab);
+
+    let artenvielfaltData = artenvielfalt.slice();
+    if (percent) {
+      artenvielfaltData = artenvielfaltData.map(v => v * 100);
+    }
+
     switch (tab) {
       case 0:
         chartOptionsTmp = generateChartOptions(
@@ -257,12 +264,13 @@ const Artenvielfalt = ({
               data: transformedTemperatur.map(v => v),
             },
             {
-              name: 'Artenvielfalt',
+              name: percent ? 'Artenvielfalt in %' : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfalt,
+              data: percent ? artenvielfaltData : artenvielfalt,
             },
           ],
+          percent,
         );
         break;
       case 1:
@@ -280,12 +288,13 @@ const Artenvielfalt = ({
               data: transformedBodenfeuchte.map(v => v),
             },
             {
-              name: 'Artenvielfalt',
+              name: percent ? 'Artenvielfalt in %' : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfalt,
+              data: percent ? artenvielfaltData : artenvielfalt,
             },
           ],
+          percent,
         );
         break;
       case 2:
@@ -303,18 +312,29 @@ const Artenvielfalt = ({
               data: versiegelung.map(v => v),
             },
             {
-              name: 'Artenvielfalt',
+              name: percent ? 'Artenvielfalt in %' : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfalt,
+              data: percent ? artenvielfaltData : artenvielfalt,
             },
           ],
+          percent,
         );
         break;
       default:
         break;
     }
     setChartOptions(chartOptionsTmp);
+  };
+
+  const updateChartAxis = (value: boolean) => {
+    if (value) {
+      // generate Chart options with % axis
+      onChange(tab, value);
+    } else {
+      // reset Chart options
+      onChange(tab, value);
+    }
   };
 
   return (
@@ -328,6 +348,9 @@ const Artenvielfalt = ({
             <Tabs tabs={tabs} onChange={onChange}></Tabs>
           </div>
           <div className="mb-4 w-full flex-auto">
+            <div className="mr-2 flex flex-row-reverse">
+              <Toggle label="Artenvielfalt in %" onChange={updateChartAxis} />
+            </div>
             <HighchartsReact
               containerProps={{ style: { height: '100%' } }}
               highcharts={Highcharts}
