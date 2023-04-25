@@ -223,6 +223,18 @@ const Artenvielfalt = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, groups, artenvielfalt]);
 
+  useEffect(() => {
+    if (artenvielfaltPercent) {
+      // generate Chart options with % axis
+      onChange(tab);
+    } else {
+      // reset Chart options
+      onChange(tab);
+    }
+
+    return () => {};
+  }, [artenvielfaltPercent]);
+
   const tabs: Tab[] = [
     {
       id: 'Lufttemperatur',
@@ -240,12 +252,6 @@ const Artenvielfalt = ({
       icon: <VersiegelungIcon />,
     },
   ];
-
-  useEffect(() => {
-    onChange(tab);
-
-    return () => {};
-  }, [artenvielfaltPercent]);
 
   const onChange = (tab: number) => {
     let chartOptionsTmp;
@@ -341,17 +347,6 @@ const Artenvielfalt = ({
     setChartOptions(chartOptionsTmp);
   };
 
-  const updateChartAxis = () => {
-    setArtenvielfaltPercent(!artenvielfaltPercent);
-    if (!artenvielfaltPercent) {
-      // generate Chart options with % axis
-      onChange(tab);
-    } else {
-      // reset Chart options
-      onChange(tab);
-    }
-  };
-
   return (
     <>
       <div className="flex h-full w-full flex-row overflow-hidden">
@@ -367,7 +362,7 @@ const Artenvielfalt = ({
               <ToggleSwitch
                 checked={artenvielfaltPercent}
                 label="Artenvielfalt in %"
-                onChange={updateChartAxis}
+                onChange={setArtenvielfaltPercent}
               />
             </div>
             <HighchartsReact

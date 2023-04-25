@@ -228,6 +228,16 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, groups]);
 
+  useEffect(() => {
+    const run = async () => {
+      updateChartOptions();
+    };
+
+    run();
+
+    return () => {};
+  }, [artenvielfaltPercent]);
+
   const tabs: Tab[] = [
     {
       id: 'Lufttemperatur',
@@ -439,8 +449,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   };
 
   const updateChartOptions = () => {
-    setArtenvielfaltPercent(!artenvielfaltPercent);
-    if (!artenvielfaltPercent) {
+    if (artenvielfaltPercent) {
       setBarChartOptions({
         ...barChartOptions,
         yAxis: {
@@ -536,7 +545,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
                   <ToggleSwitch
                     checked={artenvielfaltPercent}
                     label="Artenvielfalt in %"
-                    onChange={updateChartOptions}
+                    onChange={setArtenvielfaltPercent}
                   ></ToggleSwitch>
                 ) : null}
               </div>
