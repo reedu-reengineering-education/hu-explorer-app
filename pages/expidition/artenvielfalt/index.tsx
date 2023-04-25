@@ -22,7 +22,7 @@ import {
   transformTemperatureData,
 } from '@/lib/utils';
 import { generateChartOptions } from '@/lib/charts';
-import Toggle from '@/components/Toggle';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -349,7 +349,7 @@ const Artenvielfalt = ({
           </div>
           <div className="mb-4 w-full flex-auto">
             <div className="mr-2 flex flex-row-reverse">
-              <Toggle label="Artenvielfalt in %" onChange={updateChartAxis} />
+              <ToggleSwitch onChange={updateChartAxis} />
             </div>
             <HighchartsReact
               containerProps={{ style: { height: '100%' } }}
