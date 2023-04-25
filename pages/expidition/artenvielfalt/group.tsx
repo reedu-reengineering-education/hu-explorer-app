@@ -29,7 +29,6 @@ import {
   transformBodenfeuchteData,
   transformTemperatureData,
 } from '@/lib/utils';
-import Toggle from '@/components/Toggle';
 
 if (typeof Highcharts === 'object') {
   NoDataToDisplay(Highcharts);
@@ -527,14 +526,14 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
           </div>
           <div className="mb-4 w-full flex-auto">
             <div className="flex">
-              <div className="flex w-full items-center">
+              {/* <div className="flex w-full items-center">
                 {tab === 3 ? (
                   <Toggle
                     label="Artenvielfalt in %"
                     onChange={updateChartOptions}
                   />
                 ) : null}
-              </div>
+              </div> */}
               <div className="flex flex-row-reverse">
                 <Button
                   size="sm"
