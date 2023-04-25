@@ -141,6 +141,8 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
 
+  const [artenvielfaltPercent, setArtenvielfaltPercent] = useState(false);
+
   const [barChart, setBarChart] = useState<boolean>(true);
 
   const [lineSeriesBodenfeuchte, setLineSeriesBodenfeuchte] = useState([]);
@@ -347,6 +349,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const onChange = (tab: number) => {
     setTab(tab);
     setBarChart(true);
+    setArtenvielfaltPercent(false);
     switch (tab) {
       case 0:
         setBarChartOptions({
@@ -435,8 +438,9 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     }
   };
 
-  const updateChartOptions = (value: boolean) => {
-    if (value) {
+  const updateChartOptions = () => {
+    setArtenvielfaltPercent(!artenvielfaltPercent);
+    if (!artenvielfaltPercent) {
       setBarChartOptions({
         ...barChartOptions,
         yAxis: {
@@ -529,7 +533,11 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             <div className="flex">
               <div className="flex w-full items-center">
                 {tab === 3 ? (
-                  <ToggleSwitch onChange={updateChartOptions}></ToggleSwitch>
+                  <ToggleSwitch
+                    checked={artenvielfaltPercent}
+                    label="Artenvielfalt in %"
+                    onChange={updateChartOptions}
+                  ></ToggleSwitch>
                 ) : null}
               </div>
               <div className="flex flex-row-reverse">

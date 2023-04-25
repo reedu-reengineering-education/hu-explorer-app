@@ -131,6 +131,8 @@ const Artenvielfalt = ({
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
 
+  const [artenvielfaltPercent, setArtenvielfaltPercent] = useState(false);
+
   const colors = useTailwindColors();
 
   // Fetch openSenseMap data
@@ -239,12 +241,18 @@ const Artenvielfalt = ({
     },
   ];
 
-  const onChange = (tab: number, percent?: boolean) => {
+  useEffect(() => {
+    onChange(tab);
+
+    return () => {};
+  }, [artenvielfaltPercent]);
+
+  const onChange = (tab: number) => {
     let chartOptionsTmp;
     setTab(tab);
 
     let artenvielfaltData = artenvielfalt.slice();
-    if (percent) {
+    if (artenvielfaltPercent) {
       artenvielfaltData = artenvielfaltData.map(v => v * 100);
     }
 
@@ -264,13 +272,15 @@ const Artenvielfalt = ({
               data: transformedTemperatur.map(v => v),
             },
             {
-              name: percent ? 'Artenvielfalt in %' : 'Artenvielfalt',
+              name: artenvielfaltPercent
+                ? 'Artenvielfalt in %'
+                : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: percent ? artenvielfaltData : artenvielfalt,
+              data: artenvielfaltPercent ? artenvielfaltData : artenvielfalt,
             },
           ],
-          percent,
+          artenvielfaltPercent,
         );
         break;
       case 1:
@@ -288,13 +298,15 @@ const Artenvielfalt = ({
               data: transformedBodenfeuchte.map(v => v),
             },
             {
-              name: percent ? 'Artenvielfalt in %' : 'Artenvielfalt',
+              name: artenvielfaltPercent
+                ? 'Artenvielfalt in %'
+                : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: percent ? artenvielfaltData : artenvielfalt,
+              data: artenvielfaltPercent ? artenvielfaltData : artenvielfalt,
             },
           ],
-          percent,
+          artenvielfaltPercent,
         );
         break;
       case 2:
@@ -312,13 +324,15 @@ const Artenvielfalt = ({
               data: versiegelung.map(v => v),
             },
             {
-              name: percent ? 'Artenvielfalt in %' : 'Artenvielfalt',
+              name: artenvielfaltPercent
+                ? 'Artenvielfalt in %'
+                : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: percent ? artenvielfaltData : artenvielfalt,
+              data: artenvielfaltPercent ? artenvielfaltData : artenvielfalt,
             },
           ],
-          percent,
+          artenvielfaltPercent,
         );
         break;
       default:
@@ -327,13 +341,14 @@ const Artenvielfalt = ({
     setChartOptions(chartOptionsTmp);
   };
 
-  const updateChartAxis = (value: boolean) => {
-    if (value) {
+  const updateChartAxis = () => {
+    setArtenvielfaltPercent(!artenvielfaltPercent);
+    if (!artenvielfaltPercent) {
       // generate Chart options with % axis
-      onChange(tab, value);
+      onChange(tab);
     } else {
       // reset Chart options
-      onChange(tab, value);
+      onChange(tab);
     }
   };
 
@@ -349,7 +364,11 @@ const Artenvielfalt = ({
           </div>
           <div className="mb-4 w-full flex-auto">
             <div className="mr-2 flex flex-row-reverse">
-              <ToggleSwitch onChange={updateChartAxis} />
+              <ToggleSwitch
+                checked={artenvielfaltPercent}
+                label="Artenvielfalt in %"
+                onChange={updateChartAxis}
+              />
             </div>
             <HighchartsReact
               containerProps={{ style: { height: '100%' } }}
