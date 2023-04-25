@@ -1,10 +1,4 @@
-import { useState } from 'react';
-
 const ToggleSwitch = ({ label, checked, onChange }) => {
-  // const toggled = () => {
-  //   onChange();
-  // };
-
   return (
     <div className="ml-2">
       <label className="relative inline-flex cursor-pointer items-center">

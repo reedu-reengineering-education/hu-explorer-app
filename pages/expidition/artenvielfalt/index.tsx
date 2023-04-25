@@ -111,6 +111,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       devices: featureCollection,
       versiegelung: dataVersiegelung,
       artenvielfalt: dataArtenvielfalt,
+      artenvielfaltPercentData: dataArtenvielfalt.map(v => v * 100),
     },
   };
 };
@@ -120,6 +121,7 @@ type Props = {
   devices: any;
   versiegelung: number[];
   artenvielfalt: number[];
+  artenvielfaltPercentData: number[];
 };
 
 const Artenvielfalt = ({
@@ -127,6 +129,7 @@ const Artenvielfalt = ({
   devices,
   versiegelung,
   artenvielfalt,
+  artenvielfaltPercentData,
 }: Props) => {
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
@@ -223,18 +226,6 @@ const Artenvielfalt = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, groups, artenvielfalt]);
 
-  useEffect(() => {
-    if (artenvielfaltPercent) {
-      // generate Chart options with % axis
-      onChange(tab);
-    } else {
-      // reset Chart options
-      onChange(tab);
-    }
-
-    return () => {};
-  }, [artenvielfaltPercent]);
-
   const tabs: Tab[] = [
     {
       id: 'Lufttemperatur',
@@ -257,10 +248,7 @@ const Artenvielfalt = ({
     let chartOptionsTmp;
     setTab(tab);
 
-    let artenvielfaltData = artenvielfalt.slice();
-    if (artenvielfaltPercent) {
-      artenvielfaltData = artenvielfaltData.map(v => v * 100);
-    }
+    console.log(artenvielfalt, artenvielfaltPercentData);
 
     switch (tab) {
       case 0:
@@ -283,7 +271,9 @@ const Artenvielfalt = ({
                 : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfaltPercent ? artenvielfaltData : artenvielfalt,
+              data: artenvielfaltPercent
+                ? artenvielfaltPercentData
+                : artenvielfalt,
             },
           ],
           artenvielfaltPercent,
@@ -309,7 +299,9 @@ const Artenvielfalt = ({
                 : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfaltPercent ? artenvielfaltData : artenvielfalt,
+              data: artenvielfaltPercent
+                ? artenvielfaltPercentData
+                : artenvielfalt,
             },
           ],
           artenvielfaltPercent,
@@ -335,7 +327,9 @@ const Artenvielfalt = ({
                 : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfaltPercent ? artenvielfaltData : artenvielfalt,
+              data: artenvielfaltPercent
+                ? artenvielfaltPercentData
+                : artenvielfalt,
             },
           ],
           artenvielfaltPercent,
