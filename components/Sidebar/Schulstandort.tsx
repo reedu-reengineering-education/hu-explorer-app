@@ -11,9 +11,17 @@ import BrokenAxis from 'highcharts/modules/broken-axis';
 import { useOsemData } from '@/hooks/useOsemData';
 import Tile from '../Tile';
 import { schallColors } from '@/pages/expidition/schall';
-import { defaultBarChartOptions, defaultChartOptions } from '@/lib/charts';
+import {
+  defaultBarChartOptions,
+  defaultChartOptions,
+  defaultPieChartOptions,
+} from '@/lib/charts';
 import MeasurementTile, { ChartType } from '../MeasurementTile';
-import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
+import {
+  ArtRecord,
+  ArtenvielfaltRecord,
+  VersiegelungRecord,
+} from '@prisma/client';
 import useSWR from 'swr';
 
 if (typeof Highcharts === 'object') {
@@ -75,6 +83,7 @@ const Schulstandort = ({
 
   const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
   const [isLineChartOpen, setIsLineChartOpen] = useState<boolean>(false);
+  const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
 
   const [sensor, setSensor] = useState<Sensor>();
 
@@ -108,6 +117,9 @@ const Schulstandort = ({
   );
   const [lineChartOptions, setLineChartOptions] =
     useState<Highcharts.Options>(defaultChartOptions);
+  const [pieChartOptions, setPieChartOptions] = useState<Highcharts.Options>(
+    defaultPieChartOptions,
+  );
 
   const [reflowCharts, setReflowCharts] = useState(false);
 
@@ -205,7 +217,7 @@ const Schulstandort = ({
     }
   };
 
-  // MeasurementTile Compoennt
+  // MeasurementTile Component
   const openChartSensor = (chartType: ChartType, sensor: Sensor) => {
     console.info(`Open ${chartType} Chart for sensor: `, sensor);
     const osemData = data.filter(
@@ -214,10 +226,10 @@ const Schulstandort = ({
 
     switch (chartType) {
       case ChartType.column:
-        // openBarChart(sensorParam);
+        openBarChart(sensor);
         return;
       case ChartType.pie:
-        // openPieChart(sensorParam);
+        openPieChart(sensor);
         return;
       case ChartType.line:
         openLineChart(osemData[0]);
@@ -325,6 +337,69 @@ const Schulstandort = ({
     }
 
     setReflowCharts(true);
+  };
+
+  const openBarChart = (sensor: Sensor) => {
+    const serie = sensor.title.toLowerCase().startsWith('simpson')
+      ? 'artenvielfalt'
+      : 'versiegelung';
+    let seriesData = [];
+
+    if (serie === 'versiegelung') {
+      seriesData = versiegelung.measurements.map(v => [
+        new Date(v.updatedAt).getTime(),
+        v.value,
+      ]);
+    } else if (serie === 'artenvielfalt') {
+      seriesData = artenvielfalt.measurements.map(a => [
+        new Date(a.updatedAt).getTime(),
+        a.simpsonIndex,
+      ]);
+    }
+
+    setBarChartOptions({
+      ...barChartOptions,
+      yAxis: {
+        title: {
+          text: `${serie} in %`,
+        },
+      },
+      series: [],
+      colors: [],
+    });
+
+    setIsBarChartOpen(!isBarChartOpen);
+    setReflowCharts(!reflowCharts);
+  };
+
+  const openPieChart = (sensor: Sensor) => {
+    const seriesData = [];
+
+    for (const art of sensor.measurements[0]['arten'] as Array<ArtRecord>) {
+      seriesData.push({
+        name: art.art,
+        y: art.count,
+      });
+    }
+
+    setPieChartOptions({
+      ...pieChartOptions,
+      title: {
+        text: 'Artenvielfalt',
+      },
+      series: [
+        ...pieChartOptions.series,
+        {
+          name: 'Artenvielfalt',
+          type: 'pie',
+          // colorByPoint: true,
+          data: seriesData,
+        },
+      ],
+    });
+
+    setIsPieChartOpen(!isPieChartOpen);
+    setReflowCharts(!reflowCharts);
   };
 
   const getArtenvielfaltTile = ({
@@ -501,6 +576,18 @@ const Schulstandort = ({
               </div>
             )}
 
+            {isPieChartOpen && (
+              <div className="m-2 h-[95%] w-full overflow-hidden">
+                <HighchartsReact
+                  ref={pieChart}
+                  containerProps={{ style: { height: '100%' } }}
+                  highcharts={Highcharts}
+                  allowChartUpdate={true}
+                  options={pieChartOptions}
+                />
+              </div>
+            )}
+
             {isLineChartOpen && (
               <div className="flex w-full overflow-hidden">
                 <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
@@ -515,7 +602,7 @@ const Schulstandort = ({
               </div>
             )}
 
-            {!isBarChartOpen && !isLineChartOpen ? (
+            {!isBarChartOpen && !isLineChartOpen && !isPieChartOpen ? (
               <div className="flex h-full w-full items-center justify-center text-center">
                 <h1>
                   Klicke auf eine Kachel um dir die Daten in einem Graphen
@@ -624,6 +711,18 @@ const Schulstandort = ({
                   </div>
                 )}
 
+                {isPieChartOpen && (
+                  <div className="m-2 h-[95%] w-full overflow-hidden">
+                    <HighchartsReact
+                      ref={pieChart}
+                      containerProps={{ style: { height: '100%' } }}
+                      highcharts={Highcharts}
+                      allowChartUpdate={true}
+                      options={pieChartOptions}
+                    />
+                  </div>
+                )}
+
                 {isLineChartOpen && (
                   <div className="flex h-full w-full overflow-hidden">
                     <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
@@ -638,7 +737,7 @@ const Schulstandort = ({
                   </div>
                 )}
 
-                {!isBarChartOpen && !isLineChartOpen ? (
+                {!isBarChartOpen && !isLineChartOpen && !isPieChartOpen ? (
                   <div className="flex h-full w-full items-center justify-center text-center">
                     <h1>
                       Klicke auf eine Kachel um dir die Daten in einem Graphen

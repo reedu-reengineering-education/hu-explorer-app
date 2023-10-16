@@ -49,7 +49,10 @@ export default async function handler(
       },
     });
 
-    const measurements = await prisma.versiegelungRecord.findMany({
+    const measurements = await prisma.artenvielfaltRecord.findMany({
+      include: {
+        arten: true,
+      },
       orderBy: {
         updatedAt: 'desc',
       },
