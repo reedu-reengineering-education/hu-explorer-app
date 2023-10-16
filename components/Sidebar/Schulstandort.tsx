@@ -23,6 +23,8 @@ import {
   VersiegelungRecord,
 } from '@prisma/client';
 import useSWR from 'swr';
+import Versiegelung from '../tiles/versiegelung';
+import Artenvielfalt from '../tiles/artenvielfalt';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -190,8 +192,10 @@ const Schulstandort = ({
       // Cleanup everything before a new device is selected!!!
       setIsLineChartOpen(false);
       setIsBarChartOpen(false);
+      setIsPieChartOpen(false);
       setBarChartOptions(defaultBarChartOptions);
       setLineChartOptions(defaultChartOptions);
+      setPieChartOptions(defaultPieChartOptions);
       setSensor(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -341,6 +345,12 @@ const Schulstandort = ({
     setReflowCharts(true);
   };
 
+  /**
+   * Opens a Bar Chart with the given sensor.
+   * Bar charts are only supported for Versiegelung und Artenvielfalt
+   * in the Schulstandort view.
+   * @param sensor Sensor
+   */
   const openBarChart = (sensor: Sensor) => {
     const serie = sensor.title.toLowerCase().startsWith('simpson')
       ? 'artenvielfalt'
@@ -378,6 +388,12 @@ const Schulstandort = ({
     setReflowCharts(!reflowCharts);
   };
 
+  /**
+   * Opens a Pie Chart with the given sensor.
+   * Pie charts are only supported for Artenvielfalt including Arten
+   * in the Schulstandort view.
+   * @param sensor Sensor
+   */
   const openPieChart = (sensor: Sensor) => {
     const seriesData = [];
 
@@ -406,84 +422,6 @@ const Schulstandort = ({
 
     setIsPieChartOpen(!isPieChartOpen);
     setReflowCharts(!reflowCharts);
-  };
-
-  const getArtenvielfaltTile = ({
-    aggregations,
-    measurements,
-    grouped,
-  }: {
-    aggregations: ArtenvielfaltRecord[];
-    lastMeasurement: ArtenvielfaltRecord;
-    measurements: ArtenvielfaltRecord[];
-    grouped: ArtenvielfaltRecord[];
-  }) => {
-    const sensor: Sensor = {
-      title: 'Simpson-Index',
-      unit: '',
-      sensorType: '',
-      ...(aggregations !== undefined &&
-      aggregations['_avg'] !== undefined &&
-      aggregations['_avg'].simpsonIndex !== null
-        ? {
-            lastMeasurement: {
-              value: aggregations['_avg'].simpsonIndex.toFixed(2),
-              createdAt: measurements[0].updatedAt,
-            },
-          }
-        : {}),
-      measurements,
-      groups: grouped.map(group => ({
-        value: group['_avg'].simpsonIndex.toFixed(2),
-        createdAt: group.createdAt,
-      })),
-    };
-    return (
-      <MeasurementTile
-        sensor={sensor}
-        openChart={openChartSensor}
-        charts={[ChartType.column, ChartType.pie]}
-      />
-    );
-  };
-
-  const getVersiegelungTile = ({
-    aggregations,
-    measurements,
-    grouped,
-  }: {
-    aggregations: VersiegelungRecord[];
-    lastMeasurement: VersiegelungRecord;
-    measurements: VersiegelungRecord[];
-    grouped: VersiegelungRecord[];
-  }) => {
-    const sensor: Sensor = {
-      title: 'Versiegelung',
-      unit: '%',
-      sensorType: '',
-      ...(aggregations !== undefined &&
-      aggregations['_avg'] !== undefined &&
-      aggregations['_avg'].value !== null
-        ? {
-            lastMeasurement: {
-              value: aggregations['_avg'].value.toFixed(2),
-              createdAt: measurements[0].updatedAt,
-            },
-          }
-        : {}),
-      measurements,
-      groups: grouped.map(group => ({
-        value: group['_avg'].value.toFixed(2),
-        createdAt: group.createdAt,
-      })),
-    };
-    return (
-      <MeasurementTile
-        sensor={sensor}
-        openChart={openChartSensor}
-        charts={[ChartType.column]}
-      />
-    );
   };
 
   return (
@@ -570,8 +508,20 @@ const Schulstandort = ({
                     {/* Render Artenvielfalt specific tiles */}
                     {expedition === 'Artenvielfalt' ? (
                       <>
-                        {artenvielfalt && getArtenvielfaltTile(artenvielfalt)}
-                        {versiegelung && getVersiegelungTile(versiegelung)}
+                        {artenvielfalt && (
+                          <Artenvielfalt
+                            data={artenvielfalt}
+                            openChart={openChartSensor}
+                            charts={[ChartType.column, ChartType.pie]}
+                          />
+                        )}
+                        {versiegelung && (
+                          <Versiegelung
+                            data={versiegelung}
+                            openChart={openChartSensor}
+                            charts={[ChartType.column]}
+                          />
+                        )}
                       </>
                     ) : null}
                   </div>
@@ -708,8 +658,20 @@ const Schulstandort = ({
                   })}
                   {expedition === 'Artenvielfalt' ? (
                     <>
-                      {artenvielfalt && getArtenvielfaltTile(artenvielfalt)}
-                      {versiegelung && getVersiegelungTile(versiegelung)}
+                      {artenvielfalt && (
+                        <Artenvielfalt
+                          data={artenvielfalt}
+                          openChart={openChartSensor}
+                          charts={[ChartType.column, ChartType.pie]}
+                        />
+                      )}
+                      {versiegelung && (
+                        <Versiegelung
+                          data={versiegelung}
+                          openChart={openChartSensor}
+                          charts={[ChartType.column]}
+                        />
+                      )}
                     </>
                   ) : null}
                 </div>
