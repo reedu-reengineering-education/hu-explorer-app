@@ -397,24 +397,26 @@ const Schulstandort = ({
   const openPieChart = (sensor: Sensor) => {
     const seriesData = [];
 
-    for (const art of sensor.measurements[0]['arten'] as Array<ArtRecord>) {
-      seriesData.push({
-        name: art.art,
-        y: art.count,
-      });
+    for (const observations of sensor.measurements) {
+      const arten = observations['arten'] as Array<ArtRecord>;
+      for (const art of arten) {
+        seriesData.push({
+          name: art.art,
+          y: art.count,
+        });
+      }
     }
 
     setPieChartOptions({
       ...pieChartOptions,
       title: {
-        text: 'Artenvielfalt',
+        text: 'Artenvielfalt (Arten)',
       },
       series: [
         ...pieChartOptions.series,
         {
           name: 'Artenvielfalt',
           type: 'pie',
-          // colorByPoint: true,
           data: seriesData,
         },
       ],
