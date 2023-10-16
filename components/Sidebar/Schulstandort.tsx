@@ -11,10 +11,21 @@ import BrokenAxis from 'highcharts/modules/broken-axis';
 import { useOsemData } from '@/hooks/useOsemData';
 import Tile from '../Tile';
 import { schallColors } from '@/pages/expidition/schall';
-import { defaultBarChartOptions, defaultChartOptions } from '@/lib/charts';
+import {
+  defaultBarChartOptions,
+  defaultChartOptions,
+  defaultPieChartOptions,
+} from '@/lib/charts';
 import MeasurementTile, { ChartType } from '../MeasurementTile';
-import { ArtenvielfaltRecord, VersiegelungRecord } from '@prisma/client';
+import {
+  ArtRecord,
+  ArtenvielfaltRecord,
+  VersiegelungRecord,
+} from '@prisma/client';
 import useSWR from 'swr';
+import Versiegelung from '../tiles/versiegelung';
+import Artenvielfalt from '../tiles/artenvielfalt';
+import { categories } from '../Schall/utils';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -22,17 +33,6 @@ if (typeof Highcharts === 'object') {
 
 const CHART_SERIES_GAP_SIZE: number =
   Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
-
-const barChartCategories = [
-  [0, 19],
-  [20, 39],
-  [40, 59],
-  [60, 79],
-  [80, 99],
-  [100, 119],
-  [120, 139],
-  [139, 10000],
-];
 
 const Schulstandort = ({
   box,
@@ -75,6 +75,7 @@ const Schulstandort = ({
 
   const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
   const [isLineChartOpen, setIsLineChartOpen] = useState<boolean>(false);
+  const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
 
   const [sensor, setSensor] = useState<Sensor>();
 
@@ -89,16 +90,20 @@ const Schulstandort = ({
   );
   console.log('useOsemData: ', data, boxes, colors);
 
-  // TODO: only fetch for Artenvielfalt expedition
-  // Fetcher for Artenvielfalt
+  // Fetcher for Versiegelung
   const { data: versiegelung, error: versiegelungError } = useSWR<{
     aggregations: VersiegelungRecord[];
-    measurements: VersiegelungRecord;
+    lastMeasurement: VersiegelungRecord;
+    measurements: VersiegelungRecord[];
+    grouped: VersiegelungRecord[];
   }>(`/api/versiegelung?project=${tag}`);
-  console.log('API Versieglung: ', versiegelung);
+
+  // Fetcher for Versiegelung
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<{
     aggregations: ArtenvielfaltRecord[];
-    measurements: ArtenvielfaltRecord;
+    lastMeasurement: ArtenvielfaltRecord;
+    measurements: ArtenvielfaltRecord[];
+    grouped: ArtenvielfaltRecord[];
   }>(`/api/artenvielfalt?project=${tag}`);
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
@@ -106,6 +111,9 @@ const Schulstandort = ({
   );
   const [lineChartOptions, setLineChartOptions] =
     useState<Highcharts.Options>(defaultChartOptions);
+  const [pieChartOptions, setPieChartOptions] = useState<Highcharts.Options>(
+    defaultPieChartOptions,
+  );
 
   const [reflowCharts, setReflowCharts] = useState(false);
 
@@ -142,7 +150,7 @@ const Schulstandort = ({
       series: data.map(e => ({
         name: e.box.properties.name,
         type: 'column',
-        data: barChartCategories.map(
+        data: categories.map(
           c =>
             e.measurements
               .map(m => Number(m.value))
@@ -174,25 +182,46 @@ const Schulstandort = ({
       // Cleanup everything before a new device is selected!!!
       setIsLineChartOpen(false);
       setIsBarChartOpen(false);
+      setIsPieChartOpen(false);
       setBarChartOptions(defaultBarChartOptions);
       setLineChartOptions(defaultChartOptions);
+      setPieChartOptions(defaultPieChartOptions);
       setSensor(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [box]);
 
+  // Tile Component
   const openCharts = (chartType: ChartType, device: Feature<Point, Device>) => {
-    console.info(`Open ${chartType} Chart: `, device);
     const osemData = data.filter(
       feature => feature.box.properties._id === device.properties._id,
     );
 
     switch (chartType) {
       case ChartType.column:
-        // openBarChart(sensorParam);
         return;
       case ChartType.pie:
-        // openPieChart(sensorParam);
+        return;
+      case ChartType.line:
+        openLineChart(osemData[0]);
+        return;
+      default:
+        break;
+    }
+  };
+
+  // MeasurementTile Component
+  const openChartSensor = (chartType: ChartType, sensor: Sensor) => {
+    const osemData = data.filter(
+      feature => feature.sensor.title === sensor.title,
+    );
+
+    switch (chartType) {
+      case ChartType.column:
+        openBarChart(sensor);
+        return;
+      case ChartType.pie:
+        openPieChart(sensor);
         return;
       case ChartType.line:
         openLineChart(osemData[0]);
@@ -203,7 +232,8 @@ const Schulstandort = ({
   };
 
   const openLineChart = (data: {
-    box: Feature<Point, Device>;
+    box: Feature<Point, Device>; // Box is set on Schallpegel
+    sensor?: Sensor; // Sensor is set on Artenvielfalt
     measurements: any[];
   }) => {
     if (!isLineChartOpen) {
@@ -218,8 +248,10 @@ const Schulstandort = ({
         },
         series: [
           {
-            id: `${data.box.properties._id}`,
-            name: `${data.box.properties.name}`,
+            id: `${
+              data.box?.properties._id || data.sensor.title.toLowerCase()
+            }`,
+            name: `${data.box?.properties.name || data.sensor.title}`,
             type: 'line',
             gapUnit: 'value',
             gapSize: CHART_SERIES_GAP_SIZE,
@@ -230,19 +262,27 @@ const Schulstandort = ({
         ],
         colors: [
           ...lineChartOptions.colors,
-          colors['he'][data.box.properties.name.toLowerCase()].DEFAULT,
+          colors['he'][
+            data.box?.properties.name.toLowerCase() ||
+              data.sensor.title.toLowerCase()
+          ].DEFAULT,
         ],
       });
     } else {
       // Handle open chart
       const serie = lineChartOptions.series.find(serie =>
-        serie.id.includes(data.box.properties._id),
+        serie.id.includes(
+          data.box?.properties._id || data.sensor.title.toLowerCase(),
+        ),
       );
 
       if (serie) {
         // Remove serie from lineChartOptions
         const newSeries = lineChartOptions.series.filter(
-          serie => !serie.id.includes(data.box.properties._id),
+          serie =>
+            !serie.id.includes(
+              data.box?.properties._id || data.sensor.title.toLowerCase(),
+            ),
         );
 
         // Keep chartOptions up to date
@@ -265,8 +305,10 @@ const Schulstandort = ({
           series: [
             ...lineChartOptions.series,
             {
-              id: `${data.box.properties._id}`,
-              name: `${data.box.properties.name}`,
+              id: `${
+                data.box?.properties._id || data.sensor.title.toLowerCase()
+              }`,
+              name: `${data.box?.properties.name || data.sensor.title}`,
               type: 'line',
               gapUnit: 'value',
               gapSize: CHART_SERIES_GAP_SIZE,
@@ -277,7 +319,10 @@ const Schulstandort = ({
           ],
           colors: [
             ...lineChartOptions.colors,
-            colors['he'][data.box.properties.name.toLowerCase()].DEFAULT,
+            colors['he'][
+              data.box?.properties.name.toLowerCase() ||
+                data.sensor.title.toLowerCase()
+            ].DEFAULT,
           ],
         });
       }
@@ -286,73 +331,94 @@ const Schulstandort = ({
     setReflowCharts(true);
   };
 
-  const getArtenvielfaltTile = ({
-    aggregations,
-    measurements,
-  }: {
-    aggregations: ArtenvielfaltRecord[];
-    measurements: ArtenvielfaltRecord;
-  }) => {
-    const sensor: Sensor = {
-      title: 'Simpson-Index',
-      unit: '',
-      sensorType: '',
-      ...(aggregations !== undefined &&
-      aggregations['_avg'] !== undefined &&
-      aggregations['_avg'].simpsonIndex !== null
-        ? {
-            lastMeasurement: {
-              value: aggregations['_avg'].simpsonIndex.toFixed(2),
-              createdAt: measurements.updatedAt,
-            },
-          }
-        : {}),
-    };
-    return (
-      <MeasurementTile
-        sensor={sensor}
-        openChart={() => console.log('Coming soon')}
-        charts={[ChartType.column, ChartType.pie]}
-      />
-    );
+  /**
+   * Opens a Bar Chart with the given sensor.
+   * Bar charts are only supported for Versiegelung und Artenvielfalt
+   * in the Schulstandort view.
+   * @param sensor Sensor
+   */
+  const openBarChart = (sensor: Sensor) => {
+    const serie = sensor.title.toLowerCase().startsWith('simpson')
+      ? 'Artenvielfalt'
+      : 'Versiegelung';
+    let seriesData = [];
+    let seriesCategories = [];
+
+    sensor.groups.forEach(g => {
+      seriesData.push(Number(g.value));
+      seriesCategories.push(new Date(g.createdAt).toISOString().split('T')[0]);
+    });
+
+    setBarChartOptions({
+      ...barChartOptions,
+      yAxis: {
+        title: {
+          text: `${serie} in %`,
+        },
+      },
+      xAxis: {
+        categories: seriesCategories,
+      },
+      series: [
+        {
+          id: `${serie}-${sensor._id}`,
+          name: serie,
+          type: 'column',
+          data: seriesData,
+        },
+      ],
+      colors: [colors['he'][serie.toLocaleLowerCase()].DEFAULT],
+    });
+
+    setIsBarChartOpen(!isBarChartOpen);
+    setReflowCharts(!reflowCharts);
   };
 
-  const getVersiegelungTile = ({
-    aggregations,
-    measurements,
-  }: {
-    aggregations: VersiegelungRecord[];
-    measurements: VersiegelungRecord;
-  }) => {
-    const sensor: Sensor = {
-      title: 'Versiegelung',
-      unit: '%',
-      sensorType: '',
-      ...(aggregations !== undefined &&
-      aggregations['_avg'] !== undefined &&
-      aggregations['_avg'].value !== null
-        ? {
-            lastMeasurement: {
-              value: aggregations['_avg'].value.toFixed(2),
-              createdAt: measurements.updatedAt,
-            },
-          }
-        : {}),
-    };
-    return (
-      <MeasurementTile
-        sensor={sensor}
-        openChart={() => console.log('Coming soon')}
-        charts={[ChartType.column]}
-      />
-    );
+  /**
+   * Opens a Pie Chart with the given sensor.
+   * Pie charts are only supported for Artenvielfalt including Arten
+   * in the Schulstandort view.
+   * @param sensor Sensor
+   */
+  const openPieChart = (sensor: Sensor) => {
+    const seriesData = [];
+
+    for (const observations of sensor.measurements) {
+      const arten = observations['arten'] as Array<ArtRecord>;
+      for (const art of arten) {
+        seriesData.push({
+          name: art.art,
+          y: art.count,
+        });
+      }
+    }
+
+    setPieChartOptions({
+      ...pieChartOptions,
+      title: {
+        text: 'Artenvielfalt (Arten)',
+      },
+      series: [
+        ...pieChartOptions.series,
+        {
+          name: 'Artenvielfalt-Arten',
+          type: 'pie',
+          data: seriesData,
+        },
+      ],
+    });
+
+    setIsPieChartOpen(!isPieChartOpen);
+    setReflowCharts(!reflowCharts);
   };
 
   return (
     <div className="flex h-full w-full overflow-hidden rounded-lg bg-white p-2 shadow">
       {layout === LayoutMode.MAP ? (
+        // Map Layout
         <div className="flex h-full w-full divide-x-2 overflow-hidden">
           {box && (
+            // Metadata and tile rendering area
             <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
               <div className="mb-2">
                 <h1 className="mb-2 content-center text-center text-lg font-bold">
@@ -375,12 +441,12 @@ const Schulstandort = ({
                   })}
                 </div>
               </div>
+              {/* Graph rendering area */}
               <div className="flex h-full flex-wrap justify-center overflow-auto align-middle">
                 <div>
                   <div className="flex h-full flex-row flex-wrap items-center justify-evenly">
                     {data?.map((e, i) => {
                       if (expedition === 'Schallpegel' && e.box) {
-                        console.log('Data Map e: ', e);
                         return (
                           <Tile
                             key={i}
@@ -421,18 +487,29 @@ const Schulstandort = ({
                                 0,
                               ) / e.measurements.length
                             }
-                            openChart={() =>
-                              console.log('New feature. Coming soon.')
-                            }
-                            charts={[ChartType.column, ChartType.pie]}
+                            openChart={openChartSensor}
+                            charts={[ChartType.line]}
                           />
                         );
                       }
                     })}
+                    {/* Render Artenvielfalt specific tiles */}
                     {expedition === 'Artenvielfalt' ? (
                       <>
-                        {artenvielfalt && getArtenvielfaltTile(artenvielfalt)}
-                        {versiegelung && getVersiegelungTile(versiegelung)}
+                        {artenvielfalt && (
+                          <Artenvielfalt
+                            data={artenvielfalt}
+                            openChart={openChartSensor}
+                            charts={[ChartType.column, ChartType.pie]}
+                          />
+                        )}
+                        {versiegelung && (
+                          <Versiegelung
+                            data={versiegelung}
+                            openChart={openChartSensor}
+                            charts={[ChartType.column]}
+                          />
+                        )}
                       </>
                     ) : null}
                   </div>
@@ -455,6 +532,18 @@ const Schulstandort = ({
               </div>
             )}
 
+            {isPieChartOpen && (
+              <div className="m-2 h-[95%] w-full overflow-hidden">
+                <HighchartsReact
+                  ref={pieChart}
+                  containerProps={{ style: { height: '100%' } }}
+                  highcharts={Highcharts}
+                  allowChartUpdate={true}
+                  options={pieChartOptions}
+                />
+              </div>
+            )}
+
             {isLineChartOpen && (
               <div className="flex w-full overflow-hidden">
                 <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
@@ -469,17 +558,18 @@ const Schulstandort = ({
               </div>
             )}
 
-            {box !== undefined && !isBarChartOpen && (
+            {!isBarChartOpen && !isLineChartOpen && !isPieChartOpen ? (
               <div className="flex h-full w-full items-center justify-center text-center">
                 <h1>
                   Klicke auf eine Kachel um dir die Daten in einem Graphen
                   anzuzeigen.
                 </h1>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       ) : (
+        // Full screen layout
         <div className="flex h-full w-full overflow-hidden">
           {box && (
             <div className="flex w-full flex-col">
@@ -548,18 +638,28 @@ const Schulstandort = ({
                               0,
                             ) / e.measurements.length
                           }
-                          openChart={() =>
-                            console.log('New feature. Coming soon.')
-                          }
-                          charts={[ChartType.column, ChartType.pie]}
+                          openChart={openChartSensor}
+                          charts={[ChartType.line]}
                         />
                       );
                     }
                   })}
                   {expedition === 'Artenvielfalt' ? (
                     <>
-                      {artenvielfalt && getArtenvielfaltTile(artenvielfalt)}
-                      {versiegelung && getVersiegelungTile(versiegelung)}
+                      {artenvielfalt && (
+                        <Artenvielfalt
+                          data={artenvielfalt}
+                          openChart={openChartSensor}
+                          charts={[ChartType.column, ChartType.pie]}
+                        />
+                      )}
+                      {versiegelung && (
+                        <Versiegelung
+                          data={versiegelung}
+                          openChart={openChartSensor}
+                          charts={[ChartType.column]}
+                        />
+                      )}
                     </>
                   ) : null}
                 </div>
@@ -579,8 +679,20 @@ const Schulstandort = ({
                   </div>
                 )}
 
+                {isPieChartOpen && (
+                  <div className="m-2 h-[95%] w-full overflow-hidden">
+                    <HighchartsReact
+                      ref={pieChart}
+                      containerProps={{ style: { height: '100%' } }}
+                      highcharts={Highcharts}
+                      allowChartUpdate={true}
+                      options={pieChartOptions}
+                    />
+                  </div>
+                )}
+
                 {isLineChartOpen && (
-                  <div className="flex w-full overflow-hidden">
+                  <div className="flex h-full w-full overflow-hidden">
                     <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
                       <HighchartsReact
                         ref={lineChart}
@@ -593,14 +705,14 @@ const Schulstandort = ({
                   </div>
                 )}
 
-                {box !== undefined && !isBarChartOpen && (
+                {!isBarChartOpen && !isLineChartOpen && !isPieChartOpen ? (
                   <div className="flex h-full w-full items-center justify-center text-center">
                     <h1>
                       Klicke auf eine Kachel um dir die Daten in einem Graphen
                       anzuzeigen.
                     </h1>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           )}

@@ -49,7 +49,10 @@ export default async function handler(
       },
     });
 
-    const measurements = await prisma.versiegelungRecord.findFirst({
+    const measurements = await prisma.artenvielfaltRecord.findMany({
+      include: {
+        arten: true,
+      },
       orderBy: {
         updatedAt: 'desc',
       },
@@ -60,7 +63,29 @@ export default async function handler(
       },
     });
 
-    res.status(201).json({ aggregations, measurements });
+    const grouped = await prisma.artenvielfaltRecord.groupBy({
+      by: ['createdAt'],
+      _avg: {
+        simpsonIndex: true,
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    res
+      .status(201)
+      .json({
+        aggregations,
+        lastMeasurement: measurements[0],
+        measurements,
+        grouped,
+      });
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);
 
