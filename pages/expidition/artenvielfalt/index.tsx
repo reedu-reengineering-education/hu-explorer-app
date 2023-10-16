@@ -272,8 +272,8 @@ const Artenvielfalt = ({
               type: 'column',
               yAxis: 1,
               data: artenvielfaltPercent
-                ? artenvielfaltPercentData
-                : artenvielfalt,
+                ? [...artenvielfaltPercentData]
+                : [...artenvielfalt],
             },
           ],
           artenvielfaltPercent,
@@ -300,8 +300,8 @@ const Artenvielfalt = ({
               type: 'column',
               yAxis: 1,
               data: artenvielfaltPercent
-                ? artenvielfaltPercentData
-                : artenvielfalt,
+                ? [...artenvielfaltPercentData]
+                : [...artenvielfalt],
             },
           ],
           artenvielfaltPercent,
@@ -328,8 +328,8 @@ const Artenvielfalt = ({
               type: 'column',
               yAxis: 1,
               data: artenvielfaltPercent
-                ? artenvielfaltPercentData
-                : artenvielfalt,
+                ? [...artenvielfaltPercentData]
+                : [...artenvielfalt],
             },
           ],
           artenvielfaltPercent,
