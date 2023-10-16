@@ -25,6 +25,7 @@ import {
 import useSWR from 'swr';
 import Versiegelung from '../tiles/versiegelung';
 import Artenvielfalt from '../tiles/artenvielfalt';
+import { categories } from '../Schall/utils';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -32,17 +33,6 @@ if (typeof Highcharts === 'object') {
 
 const CHART_SERIES_GAP_SIZE: number =
   Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
-
-const barChartCategories = [
-  [0, 19],
-  [20, 39],
-  [40, 59],
-  [60, 79],
-  [80, 99],
-  [100, 119],
-  [120, 139],
-  [139, 10000],
-];
 
 const Schulstandort = ({
   box,
@@ -100,15 +90,15 @@ const Schulstandort = ({
   );
   console.log('useOsemData: ', data, boxes, colors);
 
-  // TODO: only fetch for Artenvielfalt expedition
-  // Fetcher for Artenvielfalt
+  // Fetcher for Versiegelung
   const { data: versiegelung, error: versiegelungError } = useSWR<{
     aggregations: VersiegelungRecord[];
     lastMeasurement: VersiegelungRecord;
     measurements: VersiegelungRecord[];
     grouped: VersiegelungRecord[];
   }>(`/api/versiegelung?project=${tag}`);
-  console.log('API Versieglung: ', versiegelung);
+
+  // Fetcher for Versiegelung
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<{
     aggregations: ArtenvielfaltRecord[];
     lastMeasurement: ArtenvielfaltRecord;
@@ -160,7 +150,7 @@ const Schulstandort = ({
       series: data.map(e => ({
         name: e.box.properties.name,
         type: 'column',
-        data: barChartCategories.map(
+        data: categories.map(
           c =>
             e.measurements
               .map(m => Number(m.value))
@@ -203,17 +193,14 @@ const Schulstandort = ({
 
   // Tile Component
   const openCharts = (chartType: ChartType, device: Feature<Point, Device>) => {
-    // console.info(`Open ${chartType} Chart: `, device);
     const osemData = data.filter(
       feature => feature.box.properties._id === device.properties._id,
     );
 
     switch (chartType) {
       case ChartType.column:
-        // openBarChart(sensorParam);
         return;
       case ChartType.pie:
-        // openPieChart(sensorParam);
         return;
       case ChartType.line:
         openLineChart(osemData[0]);
@@ -225,7 +212,6 @@ const Schulstandort = ({
 
   // MeasurementTile Component
   const openChartSensor = (chartType: ChartType, sensor: Sensor) => {
-    console.info(`Open ${chartType} Chart for sensor: `, sensor);
     const osemData = data.filter(
       feature => feature.sensor.title === sensor.title,
     );
@@ -353,8 +339,8 @@ const Schulstandort = ({
    */
   const openBarChart = (sensor: Sensor) => {
     const serie = sensor.title.toLowerCase().startsWith('simpson')
-      ? 'artenvielfalt'
-      : 'versiegelung';
+      ? 'Artenvielfalt'
+      : 'Versiegelung';
     let seriesData = [];
     let seriesCategories = [];
 
@@ -381,7 +367,7 @@ const Schulstandort = ({
           data: seriesData,
         },
       ],
-      colors: [colors['he'][serie].DEFAULT],
+      colors: [colors['he'][serie.toLocaleLowerCase()].DEFAULT],
     });
 
     setIsBarChartOpen(!isBarChartOpen);
@@ -415,7 +401,7 @@ const Schulstandort = ({
       series: [
         ...pieChartOptions.series,
         {
-          name: 'Artenvielfalt',
+          name: 'Artenvielfalt-Arten',
           type: 'pie',
           data: seriesData,
         },
