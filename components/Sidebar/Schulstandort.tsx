@@ -93,12 +93,14 @@ const Schulstandort = ({
   // Fetcher for Artenvielfalt
   const { data: versiegelung, error: versiegelungError } = useSWR<{
     aggregations: VersiegelungRecord[];
-    measurements: VersiegelungRecord;
+    lastMeasurement: VersiegelungRecord;
+    measurements: VersiegelungRecord[];
   }>(`/api/versiegelung?project=${tag}`);
   console.log('API Versieglung: ', versiegelung);
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<{
     aggregations: ArtenvielfaltRecord[];
-    measurements: ArtenvielfaltRecord;
+    lastMeasurement: ArtenvielfaltRecord;
+    measurements: ArtenvielfaltRecord[];
   }>(`/api/artenvielfalt?project=${tag}`);
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
@@ -205,7 +207,7 @@ const Schulstandort = ({
 
   // MeasurementTile Compoennt
   const openChartSensor = (chartType: ChartType, sensor: Sensor) => {
-    // console.info(`Open ${chartType} Chart for sensor: `, sensor);
+    console.info(`Open ${chartType} Chart for sensor: `, sensor);
     const osemData = data.filter(
       feature => feature.sensor.title === sensor.title,
     );
@@ -330,7 +332,8 @@ const Schulstandort = ({
     measurements,
   }: {
     aggregations: ArtenvielfaltRecord[];
-    measurements: ArtenvielfaltRecord;
+    lastMeasurement: ArtenvielfaltRecord;
+    measurements: ArtenvielfaltRecord[];
   }) => {
     const sensor: Sensor = {
       title: 'Simpson-Index',
@@ -342,15 +345,16 @@ const Schulstandort = ({
         ? {
             lastMeasurement: {
               value: aggregations['_avg'].simpsonIndex.toFixed(2),
-              createdAt: measurements.updatedAt,
+              createdAt: measurements[0].updatedAt,
             },
           }
         : {}),
+      measurements,
     };
     return (
       <MeasurementTile
         sensor={sensor}
-        openChart={() => console.log('Coming soon')}
+        openChart={openChartSensor}
         charts={[ChartType.column, ChartType.pie]}
       />
     );
@@ -361,7 +365,8 @@ const Schulstandort = ({
     measurements,
   }: {
     aggregations: VersiegelungRecord[];
-    measurements: VersiegelungRecord;
+    lastMeasurement: VersiegelungRecord;
+    measurements: VersiegelungRecord[];
   }) => {
     const sensor: Sensor = {
       title: 'Versiegelung',
@@ -373,15 +378,16 @@ const Schulstandort = ({
         ? {
             lastMeasurement: {
               value: aggregations['_avg'].value.toFixed(2),
-              createdAt: measurements.updatedAt,
+              createdAt: measurements[0].updatedAt,
             },
           }
         : {}),
+      measurements,
     };
     return (
       <MeasurementTile
         sensor={sensor}
-        openChart={() => console.log('Coming soon')}
+        openChart={openChartSensor}
         charts={[ChartType.column]}
       />
     );
@@ -393,6 +399,7 @@ const Schulstandort = ({
         // Map Layout
         <div className="flex h-full w-full divide-x-2 overflow-hidden">
           {box && (
+            // Metadata and tile rendering area
             <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
               <div className="mb-2">
                 <h1 className="mb-2 content-center text-center text-lg font-bold">
@@ -415,12 +422,12 @@ const Schulstandort = ({
                   })}
                 </div>
               </div>
+              {/* Graph rendering area */}
               <div className="flex h-full flex-wrap justify-center overflow-auto align-middle">
                 <div>
                   <div className="flex h-full flex-row flex-wrap items-center justify-evenly">
                     {data?.map((e, i) => {
                       if (expedition === 'Schallpegel' && e.box) {
-                        console.log('Data Map e: ', e);
                         return (
                           <Tile
                             key={i}
@@ -467,6 +474,7 @@ const Schulstandort = ({
                         );
                       }
                     })}
+                    {/* Render Artenvielfalt specific tiles */}
                     {expedition === 'Artenvielfalt' ? (
                       <>
                         {artenvielfalt && getArtenvielfaltTile(artenvielfalt)}

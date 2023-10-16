@@ -49,7 +49,7 @@ export default async function handler(
       },
     });
 
-    const measurements = await prisma.versiegelungRecord.findFirst({
+    const measurements = await prisma.versiegelungRecord.findMany({
       orderBy: {
         updatedAt: 'desc',
       },
@@ -60,7 +60,9 @@ export default async function handler(
       },
     });
 
-    res.status(201).json({ aggregations, measurements });
+    res
+      .status(201)
+      .json({ aggregations, lastMeasurement: measurements[0], measurements });
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);
 
