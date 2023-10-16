@@ -181,8 +181,9 @@ const Schulstandort = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [box]);
 
+  // Tile Component
   const openCharts = (chartType: ChartType, device: Feature<Point, Device>) => {
-    console.info(`Open ${chartType} Chart: `, device);
+    // console.info(`Open ${chartType} Chart: `, device);
     const osemData = data.filter(
       feature => feature.box.properties._id === device.properties._id,
     );
@@ -202,8 +203,31 @@ const Schulstandort = ({
     }
   };
 
+  // MeasurementTile Compoennt
+  const openChartSensor = (chartType: ChartType, sensor: Sensor) => {
+    // console.info(`Open ${chartType} Chart for sensor: `, sensor);
+    const osemData = data.filter(
+      feature => feature.sensor.title === sensor.title,
+    );
+
+    switch (chartType) {
+      case ChartType.column:
+        // openBarChart(sensorParam);
+        return;
+      case ChartType.pie:
+        // openPieChart(sensorParam);
+        return;
+      case ChartType.line:
+        openLineChart(osemData[0]);
+        return;
+      default:
+        break;
+    }
+  };
+
   const openLineChart = (data: {
-    box: Feature<Point, Device>;
+    box: Feature<Point, Device>; // Box is set on Schallpegel
+    sensor?: Sensor; // Sensor is set on Artenvielfalt
     measurements: any[];
   }) => {
     if (!isLineChartOpen) {
@@ -218,8 +242,10 @@ const Schulstandort = ({
         },
         series: [
           {
-            id: `${data.box.properties._id}`,
-            name: `${data.box.properties.name}`,
+            id: `${
+              data.box?.properties._id || data.sensor.title.toLowerCase()
+            }`,
+            name: `${data.box?.properties.name || data.sensor.title}`,
             type: 'line',
             gapUnit: 'value',
             gapSize: CHART_SERIES_GAP_SIZE,
@@ -230,19 +256,27 @@ const Schulstandort = ({
         ],
         colors: [
           ...lineChartOptions.colors,
-          colors['he'][data.box.properties.name.toLowerCase()].DEFAULT,
+          colors['he'][
+            data.box?.properties.name.toLowerCase() ||
+              data.sensor.title.toLowerCase()
+          ].DEFAULT,
         ],
       });
     } else {
       // Handle open chart
       const serie = lineChartOptions.series.find(serie =>
-        serie.id.includes(data.box.properties._id),
+        serie.id.includes(
+          data.box?.properties._id || data.sensor.title.toLowerCase(),
+        ),
       );
 
       if (serie) {
         // Remove serie from lineChartOptions
         const newSeries = lineChartOptions.series.filter(
-          serie => !serie.id.includes(data.box.properties._id),
+          serie =>
+            !serie.id.includes(
+              data.box?.properties._id || data.sensor.title.toLowerCase(),
+            ),
         );
 
         // Keep chartOptions up to date
@@ -265,8 +299,10 @@ const Schulstandort = ({
           series: [
             ...lineChartOptions.series,
             {
-              id: `${data.box.properties._id}`,
-              name: `${data.box.properties.name}`,
+              id: `${
+                data.box?.properties._id || data.sensor.title.toLowerCase()
+              }`,
+              name: `${data.box?.properties.name || data.sensor.title}`,
               type: 'line',
               gapUnit: 'value',
               gapSize: CHART_SERIES_GAP_SIZE,
@@ -277,7 +313,10 @@ const Schulstandort = ({
           ],
           colors: [
             ...lineChartOptions.colors,
-            colors['he'][data.box.properties.name.toLowerCase()].DEFAULT,
+            colors['he'][
+              data.box?.properties.name.toLowerCase() ||
+                data.sensor.title.toLowerCase()
+            ].DEFAULT,
           ],
         });
       }
@@ -351,6 +390,7 @@ const Schulstandort = ({
   return (
     <div className="flex h-full w-full overflow-hidden rounded-lg bg-white p-2 shadow">
       {layout === LayoutMode.MAP ? (
+        // Map Layout
         <div className="flex h-full w-full divide-x-2 overflow-hidden">
           {box && (
             <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
@@ -421,10 +461,8 @@ const Schulstandort = ({
                                 0,
                               ) / e.measurements.length
                             }
-                            openChart={() =>
-                              console.log('New feature. Coming soon.')
-                            }
-                            charts={[ChartType.column, ChartType.pie]}
+                            openChart={openChartSensor}
+                            charts={[ChartType.line]}
                           />
                         );
                       }
@@ -469,17 +507,18 @@ const Schulstandort = ({
               </div>
             )}
 
-            {box !== undefined && !isBarChartOpen && (
+            {!isBarChartOpen && !isLineChartOpen ? (
               <div className="flex h-full w-full items-center justify-center text-center">
                 <h1>
                   Klicke auf eine Kachel um dir die Daten in einem Graphen
                   anzuzeigen.
                 </h1>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       ) : (
+        // Full screen layout
         <div className="flex h-full w-full overflow-hidden">
           {box && (
             <div className="flex w-full flex-col">
@@ -548,10 +587,8 @@ const Schulstandort = ({
                               0,
                             ) / e.measurements.length
                           }
-                          openChart={() =>
-                            console.log('New feature. Coming soon.')
-                          }
-                          charts={[ChartType.column, ChartType.pie]}
+                          openChart={openChartSensor}
+                          charts={[ChartType.line]}
                         />
                       );
                     }
@@ -593,14 +630,14 @@ const Schulstandort = ({
                   </div>
                 )}
 
-                {box !== undefined && !isBarChartOpen && (
+                {!isBarChartOpen && !isLineChartOpen ? (
                   <div className="flex h-full w-full items-center justify-center text-center">
                     <h1>
                       Klicke auf eine Kachel um dir die Daten in einem Graphen
                       anzuzeigen.
                     </h1>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           )}
