@@ -12,6 +12,7 @@ export interface Sensor {
   sensorType: string;
   lastMeasurement?: Measurement;
   measurements?: any[];
+  groups?: Measurement[];
 }
 
 export interface Location {

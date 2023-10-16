@@ -104,12 +104,14 @@ const Schulstandort = ({
     aggregations: VersiegelungRecord[];
     lastMeasurement: VersiegelungRecord;
     measurements: VersiegelungRecord[];
+    grouped: VersiegelungRecord[];
   }>(`/api/versiegelung?project=${tag}`);
   console.log('API Versieglung: ', versiegelung);
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<{
     aggregations: ArtenvielfaltRecord[];
     lastMeasurement: ArtenvielfaltRecord;
     measurements: ArtenvielfaltRecord[];
+    grouped: ArtenvielfaltRecord[];
   }>(`/api/artenvielfalt?project=${tag}`);
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
@@ -344,18 +346,12 @@ const Schulstandort = ({
       ? 'artenvielfalt'
       : 'versiegelung';
     let seriesData = [];
+    let seriesCategories = [];
 
-    if (serie === 'versiegelung') {
-      seriesData = versiegelung.measurements.map(v => [
-        new Date(v.updatedAt).getTime(),
-        v.value,
-      ]);
-    } else if (serie === 'artenvielfalt') {
-      seriesData = artenvielfalt.measurements.map(a => [
-        new Date(a.updatedAt).getTime(),
-        a.simpsonIndex,
-      ]);
-    }
+    sensor.groups.forEach(g => {
+      seriesData.push(Number(g.value));
+      seriesCategories.push(new Date(g.createdAt).toISOString().split('T')[0]);
+    });
 
     setBarChartOptions({
       ...barChartOptions,
@@ -364,8 +360,18 @@ const Schulstandort = ({
           text: `${serie} in %`,
         },
       },
-      series: [],
-      colors: [],
+      xAxis: {
+        categories: seriesCategories,
+      },
+      series: [
+        {
+          id: `${serie}-${sensor._id}`,
+          name: serie,
+          type: 'column',
+          data: seriesData,
+        },
+      ],
+      colors: [colors['he'][serie].DEFAULT],
     });
 
     setIsBarChartOpen(!isBarChartOpen);
@@ -405,10 +411,12 @@ const Schulstandort = ({
   const getArtenvielfaltTile = ({
     aggregations,
     measurements,
+    grouped,
   }: {
     aggregations: ArtenvielfaltRecord[];
     lastMeasurement: ArtenvielfaltRecord;
     measurements: ArtenvielfaltRecord[];
+    grouped: ArtenvielfaltRecord[];
   }) => {
     const sensor: Sensor = {
       title: 'Simpson-Index',
@@ -425,6 +433,10 @@ const Schulstandort = ({
           }
         : {}),
       measurements,
+      groups: grouped.map(group => ({
+        value: group['_avg'].simpsonIndex.toFixed(2),
+        createdAt: group.createdAt,
+      })),
     };
     return (
       <MeasurementTile
@@ -438,10 +450,12 @@ const Schulstandort = ({
   const getVersiegelungTile = ({
     aggregations,
     measurements,
+    grouped,
   }: {
     aggregations: VersiegelungRecord[];
     lastMeasurement: VersiegelungRecord;
     measurements: VersiegelungRecord[];
+    grouped: VersiegelungRecord[];
   }) => {
     const sensor: Sensor = {
       title: 'Versiegelung',
@@ -458,6 +472,10 @@ const Schulstandort = ({
           }
         : {}),
       measurements,
+      groups: grouped.map(group => ({
+        value: group['_avg'].value.toFixed(2),
+        createdAt: group.createdAt,
+      })),
     };
     return (
       <MeasurementTile

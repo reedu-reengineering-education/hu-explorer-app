@@ -63,9 +63,29 @@ export default async function handler(
       },
     });
 
+    const grouped = await prisma.artenvielfaltRecord.groupBy({
+      by: ['createdAt'],
+      _avg: {
+        simpsonIndex: true,
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
     res
       .status(201)
-      .json({ aggregations, lastMeasurement: measurements[0], measurements });
+      .json({
+        aggregations,
+        lastMeasurement: measurements[0],
+        measurements,
+        grouped,
+      });
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);
 

@@ -77,9 +77,29 @@ export default async function handler(
       },
     });
 
+    const grouped = await prisma.versiegelungRecord.groupBy({
+      by: ['createdAt'],
+      _avg: {
+        value: true,
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
     res
       .status(201)
-      .json({ aggregations, lastMeasurement: measurements[0], measurements });
+      .json({
+        aggregations,
+        lastMeasurement: measurements[0],
+        measurements,
+        grouped,
+      });
   } else {
     res.status(405).json({});
   }
