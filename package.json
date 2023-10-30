@@ -13,7 +13,7 @@
     "@heroicons/react": "^1.0.5",
     "@mapbox/geo-viewport": "^0.5.0",
     "@prisma/client": "3.5.0",
-    "@silevis/reactgrid": "^4.0.2",
+    "@silevis/reactgrid": "^4.1.1",
     "@turf/bbox": "^6.5.0",
     "@turf/bbox-polygon": "^6.5.0",
     "@turf/boolean-point-in-polygon": "^6.5.0",
