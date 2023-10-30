@@ -42,7 +42,7 @@ export default async function handler(
       });
     }
   } else if (req.method === 'GET') {
-    const { project } = req.query;
+    const { project, from, to } = req.query;
 
     // fetch boxes from osem api
     const response = await fetch(
@@ -64,6 +64,10 @@ export default async function handler(
         deviceId: {
           in: deviceIds,
         },
+        createdAt: {
+          gte: from as string,
+          lte: to as string,
+        },
       },
     });
     const measurements = await prisma.versiegelungRecord.findMany({
@@ -73,6 +77,10 @@ export default async function handler(
       where: {
         deviceId: {
           in: deviceIds,
+        },
+        createdAt: {
+          gte: from as string,
+          lte: to as string,
         },
       },
     });
@@ -86,20 +94,22 @@ export default async function handler(
         deviceId: {
           in: deviceIds,
         },
+        createdAt: {
+          gte: from as string,
+          lte: to as string,
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    res
-      .status(201)
-      .json({
-        aggregations,
-        lastMeasurement: measurements[0],
-        measurements,
-        grouped,
-      });
+    res.status(201).json({
+      aggregations,
+      lastMeasurement: measurements[0],
+      measurements,
+      grouped,
+    });
   } else {
     res.status(405).json({});
   }

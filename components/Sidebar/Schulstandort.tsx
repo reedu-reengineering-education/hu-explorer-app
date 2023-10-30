@@ -61,6 +61,10 @@ const Schulstandort = ({
   const colors = useTailwindColors();
   const { compareSensors } = useSharedCompareSensors();
 
+  // Selected date range by the user
+  const fromDate = dateRange[0] ? `from=${dateRange[0].toISOString()}` : '';
+  const toDate = dateRange[1] ? `to=${dateRange[1].toISOString()}` : '';
+
   useEffect(() => {
     if (compareSensors.length > 0) {
       const { active, sensor, device } = compareSensors[0];
@@ -96,7 +100,7 @@ const Schulstandort = ({
     lastMeasurement: VersiegelungRecord;
     measurements: VersiegelungRecord[];
     grouped: VersiegelungRecord[];
-  }>(`/api/versiegelung?project=${tag}`);
+  }>(`/api/versiegelung?project=${tag}&${fromDate}&${toDate}`);
 
   // Fetcher for Versiegelung
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<{
@@ -104,7 +108,7 @@ const Schulstandort = ({
     lastMeasurement: ArtenvielfaltRecord;
     measurements: ArtenvielfaltRecord[];
     grouped: ArtenvielfaltRecord[];
-  }>(`/api/artenvielfalt?project=${tag}`);
+  }>(`/api/artenvielfalt?project=${tag}&${fromDate}&${toDate}`);
 
   const [barChartOptions, setBarChartOptions] = useState<Highcharts.Options>(
     defaultBarChartOptions,
