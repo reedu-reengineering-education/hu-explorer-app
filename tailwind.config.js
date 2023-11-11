@@ -49,15 +49,42 @@ module.exports = {
             // DEFAULT: '#6bbe98',
             DEFAULT: '#ec656b',
           },
+          versiegelung: {
+            // light: '#5394d0',
+            // DEFAULT: '#6bbe98',
+            DEFAULT: '#ec656b',
+          },
           artenvielfalt: {
             // light: '#bad580',
             light: '#bad580',
             // DEFAULT: '#ec656b',
             DEFAULT: '#6bbe98',
           },
+          lautstärke: {
+            DEFAULT: '#14B8A6',
+          },
+          straße: {
+            DEFAULT: '#f6a03e',
+          },
+          eingang: {
+            DEFAULT: '#5394d0',
+          },
+          hof: {
+            DEFAULT: '#6bbe98',
+          },
+          flur: {
+            DEFAULT: '#ec656b',
+          },
+          klingel: {
+            DEFAULT: '#9b78b4',
+          },
         },
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/forms')({
+      strategy: 'class',
+    }),
+  ],
 };

@@ -166,7 +166,7 @@ const Artenvielfalt = ({
         title: {
           text: 'Artenvielfaltsindex',
           style: {
-            color: colors.he.artenvielfalt.DEFAULT,
+            color: colors['he'].artenvielfalt.DEFAULT,
           },
         },
         opposite: true,
@@ -322,7 +322,7 @@ const Artenvielfalt = ({
       <div className="flex h-full w-full flex-row overflow-hidden">
         <div className="flex w-full flex-col">
           <div className="mb-4 h-[25%] max-h-[25%] w-full flex-auto">
-            <Map width="100%" height="100%" data={devices} expedition={true} />
+            <Map data={devices} expedition={true} />
           </div>
           <div className="mb-4">
             <Tabs tabs={tabs} onChange={onChange}></Tabs>

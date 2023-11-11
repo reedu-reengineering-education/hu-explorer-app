@@ -76,11 +76,11 @@ const Schall = () => {
       layout: 'horizontal',
     },
     colors: [
-      colors.he.blue.DEFAULT,
-      colors.he.yellow.DEFAULT,
-      colors.he.green.DEFAULT,
-      colors.he.violet.DEFAULT,
-      colors.he.red.DEFAULT,
+      colors['he'].blue.DEFAULT,
+      colors['he'].yellow.DEFAULT,
+      colors['he'].green.DEFAULT,
+      colors['he'].violet.DEFAULT,
+      colors['he'].red.DEFAULT,
     ],
     credits: {
       enabled: true,
@@ -127,11 +127,11 @@ const Schall = () => {
       layout: 'horizontal',
     },
     colors: [
-      colors.he.blue.DEFAULT,
-      colors.he.yellow.DEFAULT,
-      colors.he.green.DEFAULT,
-      colors.he.violet.DEFAULT,
-      colors.he.red.DEFAULT,
+      colors['he'].blue.DEFAULT,
+      colors['he'].yellow.DEFAULT,
+      colors['he'].green.DEFAULT,
+      colors['he'].violet.DEFAULT,
+      colors['he'].red.DEFAULT,
     ],
     credits: {
       enabled: true,
@@ -229,14 +229,7 @@ const Schall = () => {
         </LayoutTile>
         <LayoutTile>
           <div className="h-full min-h-[300px] w-full overflow-hidden rounded-xl shadow">
-            <Map
-              width="100%"
-              height="100%"
-              data={boxes}
-              expedition={true}
-              color
-              zoomLevel={10}
-            />
+            <Map data={boxes} expedition={true} color zoomLevel={10} />
           </div>
         </LayoutTile>
         <LayoutTile>

@@ -9,18 +9,16 @@ export const useOsemData2 = (
   schule: string | string[],
   live: boolean = true,
 ) => {
-  // fetch berlin data
   const { data: boxes } = useSWR<GeoJSON.FeatureCollection<Point>, any>(
-    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,${expedition},${schule}`,
+    `${process.env.NEXT_PUBLIC_OSEM_API}/boxes?format=geojson&grouptag=HU Explorers,${expedition},${schule}&full=true`,
   );
 
   // Get today´s date
   const today = DateTime.now().startOf('day').toUTC().toString();
-
   const { data: measurements } = useSWR(
     boxes?.features.flatMap(b => {
       return b.properties.sensors.map(s => {
-        return `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${s._id}?from-date=${today}`;
+        return `${process.env.NEXT_PUBLIC_OSEM_API}/boxes/${b.properties._id}/data/${s._id}?to-date=${s.lastMeasurement.createdAt}`;
       });
     }),
     fetcher,

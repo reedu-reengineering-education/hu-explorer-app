@@ -24,8 +24,78 @@ export default async function handler(
       });
     }
   } else if (req.method === 'GET') {
-    const results = await prisma.artenvielfaltRecord.findMany();
-    res.status(201).json(results);
+    const { project, from, to } = req.query;
+
+    // fetch boxes from osem api
+    const response = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_OSEM_API
+      }/boxes?format=json&full=true&grouptag=HU Explorers${
+        project ? ',' + project : ''
+      }`,
+    );
+    const devices = await response.json();
+    const deviceIds = devices.flatMap(device => device._id);
+
+    // Get records and calculate average
+    const aggregations = await prisma.artenvielfaltRecord.aggregate({
+      _avg: {
+        simpsonIndex: true,
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+        createdAt: {
+          gte: from as string,
+          lte: to as string,
+        },
+      },
+    });
+
+    const measurements = await prisma.artenvielfaltRecord.findMany({
+      include: {
+        arten: true,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+        createdAt: {
+          gte: from as string,
+          lte: to as string,
+        },
+      },
+    });
+
+    const grouped = await prisma.artenvielfaltRecord.groupBy({
+      by: ['createdAt'],
+      _avg: {
+        simpsonIndex: true,
+      },
+      where: {
+        deviceId: {
+          in: deviceIds,
+        },
+        createdAt: {
+          gte: from as string,
+          lte: to as string,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    res.status(201).json({
+      aggregations,
+      lastMeasurement: measurements[0],
+      measurements,
+      grouped,
+    });
   } else if (req.method === 'PUT') {
     const body = JSON.parse(req.body);
 

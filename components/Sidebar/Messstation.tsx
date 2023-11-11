@@ -9,14 +9,15 @@ import {
 import { fetcher } from '@/lib/fetcher';
 import { useTailwindColors } from '@/hooks/useTailwindColors';
 import { Sensor } from '@/types/osem';
-import MeasurementTile, { ChartType } from './MeasurementTile';
+import MeasurementTile, { ChartType } from '../MeasurementTile';
 import useSharedCompareSensors from '@/hooks/useCompareSensors';
 import { LayoutMode } from '@/pages';
 
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import BrokenAxis from 'highcharts/modules/broken-axis';
-import { useOsemData } from '@/hooks/useOsemData';
+import { defaultChartOptions, defaultPieChartOptions } from '@/lib/charts';
+import { useOsemDevice } from '@/hooks/useOsemDevice';
 
 if (typeof Highcharts === 'object') {
   BrokenAxis(Highcharts);
@@ -25,91 +26,7 @@ if (typeof Highcharts === 'object') {
 const CHART_SERIES_GAP_SIZE: number =
   Number(process.env.NEXT_PUBLIC_CHART_SERIES_GAP_SIZE) || 180000;
 
-const defaultChartOptions: Highcharts.Options = {
-  title: {
-    text: '',
-  },
-  chart: {
-    zooming: {
-      type: 'x',
-    },
-  },
-  plotOptions: {
-    series: {
-      marker: {
-        enabled: false,
-        symbol: 'circle',
-      },
-      lineWidth: 4,
-    },
-  },
-  yAxis: [],
-  xAxis: {
-    type: 'datetime',
-    dateTimeLabelFormats: {
-      millisecond: '%H:%M:%S.%L',
-      second: '%H:%M:%S',
-      minute: '%H:%M',
-      hour: '%H:%M',
-      day: '%e. %b',
-      week: '%e. %b',
-      month: "%b '%y",
-      year: '%Y',
-    },
-  },
-  legend: {
-    align: 'center',
-    verticalAlign: 'bottom',
-    layout: 'horizontal',
-  },
-  credits: {
-    enabled: true,
-  },
-  time: {
-    useUTC: false,
-    timezoneOffset: new Date().getTimezoneOffset(),
-  },
-  tooltip: {
-    dateTimeLabelFormats: {
-      day: '%d.%m.%Y %H:%M:%S',
-    },
-  },
-  colors: [],
-  series: [],
-};
-
-const defaultPieChartOptions: Highcharts.Options = {
-  chart: {
-    plotBackgroundColor: null,
-    plotBorderWidth: null,
-    plotShadow: false,
-    type: 'pie',
-  },
-  title: {
-    text: '',
-  },
-  tooltip: {
-    pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>',
-  },
-  accessibility: {
-    point: {
-      valueSuffix: '%',
-    },
-  },
-  plotOptions: {
-    pie: {
-      allowPointSelect: true,
-      cursor: 'pointer',
-      dataLabels: {
-        enabled: true,
-        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-      },
-    },
-  },
-  series: [],
-};
-
-const Sidebar = ({
+const Messstation = ({
   box,
   rendering,
   dateRange,
@@ -120,8 +37,14 @@ const Sidebar = ({
   dateRange: Date[];
   layout: LayoutMode;
 }) => {
+  console.info('Opening Messstation view: ', box, rendering, dateRange, layout);
+
   const colors = useTailwindColors();
   const { compareSensors } = useSharedCompareSensors();
+
+  // Selected date range by the user
+  const fromDate = dateRange[0] ? `from=${dateRange[0].toISOString()}` : '';
+  const toDate = dateRange[1] ? `to=${dateRange[1].toISOString()}` : '';
 
   useEffect(() => {
     if (compareSensors.length > 0) {
@@ -138,17 +61,26 @@ const Sidebar = ({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPieChartOpen, setIsPieChartOpen] = useState<boolean>(false);
   const [isBarChartOpen, setIsBarChartOpen] = useState<boolean>(false);
+
+  // Fetcher for selected device
+  const { device, data: sensors } = useOsemDevice(
+    box.properties._id,
+    dateRange[0],
+    dateRange[1],
+  );
+  console.log('useOsemDevice: ', device, sensors);
+
+  // Fetcher for Artenvielfalt and Versiegelung
   const { data: artenvielfalt, error: artenvielfaltError } = useSWR<
     ArtenvielfaltRecord[]
-  >(`/api/artenvielfalt/${box?.properties._id}`);
+  >(`/api/artenvielfalt/${box?.properties._id}?${fromDate}&${toDate}`);
   const { data: versiegelung, error: versiegelungError } = useSWR<
     VersiegelungRecord[]
-  >(`/api/versiegelung/${box?.properties._id}`);
-  console.log('Main selected device - Versiegelung: ', versiegelung);
-  console.log('Main selected device - Artenvielfalt: ', artenvielfalt);
+  >(`/api/versiegelung/${box?.properties._id}?${fromDate}&${toDate}`);
 
   const [sensor, setSensor] = useState<Sensor>();
   const [shouldFetch, setShouldFetch] = useState(false);
+
   const { data } = useSWR(
     shouldFetch
       ? `https://api.opensensemap.org/boxes/${box.properties._id}/data/${
@@ -582,17 +514,17 @@ const Sidebar = ({
   };
 
   return (
-    <div className="flex h-full w-full overflow-hidden overflow-y-scroll rounded-lg bg-white p-2 shadow">
+    <div className="flex h-full w-full overflow-hidden rounded-lg bg-white p-2 shadow">
       {layout === LayoutMode.MAP ? (
-        <div className="flex h-full w-full divide-x-2 overflow-hidden overflow-y-scroll">
-          {box && (
+        <div className="flex h-full w-full divide-x-2 overflow-hidden">
+          {device && (
             <div className="min-w[30%] max-w[30%] flex w-[30%]  flex-col divide-y-2 overflow-hidden">
               <div className="mb-2">
                 <h1 className="mb-2 content-center text-center text-lg font-bold">
-                  {box.properties.name}
+                  {device.name}
                 </h1>
                 <div className="flex justify-center">
-                  {box.properties.tags.map((tag, idx) => {
+                  {device.grouptag.map((tag, idx) => {
                     // First index is HU Explorers tag
                     if (idx === 0) {
                       return;
@@ -609,18 +541,28 @@ const Sidebar = ({
                 </div>
               </div>
               <div className="flex h-full flex-wrap justify-center overflow-auto align-middle">
-                {box.properties.sensors.map(sensor => {
+                {sensors?.map((sensor, i) => {
                   return (
                     <MeasurementTile
-                      key={sensor._id}
-                      sensor={sensor}
+                      key={sensor.sensor._id}
+                      sensor={sensor.sensor}
+                      // measurement={
+                      //   sensor.measurements.length > 0
+                      //     ? sensor.measurements[0]
+                      //     : null
+                      // }
+                      value={
+                        sensor.measurements.length > 0
+                          ? Number(sensor.measurements[0].value)
+                          : null
+                      }
                       openChart={openCharts}
                       charts={[ChartType.line]}
                     />
                   );
                 })}
 
-                {box.properties.tags.includes('Artenvielfalt') && (
+                {device.grouptag.includes('Artenvielfalt') && (
                   <>
                     {getArtenvielfaltTile(artenvielfalt)}
                     {getVersiegelungTile(versiegelung)}
@@ -630,15 +572,6 @@ const Sidebar = ({
             </div>
           )}
           <div className="ml-2 flex w-[70%] min-w-[70%]">
-            {!box && (
-              <div className="flex h-full w-full items-center justify-center">
-                <h1 className="text-md content-center text-center font-bold">
-                  Wählt per Klick auf die Karte einen Schulstandort aus und ihr
-                  seht Messwerte von Umweltfaktoren an dieser Schule.
-                </h1>
-              </div>
-            )}
-
             {isOpen && (
               <div className="flex w-full overflow-hidden">
                 <div className="m-2 h-[95%] min-h-0 w-full overflow-hidden">
@@ -692,15 +625,15 @@ const Sidebar = ({
           </div>
         </div>
       ) : (
-        <div className="flex h-full w-full overflow-hidden overflow-y-scroll">
-          {box && (
+        <div className="flex h-full w-full overflow-hidden">
+          {device && (
             <div className="flex w-full flex-col">
               <div className="mb-2">
                 <h1 className="mb-2 content-center text-center text-lg font-bold">
-                  {box.properties.name}
+                  {device.name}
                 </h1>
                 <div className="flex justify-center">
-                  {box.properties.tags.map((tag, idx) => {
+                  {device.grouptag.map((tag, idx) => {
                     // First index is HU Explorers tag
                     if (idx === 0) {
                       return;
@@ -717,11 +650,21 @@ const Sidebar = ({
                 </div>
               </div>
               <div className="flex justify-evenly">
-                {box.properties.sensors.map(sensor => {
+                {sensors.map(sensor => {
                   return (
                     <MeasurementTile
-                      key={sensor._id}
-                      sensor={sensor}
+                      key={sensor.sensor._id}
+                      sensor={sensor.sensor}
+                      // measurement={
+                      //   sensor.measurements.length > 0
+                      //     ? sensor.measurements[0]
+                      //     : null
+                      // }
+                      value={
+                        sensor.measurements.length > 0
+                          ? Number(sensor.measurements[0].value)
+                          : null
+                      }
                       openChart={openCharts}
                       charts={[ChartType.line]}
                     />
@@ -736,15 +679,6 @@ const Sidebar = ({
                 )}
               </div>
               <div className="mt-2 flex h-full w-full flex-col">
-                {!box && (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <h1 className="text-md content-center text-center font-bold">
-                      Wählt per Klick auf die Karte einen Schulstandort aus und
-                      ihr seht Messwerte von Umweltfaktoren an dieser Schule.
-                    </h1>
-                  </div>
-                )}
-
                 {isOpen && (
                   <div className="flex h-full w-full overflow-hidden">
                     <div className="m-2 h-[95%] min-h-max w-full overflow-hidden">
@@ -806,4 +740,4 @@ const Sidebar = ({
   );
 };
 
-export default Sidebar;
+export default Messstation;
