@@ -29,6 +29,7 @@ import {
   transformBodenfeuchteData,
   transformTemperatureData,
 } from '@/lib/utils';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
 if (typeof Highcharts === 'object') {
   NoDataToDisplay(Highcharts);
@@ -140,6 +141,8 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
 
+  const [artenvielfaltPercent, setArtenvielfaltPercent] = useState(false);
+
   const [barChart, setBarChart] = useState<boolean>(true);
 
   const [lineSeriesBodenfeuchte, setLineSeriesBodenfeuchte] = useState([]);
@@ -224,6 +227,16 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, groups]);
+
+  useEffect(() => {
+    const run = async () => {
+      updateChartOptions();
+    };
+
+    run();
+
+    return () => {};
+  }, [artenvielfaltPercent]);
 
   const tabs: Tab[] = [
     {
@@ -346,6 +359,7 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
   const onChange = (tab: number) => {
     setTab(tab);
     setBarChart(true);
+    setArtenvielfaltPercent(false);
     switch (tab) {
       case 0:
         setBarChartOptions({
@@ -434,6 +448,46 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
     }
   };
 
+  const updateChartOptions = () => {
+    if (artenvielfaltPercent) {
+      setBarChartOptions({
+        ...barChartOptions,
+        yAxis: {
+          title: {
+            text: 'Artenvielfaltsindex in %',
+          },
+          min: 0,
+          max: 100,
+        },
+        series: [
+          {
+            name: 'artenvielfalt',
+            type: 'column',
+            data: artenvielfalt.map(v => v * 100),
+          },
+        ],
+      });
+    } else {
+      setBarChartOptions({
+        ...barChartOptions,
+        yAxis: {
+          title: {
+            text: 'Artenvielfaltsindex',
+          },
+          min: 0,
+          max: 1,
+        },
+        series: [
+          {
+            name: 'artenvielfalt',
+            type: 'column',
+            data: artenvielfalt.map(v => v),
+          },
+        ],
+      });
+    }
+  };
+
   const switchChart = () => {
     switch (tab) {
       case 0:
@@ -485,25 +539,36 @@ const Group = ({ groups, devices, versiegelung, artenvielfalt }: Props) => {
             <Tabs tabs={tabs} onChange={onChange}></Tabs>
           </div>
           <div className="mb-4 w-full flex-auto">
-            <div className="flex flex-row-reverse">
-              <Button
-                size="sm"
-                variant="inverse"
-                startIcon={<PresentationChartLineIcon className="h-5 w-5" />}
-                disabled={!barChart || tab === 2 || tab === 3}
-                onClick={switchChart}
-              >
-                Liniendiagramm
-              </Button>
-              <Button
-                size="sm"
-                variant="inverse"
-                startIcon={<PresentationChartBarIcon className="h-5 w-5" />}
-                disabled={barChart}
-                onClick={switchChart}
-              >
-                Balkendiagramm
-              </Button>
+            <div className="flex">
+              <div className="flex w-full items-center">
+                {tab === 3 ? (
+                  <ToggleSwitch
+                    checked={artenvielfaltPercent}
+                    label="Artenvielfalt in %"
+                    onChange={setArtenvielfaltPercent}
+                  ></ToggleSwitch>
+                ) : null}
+              </div>
+              <div className="flex flex-row-reverse">
+                <Button
+                  size="sm"
+                  variant="inverse"
+                  startIcon={<PresentationChartLineIcon className="h-5 w-5" />}
+                  disabled={!barChart || tab === 2 || tab === 3}
+                  onClick={switchChart}
+                >
+                  Liniendiagramm
+                </Button>
+                <Button
+                  size="sm"
+                  variant="inverse"
+                  startIcon={<PresentationChartBarIcon className="h-5 w-5" />}
+                  disabled={barChart}
+                  onClick={switchChart}
+                >
+                  Balkendiagramm
+                </Button>
+              </div>
             </div>
             {!barChart && (
               <HighchartsReact

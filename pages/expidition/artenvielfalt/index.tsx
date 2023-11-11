@@ -22,6 +22,7 @@ import {
   transformTemperatureData,
 } from '@/lib/utils';
 import { generateChartOptions } from '@/lib/charts';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
@@ -110,6 +111,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       devices: featureCollection,
       versiegelung: dataVersiegelung,
       artenvielfalt: dataArtenvielfalt,
+      artenvielfaltPercentData: dataArtenvielfalt.map(v => v * 100),
     },
   };
 };
@@ -119,6 +121,7 @@ type Props = {
   devices: any;
   versiegelung: number[];
   artenvielfalt: number[];
+  artenvielfaltPercentData: number[];
 };
 
 const Artenvielfalt = ({
@@ -126,9 +129,12 @@ const Artenvielfalt = ({
   devices,
   versiegelung,
   artenvielfalt,
+  artenvielfaltPercentData,
 }: Props) => {
   const { schule } = useExpeditionParams();
   const [tab, setTab] = useState(0);
+
+  const [artenvielfaltPercent, setArtenvielfaltPercent] = useState(false);
 
   const colors = useTailwindColors();
 
@@ -241,6 +247,9 @@ const Artenvielfalt = ({
   const onChange = (tab: number) => {
     let chartOptionsTmp;
     setTab(tab);
+
+    console.log(artenvielfalt, artenvielfaltPercentData);
+
     switch (tab) {
       case 0:
         chartOptionsTmp = generateChartOptions(
@@ -257,12 +266,17 @@ const Artenvielfalt = ({
               data: transformedTemperatur.map(v => v),
             },
             {
-              name: 'Artenvielfalt',
+              name: artenvielfaltPercent
+                ? 'Artenvielfalt in %'
+                : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfalt,
+              data: artenvielfaltPercent
+                ? [...artenvielfaltPercentData]
+                : [...artenvielfalt],
             },
           ],
+          artenvielfaltPercent,
         );
         break;
       case 1:
@@ -280,12 +294,17 @@ const Artenvielfalt = ({
               data: transformedBodenfeuchte.map(v => v),
             },
             {
-              name: 'Artenvielfalt',
+              name: artenvielfaltPercent
+                ? 'Artenvielfalt in %'
+                : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfalt,
+              data: artenvielfaltPercent
+                ? [...artenvielfaltPercentData]
+                : [...artenvielfalt],
             },
           ],
+          artenvielfaltPercent,
         );
         break;
       case 2:
@@ -303,12 +322,17 @@ const Artenvielfalt = ({
               data: versiegelung.map(v => v),
             },
             {
-              name: 'Artenvielfalt',
+              name: artenvielfaltPercent
+                ? 'Artenvielfalt in %'
+                : 'Artenvielfalt',
               type: 'column',
               yAxis: 1,
-              data: artenvielfalt,
+              data: artenvielfaltPercent
+                ? [...artenvielfaltPercentData]
+                : [...artenvielfalt],
             },
           ],
+          artenvielfaltPercent,
         );
         break;
       default:
@@ -328,6 +352,13 @@ const Artenvielfalt = ({
             <Tabs tabs={tabs} onChange={onChange}></Tabs>
           </div>
           <div className="mb-4 w-full flex-auto">
+            <div className="mr-2 flex flex-row-reverse">
+              <ToggleSwitch
+                checked={artenvielfaltPercent}
+                label="Artenvielfalt in %"
+                onChange={setArtenvielfaltPercent}
+              />
+            </div>
             <HighchartsReact
               containerProps={{ style: { height: '100%' } }}
               highcharts={Highcharts}
